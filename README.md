@@ -10,59 +10,104 @@
 <br>
 
 ## 🛠️ 기술 스택
-
+### Backend
 <img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=java&logoColor=white"> <img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
 <img src="https://img.shields.io/badge/spring data JPA-6DB33F?style=for-the-badge&logo=hibernate&logoColor=white">
 <img src="https://img.shields.io/badge/spring%20security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white">
+<img src="https://img.shields.io/badge/gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white">
 <br>
-<img src="https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white"> 
-<img src="https://img.shields.io/badge/css-1572B6?style=for-the-badge&logo=css3&logoColor=white"> 
+<img src="https://img.shields.io/badge/socket.io-010101?style=for-the-badge&logo=socketdotio&logoColor=white">
+<img src="https://img.shields.io/badge/pubmed-326599?style=for-the-badge&logo=pubmed&logoColor=white">
+<br>
+
+### Frontend
+<img src="https://img.shields.io/badge/html5-E34F26?style=for-the-badge&logo=html5&logoColor=white"> <img src="https://img.shields.io/badge/css-1572B6?style=for-the-badge&logo=css3&logoColor=white"> 
 <img src="https://img.shields.io/badge/javascript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black">
 <img src="https://img.shields.io/badge/vue.js-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white">
 <br>
-<img src="https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white">
-<img src="https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white">
-<img src="https://img.shields.io/badge/jenkins-%232C5263.svg?style=for-the-badge&logo=jenkins&logoColor=white">
-<br>
-<img src="https://img.shields.io/badge/mariadb-4479A1?style=for-the-badge&logo=mariadb&logoColor=white">
+
+### Database
+<img src="https://img.shields.io/badge/mariadb-4479A1?style=for-the-badge&logo=mariadb&logoColor=white"> <img src="https://img.shields.io/badge/mongoDB-47A248?style=for-the-badge&logo=MongoDB&logoColor=white">
+<img src="https://img.shields.io/badge/elasticsearch-005571?style=for-the-badge&logo=elasticsearch&logoColor=white">
 <img src="https://img.shields.io/badge/Amazon%20S3-FF9900?style=for-the-badge&logo=amazons3&logoColor=white">
 <br>
-<img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">
+
+### CI/CD
+<img src="https://img.shields.io/badge/GithubActions-2088FF.svg?style=for-the-badge&logo=GithubActions&logoColor=white"> <img src="https://img.shields.io/badge/aws-232F3E.svg?style=for-the-badge&logo=amazonwebservices&logoColor=white">
+<br>
+
+### Tool
+<img src="https://img.shields.io/badge/swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=white"> <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">
 <img src="https://img.shields.io/badge/figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white">
+<img src="https://img.shields.io/badge/slack-4A154B?style=for-the-badge&logo=slack&logoColor=white">
+<img src="https://img.shields.io/badge/discord-5865F2?style=for-the-badge&logo=discord&logoColor=white">
 
 <br>
 
 ## 📜 목차
-1. [프로젝트 기획서](#1-프로젝트-기획서)
-2. [WBS](#2-wbs)
-3. [DDD 설계](#3-ddd-설계)
-4. [요구사항 명세서](#4-요구사항-명세서)
-5. [Database 설계](#5-database-설계)
-6. [화면 설계서](#6-화면-설계서)
-7. [시스템 아키텍처](#7-시스템-아키텍처)
+1. [프로젝트 개요](#1-프로젝트-개요)
+2. [주요 기능](#2-주요-기능)
+3. [기대 효과](#3-기대-효과)
+4. [프로젝트 설계 문서](#4-프로젝트-설계-문서)
 
 <hr>
+<br>
 
-## 프로젝트 개요
-> <b>[MediHub]</b>
-> <br>
+## 1. 프로젝트 개요
+### MediHub
+
+> MediHub는 병원 내 의료진과 의료 관계자들이 효율적으로 협업하고 지식 공유 및 축적을 통해 의료 서비스의 품질을 향상시키기 위한 지식 관리 시스템(KMS)입니다.
 >
+> 병원의 의료 수준은 개개인의 지식과 다수 의료진의 협업으로 결정되므로 지식의 효율적인 관리와 빠른 업데이트가 필수적입니다.
+> 병원 내에서 지식은 암묵적 지식에서 명시적 지식으로 변환되어야 합니다.
+> 이를 통해 의료진과 직원들이 각자 보유한 업무 경험, 진료 지침(CP), 의료 논문 등을 조직적으로 공유하고 축적할 수 있습니다.
+>
+>이를 위해 MediHub는 병원 내 정보의 일원화를 추진하고 실시간 정보 공유와 협업을 촉진하는 다양한 기능을 제공합니다.
 
 <br>
 
-## 1. 프로젝트 기획서
+## 2. 주요 기능
+의료진 및 병원 직원들이 의료 케이스, CP, 사용자 정보 등 분산된 데이터를 검색 엔진을 통해 한 곳에서 통합적, 효율적으로 조회할 수 있도록 지원합니다.
+또한 협업과 커뮤니케이션을 위한 실시간 채팅 및 조직도 기반 네트워크를 제공해 개인화 된 정보 관리 기능으로 사용자 편의성을 극대화합니다.
+
+### 1. 지식 관리
+- <b>CP(Clinical Pathway):</b> 병원 내 치료 매뉴얼 문서(CP)를 병원 내 관계자들이 쉽게 접근하고 수정을 건의할 수 있는 기능 제공
+- <b>Case Sharing(의료 케이스 공유):</b> 희귀병 치료 등 다양한 의료 사례 공유 및 논의를 통해 의료 사고 예방 및 치료 성과 개선
+- <b>ChatGPT + PubMed(논문):</b> 최신 논문과 연구 결과를 효율적으로 검색할 수 있는 기능을 통해 의료진이 필요한 정보를 빠르게 찾을 수 있도록 지원
+- <b>Medical Life(부서 게시판):</b> 부서별 게시판을 통해 각 부서의 전문성을 바탕으로 정보 공유 및 효율적인 업무 처리 지원. 다양한 직군 간의 정보 교류를 통해 지식의 지속적인 축적과 확장 촉진
+
+### 2. 정보 검색 및 접근
+- <b>Elasticsearch:</b> 대량의 의료 데이터를 신속하고 효율적으로 검색하고 분석할 수 있도록 지원
+- <b>Newsapi:</b> 최신 의료 뉴스를 검색하고 통합하여 관계자들이 정보에 쉽게 접근할 수 있도록 지원
+
+### 3. 협업 및 커뮤니케이션
+- <b>익명 게시판(Anonymous Board)</b> 병원 내 모든 관계자가 개인적인 의견이나 질문을 자유롭게 개진하고 정보를 공유할 수 있는 환경 제공
+- <b>MediTalk(메신저):</b> 응급 상황이나 신속한 의사 결정이 필요한 경우 직원 간 실시간으로 소통할 수 있는 메신저 기능 제공
+- <b>알림:</b> 팔로우 한 의료진이 새로운 CP나 Case Sharing 등을 작성했을 때 실시간으로 알림 메시지를 전송하여 최신 정보를 신속하게 공유하고 협업을 촉진
+
+### 4. 사용자 지원 및 자동화
+- <b>ChatBot:</b> 질문과 답변을 실시간으로 처리할 수 있어 정보 검색의 편의성 향상
+
+<br>
+
+## 3. 기대 효과
+
+<br>
+
+## 4. 프로젝트 설계 문서
+### 4-1. 프로젝트 기획서
 [프로젝트 기획서](https://docs.google.com/document/d/1-ND5Wz1T14ndjffN6jAfWhBTUUeX5B-A93sHcd4FhfM/edit?tab=t.0)
 
-## 2. WBS
+### 4-2. WBS
 [WBS](https://docs.google.com/spreadsheets/d/1sWHGbgL9R79AbUzCAmxKIulggjMqbi1lwv-RsJdtgVA/edit?gid=1194459417#gid=1194459417)
 
-## 3. DDD 설계
+### 4-3. DDD 설계
 [DDD](https://miro.com/app/board/uXjVLFIor4Y=/)
 
-## 4. 요구사항 명세서
+### 4-4. 요구사항 명세서
 [요구사항명세서](https://docs.google.com/spreadsheets/d/1sWHGbgL9R79AbUzCAmxKIulggjMqbi1lwv-RsJdtgVA/edit?gid=205274512#gid=205274512)
 
-## 5. Database 설계
+### 4-5. Database 설계
 [ERD](https://www.erdcloud.com/d/EmGTuF2SJmXwbLNiv)
 <br>
 <details>
@@ -162,7 +207,7 @@
 </div>
 </details>
 
-## 6. 화면 설계서
+### 4-6. 화면 설계서
 [화면 설계서 (Figma)](https://www.figma.com/design/SiXw9eqSH2yS3GFtUxoINf/MediHub?node-id=0-1&node-type=canvas&t=yScI0V8n8O79M0vo-0)
 
-## 7. 시스템 아키텍처
+### 4-7. 시스템 아키텍처
