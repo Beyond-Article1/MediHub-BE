@@ -120,7 +120,7 @@
 <summary>MongoDB Schema</summary>
 <div markdown="1">
 
-### ChatUser Collection
+### chat.users Collection
 ```mongodb-json
 {
   "UserSeq": "123",
@@ -134,7 +134,7 @@
 }
 ```
 
-### ChatGroup Collection
+### chat.groups Collection
 ```mongodb-json
 {
   "GroupSeq": "group1",
@@ -161,10 +161,10 @@
 }
 ```
 
-### ChatMessage Collection
+### chat.messages Collection
 ```mongodb-json
 {
-	"MessageSeq": "msg1",
+  "MessageSeq": "msg1",
   "GroupSeq": "group1",
   "MessageContent": "회의자료를 첨부합니다.",
   "SendUser": {
@@ -192,7 +192,7 @@
 }
 ```
 
-### ChatFileStorage Collection
+### chat.files Collection
 ```mongodb-json
 {
   "FileSeq": "12345",  // 자동 생성된 고유 ID (ObjectId)
@@ -217,3 +217,4 @@
 [화면 설계서 (Figma)](https://www.figma.com/design/SiXw9eqSH2yS3GFtUxoINf/MediHub?node-id=0-1&node-type=canvas&t=yScI0V8n8O79M0vo-0)
 
 ### 4-7. 시스템 아키텍처
+![systemArchitecture](https://github.com/user-attachments/assets/7bc3d280-2276-4c57-b946-811271441017)
