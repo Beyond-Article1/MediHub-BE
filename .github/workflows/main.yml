@@ -5,12 +5,12 @@
   with:
     payload: |
       {
-        "channel": "#알림방",  # 실제 채널 ID로 변경
+        "channel": "#알림방",
         "attachments": [
           {
             "color": "#36a64f", 
             "title": "${{ github.repository }}",
-            "title_link": "https://github.com/${{github.repository}}",
+            "title_link": "https://github.com/${{ github.repository }}",
             "text": "GitHub Action 성공",
             "fields": [
               {
@@ -38,12 +38,12 @@
   with:
     payload: |
       {
-        "channel": "#알림방",  # 실제 채널 ID로 변경
+        "channel": "#알림방",
         "attachments": [
           {
             "color": "#ff0000",
             "title": "${{ github.repository }}",
-            "title_link": "https://github.com/${{github.repository}}",
+            "title_link": "https://github.com/${{ github.repository }}",
             "text": "GitHub Action 실패 :x:",
             "fields": [
               {
