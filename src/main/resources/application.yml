@@ -27,6 +27,11 @@ spring:
       hibernate:
         format_sql: true
 
+  # MongoDB 설정
+#  data:
+#    mongodb:
+#      uri: mongodb://${db.username}:${db.password}@mongodb_boot:${mongodb.port}
+
   web:
     resources:
       add-mappings: false # Disable static resource mapping (For NoHandlerFoundException), 스태틱 파일을 뒤져 보는 것을 방지
