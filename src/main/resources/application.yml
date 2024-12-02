@@ -6,6 +6,27 @@ server:
   port: 8088
   
 spring:
+  config:
+    import: "classpath:Application-KEY.properties"
+
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://${mariadb.host}:${mariadb.port}/${mariadb.dbname}
+    username: ${db.username}
+    password: ${db.password}
+
+  jpa:
+    hibernate:
+      dialect: org.hibernate.dialect.MariaDBDialect
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
   web:
     resources:
       add-mappings: false # Disable static resource mapping (For NoHandlerFoundException), 스태틱 파일을 뒤져 보는 것을 방지
