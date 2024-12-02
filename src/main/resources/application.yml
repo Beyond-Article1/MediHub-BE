@@ -4,3 +4,8 @@ springdoc:
 
 server:
   port: 8088
+  
+spring:
+  web:
+    resources:
+      add-mappings: false # Disable static resource mapping (For NoHandlerFoundException), 스태틱 파일을 뒤져 보는 것을 방지
