@@ -19,8 +19,8 @@ public class CpController {
 
     private final CpService cpService;
 
-    @GetMapping
     // https://medihub.info/cp?cpSearchCategorySeq=value&cpSearchCategoryData=value
+    @GetMapping
     public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpSearchCategoryAndCpSearchCategoryData(
             @RequestParam(required = false) long cpSearchCategorySeq,
             @RequestParam(required = false) String cpSearchCategoryData) {
