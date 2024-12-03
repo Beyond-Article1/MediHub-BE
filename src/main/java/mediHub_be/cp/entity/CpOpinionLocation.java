@@ -12,8 +12,9 @@ public class CpOpinionLocation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long cpOpinionLocationSeq;      // cp 의견위치 번호
 
-    @Column
-    private long cpVersionSeq;              // cp 버전 버호
+    @ManyToOne
+    @JoinColumn(name = "cp_version_seq")
+    private CpVersion cpVersionSeq;         // cp 버전 번호
 
     @Column
     private double cpOpinionLocationX;      // x 좌표
