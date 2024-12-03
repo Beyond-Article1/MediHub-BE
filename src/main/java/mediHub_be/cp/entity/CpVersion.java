@@ -11,7 +11,7 @@ public class CpVersion extends CreateTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long cpVersionSeq;                       // cp 버절 번호
+    private long cpVersionSeq;                       // cp 버전 번호
 
     @Column
     private long cpSeq;                             // cp 번호
