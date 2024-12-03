@@ -13,9 +13,8 @@ public class Cp {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long cpSeq;             // cp 번호
 
-    @ManyToOne
-    @JoinColumn(name = "user_seq")
-    private User userSeq;           // 등록인
+    @Column
+    private long userSeq;           // 등록인
 
     @Column
     private String cpName;          // cp명

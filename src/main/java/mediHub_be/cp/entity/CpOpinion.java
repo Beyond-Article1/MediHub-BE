@@ -12,16 +12,14 @@ public class CpOpinion extends BaseFullEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long cpOpinionSeq;
-
-    @ManyToOne
-    @JoinColumn(name = "user_seq")
-    private User userSeq;
-
-    @ManyToOne
-    @JoinColumn(name = "cp_opinion_location_seq")
-    private CpOpinionLocation cpOpinionLocationSeq;
+    private long cpOpinionSeq;              // cp 의견 번호
 
     @Column
-    private String cpOpinionContent;
+    private long userSeq;                   // 작성자
+
+    @Column
+    private long cpOpinionLocationSeq;      // cp 의견 위치 번호
+
+    @Column
+    private String cpOpinionContent;        // cp 의견 내용
 }

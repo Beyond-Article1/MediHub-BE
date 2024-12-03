@@ -13,9 +13,8 @@ public class CpOpinionVote extends BaseCreateDeleteEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long cpOpinionVoteSeq;      // cp 의견투표 번호
 
-    @ManyToOne
-    @JoinColumn(name = "cp_opinion_seq")
-    private CpOpinion cpOpinionSeq;     // cp 의견 번호
+    @Column
+    private long cpOpinionSeq;          // cp 의견 번호
 
     @Column
     private boolean cpOpinionVote;      // cp 의견투표 내용

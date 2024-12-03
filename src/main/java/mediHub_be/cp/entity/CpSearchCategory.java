@@ -14,9 +14,8 @@ public class CpSearchCategory extends BaseFullEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long cpSearchCategorySeq;           // cp 검색카테고리 번호
 
-    @ManyToOne
-    @JoinColumn(name = "user_seq")
-    private User userSeq;                       // 등록자
+    @Column
+    private long userSeq;                       // 등록자
 
     @Column
     private String cpSearchCategoryName;        // cp 검색카테고리명
