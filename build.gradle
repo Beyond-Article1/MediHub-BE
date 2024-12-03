@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.6'
+    id 'com.google.cloud.tools.jib' version '3.3.2' // Jib 플러그인
 }
 
 group = 'org.example'
@@ -28,15 +29,36 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     compileOnly 'org.projectlombok:lombok'
- //   runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    //Swagger
+    // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 
+    // Env 설정
+    implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+}
+
+
+jib {
+    from {
+        image = 'openjdk:17.0.2-slim' // 베이스 이미지 지정
+    }
+    to {
+        image = "${System.getenv('DOCKER_USERNAME') ?: 'default-user'}/medihub" // 이미지 지정
+        auth {
+            System.getenv('DOCKER_USERNAME') ?: 'default-user' //
+            System.getenv('DOCKER_PASSWORD') ?: 'default-password'
+        }
+    }
+    container {
+        ports = ['8088'] // 컨테이너 포트
+        jvmFlags = ["-Xms512m", "-Xmx512m"]
+        creationTime = "USE_CURRENT_TIMESTAMP"
+    }
 }
 
 test {
