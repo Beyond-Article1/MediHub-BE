@@ -37,6 +37,21 @@ dependencies {
     //Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 
+
+    // MockMvc와 REST 테스트를 위한 의존성
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework:spring-test'
+
+    // JSON 테스트 지원 (예: 응답 JSON 검증)
+    testImplementation 'com.jayway.jsonpath:json-path:2.8.0'
+
+    // Mockito: 서비스 계층 테스트를 위한 Mocking 라이브러리
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.5.0'
+
+    // AssertJ: Fluent 스타일로 테스트를 작성
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+
 }
 
 test {
