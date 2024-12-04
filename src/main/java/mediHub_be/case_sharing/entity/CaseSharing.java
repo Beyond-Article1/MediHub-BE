@@ -1,10 +1,7 @@
 package mediHub_be.case_sharing.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.part.entity.Part;
 import mediHub_be.user.entity.User;
@@ -34,5 +31,14 @@ public class CaseSharing extends BaseFullEntity {
     private String caseSharingTitle;
 
     private String caseSharingContent;
+
+    @Builder
+    public CaseSharing(User user, Part part, Template template, String caseSharingTitle, String caseSharingContent) {
+        this.user = user;
+        this.part = part;
+        this.template = template;
+        this.caseSharingTitle = caseSharingTitle;
+        this.caseSharingContent = caseSharingContent;
+    }
 
 }

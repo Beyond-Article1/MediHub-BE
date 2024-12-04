@@ -1,10 +1,7 @@
 package mediHub_be.case_sharing.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 
 @Entity
@@ -24,4 +21,12 @@ public class Version extends BaseFullEntity {
     private Integer versionNum;
 
     private boolean versionIsLatest;
+
+    @Builder
+    public Version(CaseSharing caseSharing, int versionNum, boolean versionIsLatest) {
+        this.caseSharing = caseSharing;
+        this.versionNum = versionNum;
+        this.versionIsLatest = versionIsLatest;
+    }
+
 }

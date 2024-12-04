@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import mediHub_be.dept.entity.Dept;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -21,20 +22,21 @@ public class Part {
     @Column(name = "part_seq", nullable = false)
     private long partSeq;
 
+    @ManyToOne
     @JoinColumn(name = "dept_seq", nullable = false)
-    private long deptSeq;
+    private Dept dept;
 
     @Column(name = "part_name", nullable = false)
     private String partName;
 
     @Builder
-    public Part(long deptSeq, String partName) {
-        this.deptSeq = deptSeq;
+    public Part(Dept dept, String partName) {
+        this.dept = dept;
         this.partName = partName;
     }
 
-    public void updatePart(long deptSeq, String partName) {
-        this.deptSeq = deptSeq;
+    public void updatePart(Dept dept, String partName) {
+        this.dept = dept;
         this.partName = partName;
     }
 }

@@ -1,15 +1,19 @@
 package mediHub_be.case_sharing.service;
 
 import lombok.RequiredArgsConstructor;
+import mediHub_be.board.service.KeywordService;
 import mediHub_be.case_sharing.dto.*;
 import mediHub_be.case_sharing.entity.CaseSharing;
 import mediHub_be.case_sharing.entity.CaseSharingComment;
 import mediHub_be.board.entity.Keyword;
+import mediHub_be.case_sharing.entity.Template;
 import mediHub_be.case_sharing.entity.Version;
 import mediHub_be.case_sharing.repository.CaseSharingCommentRepository;
 import mediHub_be.case_sharing.repository.CaseSharingRepository;
 import mediHub_be.board.repository.KeywordRepository;
+import mediHub_be.case_sharing.repository.TemplateRepository;
 import mediHub_be.case_sharing.repository.VersionRepository;
+import mediHub_be.part.entity.Part;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -26,7 +30,10 @@ public class CaseSharingService {
     private final VersionRepository versionRepository;
     private final UserRepository userRepository;
     private final KeywordRepository keywordRepository;
-    // 케이스 공유 전체(목록) 조회
+    private final TemplateRepository templateRepository;
+    private final KeywordService keywordService;
+
+    // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
     public List<CaseSharingListDTO> getCaseList() {
         return caseSharingRepository.findAll().stream().map(caseSharing -> {
@@ -42,7 +49,8 @@ public class CaseSharingService {
             );
         }).collect(Collectors.toList());
     }
-    //케이스 공유 상세 조회
+
+    //2. 케이스 공유 상세 조회
     @Transactional(readOnly = true)
     public CaseSharingDetailDTO getCaseSharingDetail(Long caseSharingSeq) {
         // 게시글 정보 조회
@@ -101,5 +109,49 @@ public class CaseSharingService {
                 .keywords(keywordDTOs) // 키워드 리스트
                 .versions(versionDTOs) // 버전 리스트
                 .build();
+    }
+
+    //3. 케이스 공유 등록
+    public Long createCaseSharing(CaseSharingCreateRequestDTO requestDTO) {
+        // 작성자 검증
+        User user = userRepository.findById(requestDTO.getUserSeq())
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
+
+        if (!"진료과".equals(user.getPart().getDept().getDeptName())) {
+            throw new IllegalArgumentException("케이스 공유글은 의사만 작성할 수 있습니다.");
+        }
+
+        // 템플릿 조회
+        Template template = templateRepository.findById(requestDTO.getTemplateSeq())
+                .orElseThrow(() -> new IllegalArgumentException("해당 템플릿을 찾을 수 없습니다."));
+
+        //케이스 공유 생성
+        CaseSharing caseSharing = CaseSharing.builder()
+                .user(user)
+                .part(user.getPart()) // 작성자의 소속 과로 설정
+                .template(template)
+                .caseSharingTitle(requestDTO.getTitle())
+                .caseSharingContent(requestDTO.getContent())
+                .build();
+
+        caseSharingRepository.save(caseSharing);
+
+        // 키워드 저장
+        if (requestDTO.getKeywords() != null && !requestDTO.getKeywords().isEmpty()) {
+            keywordService.saveKeywords(
+                    requestDTO.getKeywords(), // 키워드 리스트
+                    "CASE_SHARING",          // 게시판 플래그
+                    caseSharing.getCaseSharingSeq() // 저장된 케이스 공유 ID
+            );
+        }
+        // 버전 저장
+        Version version = Version.builder()
+                .caseSharing(caseSharing)
+                .versionNum(1) // 새 글은 항상 버전 1
+                .versionIsLatest(true) // 최신 버전으로 설정
+                .build();
+        versionRepository.save(version);
+
+        return caseSharing.getCaseSharingSeq();
     }
 }

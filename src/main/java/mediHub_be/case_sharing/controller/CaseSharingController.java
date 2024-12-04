@@ -4,10 +4,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.case_sharing.dto.CaseSharingListDTO;
-import mediHub_be.case_sharing.dto.CaseSharingDetailDTO;
+import mediHub_be.case_sharing.dto.*;
 import mediHub_be.case_sharing.service.CaseSharingService;
 import mediHub_be.common.response.ApiResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,8 +38,12 @@ public class CaseSharingController {
         return ApiResponse.ok(caseSharingDetailDTO);
     }
 
-
-    /*@Operation(summary = "케이스 공유글 등록",
+    @Operation(summary = "케이스 공유글 등록",
             description = "케이스 공유 템플릿 선택 후 글 작성 및 등록")
-    @GetMapping("/")*/
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<Long> createCaseSharing(@RequestBody CaseSharingCreateRequestDTO requestDTO) {
+        Long caseSharingSeq = caseSharingService.createCaseSharing(requestDTO);
+        return ApiResponse.created(caseSharingSeq);
+    }
 }

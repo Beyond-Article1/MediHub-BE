@@ -10,7 +10,7 @@ DELETE FROM part;
 DELETE FROM dept;
 
 INSERT INTO dept (dept_seq, dept_name) VALUES
-                                           (1, 'Cardiology'),
+                                           (1, '진료과'),
                                            (2, 'Neurology'),
                                            (3, 'Pediatrics');
 -- Part 데이터 삽입
@@ -30,7 +30,6 @@ INSERT INTO ranking (dept_seq, ranking_num, ranking_name) VALUES
                                                               (3, 1, 'Pediatrician'),
                                                               (3, 2, 'Senior Pediatrician'),
                                                               (3, 3, 'Chief Pediatrician');
-
 
 -- User 데이터 삽입
 INSERT INTO user (
