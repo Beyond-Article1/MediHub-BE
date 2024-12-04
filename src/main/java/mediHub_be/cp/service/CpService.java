@@ -48,6 +48,7 @@ public class CpService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<ResponseCpDTO> getCpListByCpName(String cpName) {
         logger.info("CP 이름으로 검색: {}", cpName);
 
@@ -66,6 +67,7 @@ public class CpService {
         }
     }
 
+    @Transactional(readOnly = true)
     public ResponseCpDTO getCpByCpVersionSeq(long cpVersionSeq) {
         logger.info("CP 버전 시퀀스로 검색: {}", cpVersionSeq);
 
