@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-//import mediHub_be.case_sharing.entity.Picture;
+import mediHub_be.board.entity.Picture;
 import mediHub_be.part.entity.Part;
 import mediHub_be.ranking.entity.Ranking;
 import org.hibernate.annotations.SQLDelete;
@@ -27,15 +27,13 @@ public class User {
     @JoinColumn(name = "part_seq", nullable = false)
     private Part part;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ranking_seq", nullable = false)
     private Ranking ranking;
 
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "picture_seq", nullable = false)
-//    private Picture picture;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "picture_seq")
+    private Picture picture;
 
     @Column(name = "user_id", nullable = false, unique = true)
     private String userId;
