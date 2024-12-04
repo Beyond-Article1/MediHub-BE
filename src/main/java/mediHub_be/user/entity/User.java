@@ -1,4 +1,4 @@
-package com.ohgiraffers.jwt_practice.user.entity;
+package mediHub_be.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -22,11 +22,11 @@ public class User {
     @Column(name = "user_seq")
     private long userSeq;
 
-    @JoinColumn(name = "class_seq", nullable = true)
-    private long classSeq;
+    @JoinColumn(name = "part_seq", nullable = true)
+    private long partSeq;
 
-    @JoinColumn(name = "rank_seq", nullable = true)
-    private long rankSeq;
+    @JoinColumn(name = "ranking_seq", nullable = true)
+    private long rankingSeq;
 
     @JoinColumn(name = "picture_seq", nullable = true)
     private long pictureSeq;
