@@ -1,11 +1,10 @@
-package com.ohgiraffers.jwt_practice.user.entity;
+package mediHub_be.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import mediHub_be.user.entity.UserAuth;
-import mediHub_be.user.entity.UserStatus;
+
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -22,13 +21,13 @@ public class User {
     @Column(name = "user_seq")
     private long userSeq;
 
-    @JoinColumn(name = "class_seq", nullable = true)
-    private long classSeq;
+    @Column(name = "part_seq", nullable = true)
+    private long partSeq;
 
-    @JoinColumn(name = "rank_seq", nullable = true)
-    private long rankSeq;
+    @Column(name = "ranking_seq", nullable = true)
+    private long rankingSeq;
 
-    @JoinColumn(name = "picture_seq", nullable = true)
+    @Column(name = "picture_seq", nullable = true)
     private long pictureSeq;
 
     @Column(name = "user_id", nullable = false, unique = true)
@@ -51,6 +50,14 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private UserAuth userAuth = UserAuth.USER;
+
+    public User(String userId, String userPassword, String userName, String userEmail, String userPhone) {
+        this.userId = userId;
+        this.userPassword = userPassword;
+        this.userName = userName;
+        this.userEmail = userEmail;
+        this.userPhone = userPhone;
+    }
 
     public void encryptPassword(String encodedPwd) {
         this.userPassword= encodedPwd;
