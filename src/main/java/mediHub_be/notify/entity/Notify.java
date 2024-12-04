@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mediHub_be.common.aggregate.entity.CreateTimeEntity;
+import mediHub_be.user.entity.User;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -33,9 +34,6 @@ public class Notify extends CreateTimeEntity {
     @Column(name = "noti_url", nullable = false)
     private String notiUrl;
 
-//    @Column(name = "user_seq")
-//    private Long receiver;
-
     @ManyToOne
     @JoinColumn(name = "user_seq")
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -55,17 +53,6 @@ public class Notify extends CreateTimeEntity {
     // 알림 읽음
     public void notiRead(){
         this.isRead = NotiReadStatus.Y;
-    }
-
-    public enum NotiType {
-        BOARD,  // 팔로우 한 사람의 새로운 게시글
-        COMMENT,    // 내 게시글에 대한 댓글
-        CASE    // 팔로우 한 사람의 새로운 케이스공유 글
-    }
-
-    public enum NotiReadStatus {
-        Y,  // 읽음
-        N   // 안읽음
     }
 
 }
