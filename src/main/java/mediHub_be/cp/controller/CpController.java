@@ -78,7 +78,7 @@ public class CpController {
 
     // https://medihub.info/cp?cpName=value
     @GetMapping(params = "cpName") // 중복된 매핑 방지
-    public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpByCpName(@RequestParam String cpName) {
+    public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpName(@RequestParam String cpName) {
         logger.info("이름: {}으로 CP를 가져오는 요청을 받았습니다.", cpName);
         try {
             // 이름을 통하여 Cp 를 가져오는 서비스 호출
