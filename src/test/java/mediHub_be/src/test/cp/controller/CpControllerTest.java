@@ -4,7 +4,6 @@ import mediHub_be.common.response.ApiResponse;
 import mediHub_be.cp.dto.ResponseCpDTO;
 import mediHub_be.cp.service.CpService;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
