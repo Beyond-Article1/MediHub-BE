@@ -1,4 +1,4 @@
-package mediHub_be.cp.controller;
+package mediHub_be.cp.repository;
 
 import mediHub_be.cp.entity.CpVersion;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,16 +7,32 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
 
-    @Query("SELECT cv FROM CpVersion cv " +
-            "JOIN CpSearchData csd ON cv.cpVersionSeq = csd.cpVersionSeq " +
-            "JOIN CpSearchCategoryData cscd ON csd.cpSearchCategoryDataSeq = cscd.cpSearchCategoryDataSeq " +
-            "WHERE cscd.cpSearchCategorySeq IN (:categorySeqs) " +
-            "AND cscd.cpSearchCategoryDataName IN (:categoryDataNames)")
-    List<CpVersion> findByCategorySeqAndCategoryDataNames(
-            @Param("categorySeqs") List<Long> categorySeqs,
-            @Param("categoryDataNames") List<String> categoryDataNames);
+    @Query("SELECT new map(" +
+            "cp.cpName as cpName, " +
+            "cp.cpDescription as cpDescription, " +
+            "cp.cpViewCount as cpViewCount, " +
+            "cv.cpVersion as cpVersion, " +
+            "cv.cpVersionDescription as cpVersionDescription," +
+            "cv.createdAt as createdAt, " +
+            "u.userName as userName, " +
+            "u.userId as userId, " +
+            "p.partName as partName)" +
+            "FROM CpVersion AS cv " +
+            "JOIN Cp as cp ON cv.cpSeq = cp.cpSeq " +
+            "JOIN CpSearchData AS csd ON cv.cpVersionSeq = csd.cpVersionSeq " +
+            "JOIN CpSearchCategoryData AS cscd ON csd.cpSearchCategoryDataSeq = cscd.cpSearchCategoryDataSeq " +
+            "JOIN User AS u ON cv.userSeq = u.userSeq " +
+            "JOIN Dept AS d ON u.deptSeq = d.deptSeq " +
+            "JOIN Part AS p ON d.deptSeq = p.deptSeq " +
+            "WHERE cscd.cpSearchCategorySeq IN (:cpSearchCategorySeqArray) " +
+            "AND cscd.cpSearchCategoryDataSeq IN (:cpSearchCategoryDataArray)")
+    List<Map<String, Object>> findByCategorySeqAndCategoryData(
+            @Param("cpSearchCategorySeqArray") Long[] cpSearchCategorySeqArray,
+            @Param("cpSearchCategoryDataArray") Long[] cpSearchCategoryDataArray);
 }
+
