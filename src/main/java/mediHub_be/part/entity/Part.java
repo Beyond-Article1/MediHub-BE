@@ -21,7 +21,7 @@ public class Part {
     @Column(name = "part_seq", nullable = false)
     private long partSeq;
 
-    @Column(name = "dept_seq", nullable = false)
+    @JoinColumn(name = "dept_seq", nullable = false)
     private long deptSeq;
 
     @Column(name = "part_name", nullable = false)
