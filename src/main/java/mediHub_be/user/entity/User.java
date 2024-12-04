@@ -1,10 +1,12 @@
-package mediHub_be.user.entity;
+package com.ohgiraffers.jwt_practice.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+import mediHub_be.board.entity.Picture;
+import mediHub_be.part.entity.Part;
+import mediHub_be.ranking.entity.Ranking;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -21,14 +23,17 @@ public class User {
     @Column(name = "user_seq")
     private long userSeq;
 
-    @Column(name = "part_seq", nullable = true)
-    private long partSeq;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "part_seq", nullable = false)
+    private Part part;
 
-    @Column(name = "ranking_seq", nullable = true)
-    private long rankingSeq;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ranking_seq", nullable = false)
+    private Ranking ranking;
 
-    @Column(name = "picture_seq", nullable = true)
-    private long pictureSeq;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "picture_seq")
+    private Picture picture;
 
     @Column(name = "user_id", nullable = false, unique = true)
     private String userId;
