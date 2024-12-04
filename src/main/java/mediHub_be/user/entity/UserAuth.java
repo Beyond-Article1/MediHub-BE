@@ -2,6 +2,6 @@ package mediHub_be.user.entity;
 
 public enum UserAuth {
 
-    USER,
-    ADMIN
+    USER,   // 유저
+    ADMIN   // 관리자
 }

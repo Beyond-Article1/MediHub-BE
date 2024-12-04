@@ -1,47 +1,63 @@
-package mediHub_be.user.entity;
+package com.ohgiraffers.jwt_practice.user.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
-import mediHub_be.common.aggregate.entity.BaseFullEntity;
+import lombok.NoArgsConstructor;
+import mediHub_be.user.entity.UserAuth;
+import mediHub_be.user.entity.UserStatus;
+import org.hibernate.annotations.SQLDelete;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "user")
 @Getter
-public class User extends BaseFullEntity {
+@EntityListeners(AuditingEntityListener.class)
+@SQLDelete(sql = "UPDATE user SET user_state = 'DELETE', del_date = LOCALTIME WHERE user_seq = ?")
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long userSeq;                               // 직원 번호
+    @Column(name = "user_seq")
+    private long userSeq;
 
-    @Column
-    private long classSeq;                              // 과
+    @JoinColumn(name = "class_seq", nullable = true)
+    private long classSeq;
 
-    @Column
-    private String rankSeq;                             // 직급
+    @JoinColumn(name = "rank_seq", nullable = true)
+    private long rankSeq;
 
-    @Column
-    private long pictureSeq;                            // 프로필사진
+    @JoinColumn(name = "picture_seq", nullable = true)
+    private long pictureSeq;
 
-    @Column
-    private String userName;                            // 직원명
+    @Column(name = "user_id", nullable = false, unique = true)
+    private String userId;
 
-    @Column
-    private String userId;                              // 아이디
+    @Column(name = "user_password", nullable = false)
+    private String userPassword;
 
-    @Column
-    private String userPassword;                        // 비밀번호
+    @Column(name = "user_name", nullable = false)
+    private String userName;
 
-    @Column
-    private String userEmail;                           // 이메일
+    @Column(name = "user_email", nullable = false)
+    private String userEmail;
 
-    @Column
-    private String userPhone;                           // 연락처
+    @Column(name = "user_phone", nullable = false)
+    private String userPhone;
 
-    @Column
     @Enumerated(EnumType.STRING)
-    private UserAuth userAuth = UserAuth.USER;          // 권한
+    private UserStatus userStatus = UserStatus.ACTIVE;
 
-    @Column
     @Enumerated(EnumType.STRING)
-    private UserStatus userStatus = UserStatus.ACTIVE;  // 상태
+    private UserAuth userAuth = UserAuth.USER;
+
+    public void encryptPassword(String encodedPwd) {
+        this.userPassword= encodedPwd;
+    }
+
 }
+
+
+
+
