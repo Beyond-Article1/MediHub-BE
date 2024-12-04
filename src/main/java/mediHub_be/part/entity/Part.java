@@ -10,7 +10,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "dept")
+@Table(name = "part")
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE dept SET del_date = LOCALTIME WHERE part_seq = ?")
 public class Part {
@@ -25,6 +25,5 @@ public class Part {
 
     @Column(name = "part_name", nullable = false)
     private String partName;
-
 
 }
