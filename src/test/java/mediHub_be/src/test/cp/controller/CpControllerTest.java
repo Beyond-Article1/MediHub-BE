@@ -3,6 +3,7 @@ package mediHub_be.src.test.cp.controller;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.cp.dto.ResponseCpDTO;
 import mediHub_be.cp.service.CpService;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,11 +34,11 @@ class CpControllerTest {
     private CpService cpService; // MockBean 설정
 
     // 테스트 데이터
-    private ResponseCpDTO cp1;
-    private ResponseCpDTO cp2;
+    private static ResponseCpDTO cp1;
+    private static ResponseCpDTO cp2;
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void setUp() {
         cp1 = ResponseCpDTO.builder()
                 .cpName("백내장")
                 .cpDescription("백내장 설명")
