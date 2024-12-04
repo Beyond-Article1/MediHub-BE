@@ -4,13 +4,15 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import mediHub_be.board.entity.Picture;
 import mediHub_be.part.entity.Part;
 import mediHub_be.ranking.entity.Ranking;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "user")
 @Getter

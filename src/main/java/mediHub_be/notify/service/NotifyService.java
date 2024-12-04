@@ -8,7 +8,9 @@ import mediHub_be.notify.entity.NotiType;
 import mediHub_be.notify.entity.Notify;
 import mediHub_be.notify.repository.NotifyRepository;
 import mediHub_be.notify.repository.SseRepository;
+import mediHub_be.notify.repository.SseRepositoryImpl;
 import mediHub_be.user.entity.User;
+import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -23,11 +25,12 @@ public class NotifyService {
     // 연결 지속시간
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
 
-    private final SseRepository sseRepository;
+    private final SseRepositoryImpl sseRepository;
     private final NotifyRepository notifyRepository;
+    private final UserRepository userRepository;
 
     private final static Long userSeq = 1L;
-    private final static String userEmail = "user1";
+    private final static String userEmail = "email";
 
     public SseEmitter subscribe(String lastEventId) {
 
@@ -62,6 +65,7 @@ public class NotifyService {
         return email + "_" + System.currentTimeMillis();
     }
 
+    // 알림 보내기
     private void sendNotification(SseEmitter emitter, String eventId, String emitterId, Object data) {
         try {
             emitter.send(SseEmitter.event()
@@ -78,7 +82,7 @@ public class NotifyService {
         return !lastEventId.isEmpty();
     }
 
-    private void sendLostData(String lastEventId, String userEmail, String emitterId, SseEmitter emitter) {
+    public void sendLostData(String lastEventId, String userEmail, String emitterId, SseEmitter emitter) {
         Map<String, Object> eventCaches = sseRepository.findAllEventCacheStartWithByMemberId(String.valueOf(userEmail));
         eventCaches.entrySet().stream()
                 .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
@@ -86,7 +90,12 @@ public class NotifyService {
     }
 
     // send()
-    public void send(User receiver, NotiType notiType, String content, String url) {
+//    public void send(User receiver, NotiType notiType, String content, String url) {
+    public void send(NotiType notiType, String content, String url) {
+        User receiver = userRepository.findByUserId("dlacofbs").orElseThrow(() -> new RuntimeException("User not found"));
+
+        log.debug("receiver 확인 {}", receiver);
+
         Notify notification = notifyRepository.save(createNotification(receiver, notiType, content, url));
 
         String receiverEmail = receiver.getUserEmail();
@@ -109,4 +118,5 @@ public class NotifyService {
                 .isRead(NotiReadStatus.N)
                 .build();
     }
+
 }
