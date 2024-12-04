@@ -1,19 +1,19 @@
 package mediHub_be.case_sharing.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.service.KeywordService;
 import mediHub_be.case_sharing.dto.*;
 import mediHub_be.case_sharing.entity.CaseSharing;
 import mediHub_be.case_sharing.entity.CaseSharingComment;
 import mediHub_be.board.entity.Keyword;
 import mediHub_be.case_sharing.entity.Template;
-import mediHub_be.case_sharing.entity.Version;
+import mediHub_be.case_sharing.entity.CaseSharingGroup;
 import mediHub_be.case_sharing.repository.CaseSharingCommentRepository;
 import mediHub_be.case_sharing.repository.CaseSharingRepository;
 import mediHub_be.board.repository.KeywordRepository;
 import mediHub_be.case_sharing.repository.TemplateRepository;
-import mediHub_be.case_sharing.repository.VersionRepository;
-import mediHub_be.part.entity.Part;
+import mediHub_be.case_sharing.repository.CaseSharingGroupRepository;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -24,10 +24,11 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CaseSharingService {
     private final CaseSharingRepository caseSharingRepository;
     private final CaseSharingCommentRepository commentRepository;
-    private final VersionRepository versionRepository;
+    private final CaseSharingGroupRepository caseSharingGroupRepository;
     private final UserRepository userRepository;
     private final KeywordRepository keywordRepository;
     private final TemplateRepository templateRepository;
@@ -36,15 +37,9 @@ public class CaseSharingService {
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
     public List<CaseSharingListDTO> getCaseList() {
-        return caseSharingRepository.findAll().stream()
-                .filter(caseSharing -> {
-                    Version latestVersion = versionRepository
-                            .findFirstByCaseSharingCaseSharingSeqAndVersionIsLatestTrue(caseSharing.getCaseSharingSeq());
-                    return latestVersion != null; // 최신 버전인 경우만 필터링
-                })
+        return caseSharingRepository.findAllLatestVersions().stream()
                 .map(caseSharing -> {
-                    User author = userRepository.findByUserId(caseSharing.getUser().getUserId())
-                            .orElseThrow(() -> new IllegalArgumentException("작성자 정보를 찾을 수 없습니다."));
+                    User author = caseSharing.getUser();
                     return new CaseSharingListDTO(
                             caseSharing.getCaseSharingSeq(),
                             caseSharing.getCaseSharingTitle(),
@@ -55,12 +50,18 @@ public class CaseSharingService {
                 }).collect(Collectors.toList());
     }
 
+
     //2. 케이스 공유 상세 조회
     @Transactional(readOnly = true)
     public CaseSharingDetailDTO getCaseSharingDetail(Long caseSharingSeq) {
         // 게시글 정보 조회
         CaseSharing caseSharing = caseSharingRepository.findById(caseSharingSeq)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
+        // 삭제된 게시글인지 확인
+        if (caseSharing.getDeletedAt() != null) {
+            throw new IllegalArgumentException("삭제된 게시글은 조회할 수 없습니다.");
+        }
 
         // 작성자 정보 조회
         User author = userRepository.findById(caseSharing.getUser().getUserSeq())
@@ -93,16 +94,6 @@ public class CaseSharingService {
                 ))
                 .toList();
 
-        // 버전 내역 반환
-        List<Version> versions = versionRepository.findByCaseSharingCaseSharingSeq(caseSharingSeq);
-        List<VersionDTO> versionDTOs = versions.stream()
-                .map(version -> new VersionDTO(
-                        version.getVersionSeq(),
-                        version.getVersionNum(),
-                        version.isVersionIsLatest()
-                ))
-                .toList();
-
         // DTO 생성
         return CaseSharingDetailDTO.builder()
                 .caseSharingSeq(caseSharing.getCaseSharingSeq()) // 게시글 ID
@@ -112,7 +103,8 @@ public class CaseSharingService {
                 .caseAuthorRankName(author.getRanking().getRankingName()) // 작성자 직위명
                 .comments(commentDTOs) // 댓글 리스트
                 .keywords(keywordDTOs) // 키워드 리스트
-                .versions(versionDTOs) // 버전 리스트
+                .caseSharingGroupSeq(caseSharing.getCaseSharingGroup().getCaseSharingGroupSeq()) // 그룹 ID
+                .isLatestVersion(caseSharing.getCaseSharingIsLatest()) // 최신 버전 여부
                 .build();
     }
 
@@ -130,26 +122,21 @@ public class CaseSharingService {
         Template template = templateRepository.findById(requestDTO.getTemplateSeq())
                 .orElseThrow(() -> new IllegalArgumentException("해당 템플릿을 찾을 수 없습니다."));
 
-        //케이스 공유 생성
-        CaseSharing caseSharing = CaseSharing.builder()
-                .user(user)
-                .part(user.getPart())
-                .template(template)
-                .caseSharingTitle(requestDTO.getTitle())
-                .caseSharingContent(requestDTO.getContent())
-                .build();
-        caseSharing = caseSharingRepository.save(caseSharing); // 저장하여 caseSharingSeq 생성
+        // 그룹 생성 및 저장
+        CaseSharingGroup group = CaseSharingGroup.createNewGroup();
+        caseSharingGroupRepository.save(group);
 
-        // baseSeq 업데이트
-        caseSharing = CaseSharing.createNewCaseSharing(
+        // 케이스 공유 생성
+        CaseSharing caseSharing = CaseSharing.createNewCaseSharing(
                 user,
                 user.getPart(),
                 template,
-                caseSharing.getCaseSharingSeq(),
+                group, // 그룹 객체를 직접 전달
                 requestDTO.getTitle(),
-                requestDTO.getContent()
+                requestDTO.getContent(),
+                false // 임시 저장 여부 기본값 설정 (예: false)
         );
-        caseSharingRepository.save(caseSharing); // 업데이트된 baseSeq 저장
+        caseSharingRepository.save(caseSharing);
 
         // 키워드 저장
         if (requestDTO.getKeywords() != null && !requestDTO.getKeywords().isEmpty()) {
@@ -159,13 +146,6 @@ public class CaseSharingService {
                     caseSharing.getCaseSharingSeq() // 저장된 케이스 공유 ID
             );
         }
-        // 버전 저장
-        Version version = Version.builder()
-                .caseSharing(caseSharing)
-                .versionNum(1) // 새 글은 항상 버전 1
-                .versionIsLatest(true) // 최신 버전으로 설정
-                .build();
-        versionRepository.save(version);
 
         return caseSharing.getCaseSharingSeq();
     }
@@ -185,21 +165,21 @@ public class CaseSharingService {
         }
 
         // 기존 최신 버전 비활성화
-        Version latestVersion = versionRepository.findFirstByCaseSharingCaseSharingSeqAndVersionIsLatestTrue(caseSharingSeq);
-        if (latestVersion != null) {
-            latestVersion.markAsNotLatest();
-            versionRepository.save(latestVersion);
-        }
+        existingCaseSharing.markAsNotLatest();
+        caseSharingRepository.save(existingCaseSharing);
 
-        // 새 케이스 공유 생성 (baseSeq 유지)
+        // 새 케이스 공유 생성 (기존 그룹 유지)
         CaseSharing newCaseSharing = CaseSharing.createNewCaseSharing(
                 user,
                 existingCaseSharing.getPart(),
                 existingCaseSharing.getTemplate(),
-                existingCaseSharing.getCaseSharingBaseSeq(),
+                existingCaseSharing.getCaseSharingGroup(), // 기존 그룹 유지 (그룹 객체 전달)
                 requestDTO.getTitle(),
-                requestDTO.getContent()
+                requestDTO.getContent(),
+                false // 임시 저장 여부 기본값 설정 (예: false)
         );
+
+        newCaseSharing.markAsLatest(); // 새 버전을 최신으로 설정
         caseSharingRepository.save(newCaseSharing);
 
         // 새 키워드 저장
@@ -211,16 +191,56 @@ public class CaseSharingService {
             );
         }
 
-        // 새 버전 저장
-        Version newVersion = Version.builder()
-                .caseSharing(newCaseSharing)
-                .versionNum(latestVersion.getVersionNum() + 1) // 이전 버전 번호 + 1
-                .versionIsLatest(true) // 최신 버전으로 설정
-                .build();
-        versionRepository.save(newVersion);
-
         return newCaseSharing.getCaseSharingSeq();
     }
 
+    @Transactional
+    public void deleteCaseSharing(Long caseSharingSeq) {
 
+        CaseSharing caseSharing = caseSharingRepository.findById(caseSharingSeq)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글 입니다."));
+
+        // 2. 삭제된 상태 확인
+        if (caseSharing.getDeletedAt() != null) {
+            throw new IllegalArgumentException("이미 삭제된 게시글입니다.");
+        }
+
+        // 3. 그룹 정보 가져오기
+        CaseSharingGroup caseSharingGroup = caseSharing.getCaseSharingGroup();
+        if (caseSharingGroup == null) {
+            throw new IllegalArgumentException("케이스 공유 그룹 정보가 없습니다.");
+        }
+        log.info("너 최신?"+ caseSharing.getCaseSharingIsLatest().toString());
+
+        log.info("여기까지 노문제");
+        // 5. 최신 버전인지 확인 및 처리
+        log.info("너 최신?"+ caseSharing.getCaseSharingIsLatest().toString());
+        if (caseSharing.getCaseSharingIsLatest()) {
+            // 최신 버전 해제
+            caseSharing.markAsNotLatest();
+            caseSharingRepository.save(caseSharing);
+
+            // 바로 이전 버전을 최신으로 설정
+            CaseSharing previousVersion = caseSharingRepository
+                    .findTopByCaseSharingGroupCaseSharingGroupSeqAndCaseSharingSeqNotAndDeletedAtIsNullOrderByCreatedAtDesc(
+                            caseSharingGroup.getCaseSharingGroupSeq(),
+                            caseSharingSeq
+                    ).orElse(null); // 이전 버전이 없을 경우 null 처리
+
+            if (previousVersion.equals(null)){
+                log.info("응 null이야~");
+            }
+            log.info("이전버전{}", previousVersion.getCaseSharingSeq());
+
+            if (previousVersion != null) {
+                previousVersion.markAsLatest();
+                caseSharingRepository.save(previousVersion);
+            }
+
+        }
+
+        // 4. 삭제 처리
+        caseSharing.markAsDeleted();
+        caseSharingRepository.save(caseSharing);
+    }
 }

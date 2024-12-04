@@ -59,5 +59,12 @@ public class CaseSharingController {
         return ApiResponse.created(newVersionSeq); // 새로 생성된 버전 ID 반환
     }
 
+    @DeleteMapping("/{caseSharingSeq}")
+    @Operation(summary = "케이스 공유글 삭제", description = "케이스 공유글을 소프트 삭제합니다.")
+    public ApiResponse<Void> deleteCaseSharing(@PathVariable Long caseSharingSeq) {
+        caseSharingService.deleteCaseSharing(caseSharingSeq);
+        return ApiResponse.ok(null);
+    }
+
 
 }
