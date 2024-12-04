@@ -1,9 +1,9 @@
 package mediHub_be.src.test.cp.controller;
 
 import mediHub_be.common.response.ApiResponse;
-import mediHub_be.cp.controller.CpController;
 import mediHub_be.cp.dto.ResponseCpDTO;
 import mediHub_be.cp.service.CpService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,12 +32,13 @@ class CpControllerTest {
     @MockBean
     private CpService cpService; // MockBean 설정
 
-    @Test
-    @DisplayName("CP명을 입력하여 CP 조회 테스트")
-    public void getCpListByCpNameTest() throws Exception {
+    // 테스트 데이터
+    private ResponseCpDTO cp1;
+    private ResponseCpDTO cp2;
 
-        // Given: 테스트 결과 CP DTO 준비
-        ResponseCpDTO cp1 = ResponseCpDTO.builder()
+    @BeforeEach
+    void setUp() {
+        cp1 = ResponseCpDTO.builder()
                 .cpName("백내장")
                 .cpDescription("백내장 설명")
                 .cpViewCount(523L)
@@ -49,7 +50,7 @@ class CpControllerTest {
                 .partName("안과")
                 .build();
 
-        ResponseCpDTO cp2 = ResponseCpDTO.builder()
+        cp2 = ResponseCpDTO.builder()
                 .cpName("각막염")
                 .cpDescription("각막염 설명")
                 .cpViewCount(492L)
@@ -60,12 +61,53 @@ class CpControllerTest {
                 .userId("19615043")
                 .partName("안과")
                 .build();
+    }
 
+    @Test
+    @DisplayName("CP 검색 카테고리 데이터 입력하여 CP 리스트 조회 테스트")
+    public void getCpListByCpSearchCategoryAndCpSearchCategoryDataTest() throws Exception {
+        // 결과값
         List<ResponseCpDTO> cpList = List.of(cp1, cp2);
-
-        // Given: cpService의 getCpListByCpName 메서드가 호출될 때, ApiResponse를 반환하도록 설정
         ApiResponse<List<ResponseCpDTO>> responseApi = ApiResponse.ok(cpList);
-        given(cpService.getCpListByCpName("백내장")).willReturn(responseApi.data());
+
+        // 파라미터값
+        List<Long> cpSearchCategorySeqArray = List.of(1L, 2L, 3L);
+        List<Long> cpSearchCategoryDataArray = List.of(1L, 2L, 3L);
+
+        // Given
+        given(cpService.getCpListByCpSearchCategoryAndCpSearchCategoryData(
+                cpSearchCategorySeqArray,
+                cpSearchCategoryDataArray))
+                .willReturn(responseApi.data());
+
+        // When: CP 검색 카테고리 데이터로 요청을 보냄
+        mockMvc.perform(get("/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryData=1,2,3"))
+                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.success").value(true)) // success 검증
+//                .andExpect(jsonPath("$.data[0].cpName").value("백내장"))
+//                .andExpect(jsonPath("$.data[0].cpDescription").value("백내장 설명"))
+//                .andExpect(jsonPath("$.data[0].cpViewCount").value(523))
+//                .andExpect(jsonPath("$.data[0].cpVersion").value("1.0.0"))
+//                .andExpect(jsonPath("$.data[0].cpVersionDescription").value("최초 업로드"))
+//                .andExpect(jsonPath("$.data[0].userName").value("임광택"))
+//                .andExpect(jsonPath("$.data[0].userId").value("19615041"))
+//                .andExpect(jsonPath("$.data[0].partName").value("안과"))
+                .andDo(print());
+
+        // Then: cpService의 메서드가 올바르게 호출되었는지 검증
+        verify(cpService).getCpListByCpSearchCategoryAndCpSearchCategoryData(cpSearchCategorySeqArray, cpSearchCategoryDataArray);
+    }
+
+
+    @Test
+    @DisplayName("CP명을 입력하여 CP 리스트 조회 테스트")
+    public void getCpListByCpNameTest() throws Exception {
+        // Given
+        List<ResponseCpDTO> cpList = List.of(cp1, cp2);
+        ApiResponse<List<ResponseCpDTO>> responseApi = ApiResponse.ok(cpList);
+
+        given(cpService.getCpListByCpName("백내장"))
+                .willReturn(responseApi.data());
 
         // When: CP 이름을 입력하여 요청을 보냄
         String inputCpName = "백내장";
@@ -84,5 +126,33 @@ class CpControllerTest {
 
         // Then: cpService의 getCpListByCpName 메서드가 올바르게 호출되었는지 검증
         verify(cpService).getCpListByCpName(inputCpName);
+    }
+
+    @Test
+    @DisplayName("CP 버전 번호를 입력하여 CP 조회 테스트")
+    public void getCpByCpVersionSeqTest() throws Exception {
+        // Given
+        ApiResponse<ResponseCpDTO> responseApi = ApiResponse.ok(cp1);
+        long inputCpVersionSeq = 12L;
+
+        given(cpService.getCpByCpVersionSeq(inputCpVersionSeq))
+                .willReturn(responseApi.data());
+
+        // When: CP 버전 번호로 요청을 보냄
+        mockMvc.perform(get("/cp/" + inputCpVersionSeq))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true)) // success 검증
+                .andExpect(jsonPath("$.data.cpName").value("백내장"))
+                .andExpect(jsonPath("$.data.cpDescription").value("백내장 설명"))
+                .andExpect(jsonPath("$.data.cpViewCount").value(523))
+                .andExpect(jsonPath("$.data.cpVersion").value("1.0.0"))
+                .andExpect(jsonPath("$.data.cpVersionDescription").value("최초 업로드"))
+                .andExpect(jsonPath("$.data.userName").value("임광택"))
+                .andExpect(jsonPath("$.data.userId").value("19615041"))
+                .andExpect(jsonPath("$.data.partName").value("안과"))
+                .andDo(print());
+
+        // Then: cpService의 getCpByCpVersionSeq 메서드가 올바르게 호출되었는지 검증
+        verify(cpService).getCpByCpVersionSeq(inputCpVersionSeq);
     }
 }
