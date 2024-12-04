@@ -2,12 +2,13 @@ package mediHub_be.notify.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.notify.dto.NotifyDTO;
 import mediHub_be.notify.entity.NotiReadStatus;
 import mediHub_be.notify.entity.NotiType;
 import mediHub_be.notify.entity.Notify;
 import mediHub_be.notify.repository.NotifyRepository;
-import mediHub_be.notify.repository.SseRepository;
 import mediHub_be.notify.repository.SseRepositoryImpl;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
@@ -29,7 +30,6 @@ public class NotifyService {
     private final NotifyRepository notifyRepository;
     private final UserRepository userRepository;
 
-    private final static Long userSeq = 1L;
     private final static String userEmail = "email";
 
     public SseEmitter subscribe(String lastEventId) {
@@ -92,7 +92,8 @@ public class NotifyService {
     // send()
 //    public void send(User receiver, NotiType notiType, String content, String url) {
     public void send(NotiType notiType, String content, String url) {
-        User receiver = userRepository.findByUserId("dlacofbs").orElseThrow(() -> new RuntimeException("User not found"));
+
+        User receiver = userRepository.findByUserId("dlacofbs").orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
         log.debug("receiver 확인 {}", receiver);
 
