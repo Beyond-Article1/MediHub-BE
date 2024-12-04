@@ -25,8 +25,8 @@ public class CpService {
 
     @Transactional(readOnly = true)
     public List<ResponseCpDTO> getCpListByCpSearchCategoryAndCpSearchCategoryData(
-            Long[] cpSearchCategorySeqArray,
-            Long[] cpSearchCategoryDataArray) {
+            List<Long> cpSearchCategorySeqArray,
+            List<Long> cpSearchCategoryDataArray) {
 
         logger.info("CP 검색 카테고리 시퀀스: {}, 카테고리 데이터: {}", cpSearchCategorySeqArray, cpSearchCategoryDataArray);
 

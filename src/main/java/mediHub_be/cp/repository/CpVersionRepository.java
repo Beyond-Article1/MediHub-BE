@@ -28,12 +28,12 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "JOIN CpSearchData AS csd ON cv.cpVersionSeq = csd.cpVersionSeq " +
             "JOIN CpSearchCategoryData AS cscd ON csd.cpSearchCategoryDataSeq = cscd.cpSearchCategoryDataSeq " +
             "JOIN User AS u ON cv.userSeq = u.userSeq " +
-            "JOIN Part AS p ON u.partSeq = p.partSeq " +
+            "JOIN Part AS p ON u.part.partSeq = p.partSeq " +
             "WHERE cscd.cpSearchCategorySeq IN (:cpSearchCategorySeqArray) " +
             "AND cscd.cpSearchCategoryDataSeq IN (:cpSearchCategoryDataArray)")
     List<Map<String, Object>> findByCategorySeqAndCategoryData(
-            @Param("cpSearchCategorySeqArray") Long[] cpSearchCategorySeqArray,
-            @Param("cpSearchCategoryDataArray") Long[] cpSearchCategoryDataArray);
+            @Param("cpSearchCategorySeqArray") List<Long> cpSearchCategorySeqArray,
+            @Param("cpSearchCategoryDataArray") List<Long> cpSearchCategoryDataArray);
 
     @Query("SELECT new map(" +
             "cp.cpName as cpName, " +
@@ -50,7 +50,7 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "JOIN CpSearchData AS csd ON cv.cpVersionSeq = csd.cpVersionSeq " +
             "JOIN CpSearchCategoryData AS cscd ON csd.cpSearchCategoryDataSeq = cscd.cpSearchCategoryDataSeq " +
             "JOIN User AS u ON cv.userSeq = u.userSeq " +
-            "JOIN Part AS p ON u.partSeq = p.partSeq " +
+            "JOIN Part AS p ON u.part.partSeq = p.partSeq " +
             "WHERE cp.cpName LIKE CONCAT('%', :cpName, '%')")
     List<Map<String, Object>> findByCpNameContainingIgnoreCase(@Param("cpName") String cpName);
 
@@ -69,7 +69,7 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "JOIN CpSearchData AS csd ON cv.cpVersionSeq = csd.cpVersionSeq " +
             "JOIN CpSearchCategoryData AS cscd ON csd.cpSearchCategoryDataSeq = cscd.cpSearchCategoryDataSeq " +
             "JOIN User AS u ON cv.userSeq = u.userSeq " +
-            "JOIN Part AS p ON u.partSeq = p.partSeq " +
+            "JOIN Part AS p ON u.part.partSeq = p.partSeq " +
             "WHERE cv.cpVersion = :cpVersionSeq")
     ResponseCpDTO findByCpVersionSeq(@Param("cpVersionSeq") long cpVersionSeq);
 }
