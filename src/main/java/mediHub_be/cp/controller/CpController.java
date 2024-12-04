@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "cp")
@@ -32,29 +33,28 @@ public class CpController {
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpController"); // Logger
 
-    // https://medihub.info/cp?cpSearchCategorySeq=value&cpSearchCategoryData=value
     @GetMapping
     public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpSearchCategoryAndCpSearchCategoryData(
             @RequestParam(required = false) String cpSearchCategorySeq,
             @RequestParam(required = false) String cpSearchCategoryData) {
         logger.info("카테고리 시퀀스: {} 및 카테고리 데이터: {}를 사용하여 CP 리스트 요청을 받았습니다.", cpSearchCategorySeq, cpSearchCategoryData);
 
-        // RequestParam 값을 배열에 저장(없으면, null)
-        Long[] cpSearchCategorySeqArray = cpSearchCategorySeq != null
+        // RequestParam 값을 List에 저장(없으면, null)
+        List<Long> cpSearchCategorySeqList = cpSearchCategorySeq != null
                 ? Arrays.stream(cpSearchCategorySeq.split(","))
                 .map(Long::valueOf)
-                .toArray(Long[]::new) : null;
+                .collect(Collectors.toList()) : null;
 
-        // RequestParam 값을 배열에 저장(없으면, null)
-        Long[] cpSearchCategoryDataArray =
+        // RequestParam 값을 List에 저장(없으면, null)
+        List<Long> cpSearchCategoryDataList =
                 cpSearchCategoryData != null
                         ? Arrays.stream(cpSearchCategoryData.split(","))
                         .map(Long::valueOf)
-                        .toArray(Long[]::new) : null;
+                        .collect(Collectors.toList()) : null;
 
         try {
             // 입력받은 데이터를 통하여 CP 리스트를 가져오는 서비스 호출
-            List<ResponseCpDTO> cpList = cpService.getCpListByCpSearchCategoryAndCpSearchCategoryData(cpSearchCategorySeqArray, cpSearchCategoryDataArray);
+            List<ResponseCpDTO> cpList = cpService.getCpListByCpSearchCategoryAndCpSearchCategoryData(cpSearchCategorySeqList, cpSearchCategoryDataList);
 
             if (cpList == null || cpList.isEmpty()) {
                 logger.info("주어진 카테고리 시퀀스 및 카테고리 데이터에 대한 CP 레코드가 없습니다.");
