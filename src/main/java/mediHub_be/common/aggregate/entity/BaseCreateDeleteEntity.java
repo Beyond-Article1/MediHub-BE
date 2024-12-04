@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 // 생성, 삭제
 public abstract class BaseCreateDeleteEntity extends CreateTimeEntity{
     @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
+    protected LocalDateTime deletedAt;
 
     public void delete(){
         this.deletedAt = LocalDateTime.now();
