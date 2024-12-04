@@ -52,7 +52,7 @@ public class CpService {
         logger.info("CP 이름으로 검색: {}", cpName);
 
         // DB 조회
-        List<Map<String, Object>> findCpList = cpVersionRepository.findByCpNameContainingIgnoreCase(cpName);
+        List<Map<String, Object>> findCpList = cpVersionRepository.findByCpNameContainingIgnoreCase(cpName);    // Logger
 
         if (findCpList.isEmpty()) {
             logger.warn("조회 결과 없음: CP 이름 '{}'에 대한 결과가 없습니다.", cpName);
