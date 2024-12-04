@@ -75,6 +75,7 @@ public class CpService {
         ResponseCpDTO findCp = cpVersionRepository.findByCpVersionSeq(cpVersionSeq);
 
         if (findCp == null) {
+            // 조회 결과 없음
             logger.warn("조회 결과 없음: CP 버전 시퀀스 '{}'에 대한 결과가 없습니다.", cpVersionSeq);
             return null;
         } else {
