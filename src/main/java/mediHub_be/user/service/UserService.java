@@ -1,6 +1,7 @@
 package mediHub_be.user.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,8 +35,11 @@ public class UserService implements UserDetailsService {
     }
 
     public User authenticateUser(String userId, String password) {
-        User user = (User) userRepository.findByUserId(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + userId));
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> {
+                    return new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + userId);
+                });
 
         if (!validatePassword(password, user.getUserPassword())) {
             throw new IllegalArgumentException("비밀번호가 올바르지 않습니다.");
@@ -43,4 +47,6 @@ public class UserService implements UserDetailsService {
 
         return user;
     }
+
 }
+

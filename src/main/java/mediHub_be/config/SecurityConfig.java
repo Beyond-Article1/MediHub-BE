@@ -1,4 +1,4 @@
-package mediHub_be.security.config;
+package mediHub_be.config;
 
 import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
@@ -39,34 +39,28 @@ public class SecurityConfig {
 
     @Bean
     protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
-        /* CSRF 토큰 발행 시 Client에서 매번 해당 토큰도 함께 요청에 넘겨 주어야 하므로 기능 비 활성화 */
+        /* CSRF 비활성화 및 요청 경로 권한 설정 */
         http.csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(authz ->
-                        authz.requestMatchers(new AntPathRequestMatcher("/api/v1/user", "post")).permitAll()
-                                .anyRequest().authenticated()
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(new AntPathRequestMatcher("/api/v1/user/login", "POST")).permitAll() // 로그인 API 허용
+//                        .requestMatchers(new AntPathRequestMatcher("/api/**")).permitAll() // 로그인 API 허용
+                        .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
+                        .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 )
-                /* session 로그인 방식을 사용하지 않음 (JWT Token 방식을 사용할 예정) */
-                .sessionManagement(
-                        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
-
-        /* 커스텀 로그인 필터 이전에 JWT 토큰 확인 필터를 설정 */
-        http.addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
-
-        /* 커스텀 로그인 필터 추가 */
-        http.addFilterBefore(getAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-
-        /* 인증, 인가 실패 핸들러 설정 */
-        http.exceptionHandling(
-                exceptionHandling -> {
+                /* 세션 정책 설정 (Stateless) */
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                /* JWT 인증 필터 추가 */
+                .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                /* 인증/인가 실패 핸들러 설정 */
+                .exceptionHandling(exceptionHandling -> {
                     exceptionHandling.accessDeniedHandler(new JwtAccessDeniedHandler());
                     exceptionHandling.authenticationEntryPoint(new JwtAuthenticationEntryPoint());
-                }
-        );
-
-        /* CORS 설정 */
-        http.cors(cors -> cors
-                .configurationSource(corsConfigurationSource()));
+                })
+                /* CORS 설정 */
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         return http.build();
     }
@@ -98,7 +92,7 @@ public class SecurityConfig {
         config.addAllowedOrigin("http://localhost:5173"); // 허용할 도메인
         config.addAllowedHeader("*"); // 모든 헤더 허용
         config.addAllowedMethod("*"); // 모든 HTTP 메소드 허용
-        config.addExposedHeader("token"); // 서버측에서 보내는 헤더에 대한 허용 설정
+        config.addExposedHeader("token"); // 서버에서 클라이언트로 반환하는 헤더 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

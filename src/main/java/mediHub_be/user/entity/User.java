@@ -1,4 +1,4 @@
-package com.ohgiraffers.jwt_practice.user.entity;
+package mediHub_be.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import mediHub_be.board.entity.Picture;
 import mediHub_be.part.entity.Part;
 import mediHub_be.ranking.entity.Ranking;
+import mediHub_be.user.entity.UserAuth;
+import mediHub_be.user.entity.UserStatus;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 

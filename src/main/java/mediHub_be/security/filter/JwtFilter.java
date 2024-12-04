@@ -17,23 +17,47 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
+
+
     private final JwtUtil jwtUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        /* 요청 헤더에 담긴 토큰의 유효성 판별 및 인증 객체 저장 */
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        String requestURI = request.getRequestURI();
+        log.info("Request URI: {}", requestURI);
+
+//        // 로그인 요청은 JWT 검증 제외
+//        if ("/api/user/login".equals(requestURI)) {
+//            log.info("Skipping JwtFilter for login endpoint: {}", requestURI);
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
+
         String authorizationHeader = request.getHeader("Authorization");
         log.info("Authorization header: {}", authorizationHeader);
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String token = authorizationHeader.substring(7);
-            log.info("Token: {}", token);
-            if(jwtUtil.validateToken(token)) {
-                Authentication authentication = jwtUtil.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                String token = authorizationHeader.substring(7);
+
+                if (jwtUtil.validateToken(token)) {
+                    Authentication authentication = jwtUtil.getAuthentication(token);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.info("JWT validation successful for token: {}", token);
+                } else {
+                    log.warn("Invalid JWT token: {}", token);
+                }
+            } else {
+                log.warn("Authorization header is missing or does not start with Bearer.");
             }
+        } catch (Exception e) {
+            log.error("Error occurred during JWT validation: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+            return;
         }
 
         filterChain.doFilter(request, response);
     }
+
 }
