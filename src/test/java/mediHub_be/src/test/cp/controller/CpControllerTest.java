@@ -83,15 +83,15 @@ class CpControllerTest {
         // When: CP 검색 카테고리 데이터로 요청을 보냄
         mockMvc.perform(get("/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryData=1,2,3"))
                 .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.success").value(true)) // success 검증
-//                .andExpect(jsonPath("$.data[0].cpName").value("백내장"))
-//                .andExpect(jsonPath("$.data[0].cpDescription").value("백내장 설명"))
-//                .andExpect(jsonPath("$.data[0].cpViewCount").value(523))
-//                .andExpect(jsonPath("$.data[0].cpVersion").value("1.0.0"))
-//                .andExpect(jsonPath("$.data[0].cpVersionDescription").value("최초 업로드"))
-//                .andExpect(jsonPath("$.data[0].userName").value("임광택"))
-//                .andExpect(jsonPath("$.data[0].userId").value("19615041"))
-//                .andExpect(jsonPath("$.data[0].partName").value("안과"))
+                .andExpect(jsonPath("$.success").value(true)) // success 검증
+                .andExpect(jsonPath("$.data[0].cpName").value("백내장"))
+                .andExpect(jsonPath("$.data[0].cpDescription").value("백내장 설명"))
+                .andExpect(jsonPath("$.data[0].cpViewCount").value(523))
+                .andExpect(jsonPath("$.data[0].cpVersion").value("1.0.0"))
+                .andExpect(jsonPath("$.data[0].cpVersionDescription").value("최초 업로드"))
+                .andExpect(jsonPath("$.data[0].userName").value("임광택"))
+                .andExpect(jsonPath("$.data[0].userId").value("19615041"))
+                .andExpect(jsonPath("$.data[0].partName").value("안과"))
                 .andDo(print());
 
         // Then: cpService의 메서드가 올바르게 호출되었는지 검증
