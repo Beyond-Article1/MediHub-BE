@@ -29,4 +29,9 @@ public class Version extends BaseFullEntity {
         this.versionIsLatest = versionIsLatest;
     }
 
+    // 최신여부 변경 메소드
+    public void markAsNotLatest() {
+        this.versionIsLatest = false;
+    }
+
 }

@@ -46,4 +46,18 @@ public class CaseSharingController {
         Long caseSharingSeq = caseSharingService.createCaseSharing(requestDTO);
         return ApiResponse.created(caseSharingSeq);
     }
+
+    @Operation(summary = "케이스 공유글 수정 (새 버전 생성)",
+            description = "기존 케이스 공유글을 수정하고 새로운 버전을 생성합니다.")
+    @PostMapping("/{caseSharingSeq}/versions")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<Long> createNewVersion(
+            @PathVariable Long caseSharingSeq,
+            @RequestBody CaseSharingUpdateRequestDTO requestDTO
+    ) {
+        Long newVersionSeq = caseSharingService.createNewVersion(caseSharingSeq, requestDTO);
+        return ApiResponse.created(newVersionSeq); // 새로 생성된 버전 ID 반환
+    }
+
+
 }

@@ -28,17 +28,32 @@ public class CaseSharing extends BaseFullEntity {
     @JoinColumn(name = "template_seq", nullable = false)
     private Template template;
 
+    private Long caseSharingBaseSeq;
+
     private String caseSharingTitle;
 
     private String caseSharingContent;
 
     @Builder
-    public CaseSharing(User user, Part part, Template template, String caseSharingTitle, String caseSharingContent) {
+    public CaseSharing(User user, Part part, Template template, Long caseSharingBaseSeq, String caseSharingTitle, String caseSharingContent) {
         this.user = user;
         this.part = part;
         this.template = template;
+        this.caseSharingBaseSeq = caseSharingBaseSeq;
         this.caseSharingTitle = caseSharingTitle;
         this.caseSharingContent = caseSharingContent;
+    }
+
+    // 빌더 패턴으로 baseSeq 설정
+    public static CaseSharing createNewCaseSharing(User user, Part part, Template template, Long caseSharingBaseSeq, String title, String content) {
+        return CaseSharing.builder()
+                .user(user)
+                .part(part)
+                .template(template)
+                .caseSharingBaseSeq(caseSharingBaseSeq) // baseSeq 설정
+                .caseSharingTitle(title)
+                .caseSharingContent(content)
+                .build();
     }
 
 }

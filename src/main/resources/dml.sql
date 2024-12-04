@@ -50,11 +50,12 @@ INSERT INTO template (
 
 -- case_sharing 테이블 데이터 삽입
 INSERT INTO case_sharing (
-     case_sharing_seq, user_seq, part_seq, template_seq, case_sharing_title, case_sharing_content, created_at, updated_at
+     case_sharing_seq, user_seq, part_seq, template_seq, case_sharing_title, case_sharing_content, created_at, updated_at, case_sharing_base_seq
 ) VALUES
-      (1,1, 1, 1, 'Case Study 1', 'This is the content for case study 1.',  NOW(), NOW()),
-      (2,2, 1, 2, 'Case Study 2', 'This is the content for case study 2.', NOW(), NOW()),
-      (3, 3, 2, 3, 'Case Study 3', 'This is the content for case study 3.', NOW(), NOW());
+      (1,1, 1, 1, 'Case Study 1', 'This is the content for case study 1.',  NOW(), NOW(),1),
+      (2,2, 1, 2, 'Case Study 2', 'This is the content for case study 2.', NOW(), NOW(),2),
+      (3, 3, 2, 3, 'Case Study 3', 'This is the content for case study 3.', NOW(), NOW(),3),
+      (4, 3, 2, 3, 'Case Study 4', 'This is the content for case study 3.', NOW(), NOW(),3);
 
 -- case_sharing_comment 테이블 데이터 삽입
 INSERT INTO case_sharing_comment (
@@ -69,9 +70,9 @@ INSERT INTO version (
     version_seq, case_sharing_seq, version_num, version_is_latest, created_at, updated_at
 ) VALUES
       (1, 1, 1, true, NOW(), NOW()),
-      (2, 1, 1, true, NOW(), NOW()),
-      (3, 2, 2, false, NOW(), NOW()),
-      (4, 3, 1, true, NOW(), NOW());
+      (2, 2, 1, true, NOW(), NOW()),
+      (3, 3, 2, false, NOW(), NOW()),
+      (4, 4 , 1, true, NOW(), NOW());
 
 -- flag 테이블 데이터 삽입
 INSERT INTO flag (

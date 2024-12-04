@@ -8,4 +8,8 @@ import java.util.List;
 public interface VersionRepository extends JpaRepository<Version, Long> {
     // 특정 케이스 공유 글에 속한 모든 버전 조회
     List<Version> findByCaseSharingCaseSharingSeq(Long caseSharingSeq);
+
+    // 최신 버전 가져오기
+    Version findFirstByCaseSharingCaseSharingSeqAndVersionIsLatestTrue(Long caseSharingSeq);
+
 }
