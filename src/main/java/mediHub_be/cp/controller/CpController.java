@@ -59,6 +59,7 @@ public class CpController {
                 return ResponseEntity.ok(ApiResponse.ok(cpList));
             }
             // 성공적인 응답 반환
+            logger.info("조회된 CP 리스트 크기: {}", cpList.size());
             return ResponseEntity.ok(ApiResponse.ok(cpList));
         } catch (CustomException e) {
             logger.error("CP 리스트를 가져오는 동안 CustomException이 발생했습니다: {}", e.getMessage());
@@ -76,14 +77,19 @@ public class CpController {
     }
 
     // https://medihub.info/cp?cpName=value
-    @GetMapping
-    public ResponseEntity<ApiResponse<ResponseCpDTO>> getCpByCpName(@RequestParam String cpName) {
+    @GetMapping(params = "cpName") // 중복된 매핑 방지
+    public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpByCpName(@RequestParam String cpName) {
         logger.info("이름: {}으로 CP를 가져오는 요청을 받았습니다.", cpName);
         try {
             // 이름을 통하여 Cp 를 가져오는 서비스 호출
-            ResponseCpDTO findCp = cpService.getCpByCpName(cpName);
+            List<ResponseCpDTO> findCp = cpService.getCpListByCpName(cpName);
 
-            logger.info("이름으로 성공적으로 CP를 가져왔습니다: {}", findCp);
+            if (findCp == null || findCp.isEmpty()) {
+                logger.warn("이름 '{}'에 대한 CP 레코드가 없습니다.", cpName);
+            } else {
+                logger.info("이름으로 성공적으로 CP를 가져왔습니다: {}", findCp.size());
+            }
+
             // 성공적인 응답 반환
             return ResponseEntity.ok(ApiResponse.ok(findCp));
         } catch (CustomException e) {
@@ -108,6 +114,11 @@ public class CpController {
         try {
             // Cp 버전을 통하여 Cp 를 가져오는 서비스 호출
             ResponseCpDTO findCp = cpService.getCpByCpVersionSeq(cpVersionSeq);
+
+            if (findCp == null) {
+                logger.warn("버전 시퀀스 '{}'에 대한 CP 레코드가 없습니다.", cpVersionSeq);
+                return ResponseEntity.ok(ApiResponse.ok(null)); // 빈 응답
+            }
 
             logger.info("버전 시퀀스로 성공적으로 CP를 가져왔습니다: {}", findCp);
             // 성공적인 응답 반환
