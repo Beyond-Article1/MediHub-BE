@@ -9,8 +9,6 @@ import mediHub_be.cp.dto.RequestCpOpinionDTO;
 import mediHub_be.cp.dto.ResponseCpOpinionDTO;
 import mediHub_be.cp.entity.CpOpinion;
 import mediHub_be.cp.repository.CpOpinionRepository;
-import mediHub_be.cp.repository.CpVersionRepository;
-import mediHub_be.security.util.JwtUtil;
 import mediHub_be.security.util.SecurityUtil;
 import mediHub_be.user.entity.UserAuth;
 import org.slf4j.Logger;
@@ -30,9 +28,16 @@ public class CpOpinionService {
     private final CpOpinionRepository cpOpinionRepository;
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpOpinionService");    // Logger
-    private final CpVersionRepository cpVersionRepository;
-    private final JwtUtil jwtUtil;
 
+    /**
+     * 주어진 CP 버전 번호와 CP 의견 위치 번호에 따라 CP 의견 목록을 조회합니다.
+     *
+     * @param cpVersionSeq         CP 버전 번호
+     * @param cpOpinionLocationSeq CP 의견 위치 번호
+     * @param isDeleted            삭제된 의견을 조회할지 여부
+     * @return ResponseCpOpinionDTO의 리스트
+     * @throws CustomException 조회된 의견이 없을 경우
+     */
     @Transactional(readOnly = true)
     public List<ResponseCpOpinionDTO> findCpOpinionListByCpVersionSeq(
             long cpVersionSeq,
@@ -63,6 +68,13 @@ public class CpOpinionService {
         return result;
     }
 
+    /**
+     * 주어진 CP 의견 번호에 해당하는 CP 의견을 조회합니다.
+     *
+     * @param cpOpinionSeq 조회할 CP 의견의 ID
+     * @return 조회된 CP 의견의 DTO
+     * @throws CustomException 조회된 의견이 없거나 접근 권한이 없는 경우
+     */
     @Transactional(readOnly = true)
     public ResponseCpOpinionDTO findCpOpinionByCpOpinionSeq(long cpOpinionSeq) {
         logger.info("CP 의견 번호: {}로 조회 요청했습니다.", cpOpinionSeq);
@@ -91,12 +103,26 @@ public class CpOpinionService {
         }
     }
 
-    // 조회수 증가 메서드
+    /**
+     * 주어진 CP 의견의 조회 수를 증가시킵니다.
+     *
+     * @param cpOpinionSeq 조회 수를 증가시킬 CP 의견의 ID
+     * @throws CustomException 주어진 ID에 해당하는 CP 의견이 존재하지 않을 경우 예외를 발생시킬 수 있습니다.
+     */
     @Transactional
     public void incrementViewCount(long cpOpinionSeq) {
         cpOpinionRepository.incrementViewCount(cpOpinionSeq);
     }
 
+    /**
+     * 주어진 CP 버전 번호와 CP 의견 위치 번호에 따라 새로운 CP 의견을 생성합니다.
+     *
+     * @param cpVersionSeq         CP 버전 번호
+     * @param cpOpinionLocationSeq CP 의견 위치 번호
+     * @param requestBody          CP 의견을 생성하기 위한 요청 본문
+     * @return 생성된 CP 의견의 DTO
+     * @throws CustomException 입력값이 유효하지 않거나 데이터베이스 오류가 발생할 경우
+     */
     @Transactional
     public CpOpinionDTO createCpOpinion(
             long cpVersionSeq,
@@ -140,5 +166,28 @@ public class CpOpinionService {
         cpOpinionDTO = CpOpinionDTO.toDto(cpOpinion);
 
         return cpOpinionDTO;
+    }
+
+    /**
+     * 주어진 cpOpinionSeq에 해당하는 CP 의견을 삭제합니다.
+     *
+     * @param cpOpinionSeq 삭제할 CP 의견의 ID
+     * @throws CustomException 유효하지 않은 ID일 경우 또는 삭제 중 오류가 발생할 경우
+     */
+    @Transactional
+    public void deleteCpOpinionByCpOpinionSeq(long cpOpinionSeq) {
+        // 입력값 유효성 검사
+        if (cpOpinionSeq <= 0) {
+            logger.warn("유효하지 않은 cpOpinionSeq: {}", cpOpinionSeq);
+            throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
+        }
+
+        try {
+            cpOpinionRepository.deleteById(cpOpinionSeq);
+            logger.info("CP 의견이 성공적으로 삭제되었습니다. cpOpinionSeq: {}", cpOpinionSeq);
+        } catch (DataAccessException e) {
+            logger.error("데이터베이스 삭제 중 오류 발생: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        }
     }
 }
