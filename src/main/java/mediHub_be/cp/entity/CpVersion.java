@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mediHub_be.common.aggregate.entity.CreateTimeEntity;
-import mediHub_be.cp.dto.CpVersionDTO;
-import mediHub_be.user.entity.User;
 
 @Entity
 @Table(name = "cp_version")
