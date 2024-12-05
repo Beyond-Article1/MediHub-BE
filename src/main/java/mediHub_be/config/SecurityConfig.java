@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/case_sharing/**")).permitAll()
                         .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 )
                 /* 세션 정책 설정 (Stateless) */
