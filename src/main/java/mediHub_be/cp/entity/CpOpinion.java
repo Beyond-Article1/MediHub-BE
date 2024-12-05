@@ -6,6 +6,8 @@ import lombok.Getter;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.cp.dto.CpOpinionDTO;
 
+import java.util.List;
+
 @Entity
 @Table(name = "cp_opinion")
 @Getter
@@ -27,6 +29,9 @@ public class CpOpinion extends BaseFullEntity {
     @Column
     private long cpOpinionViewCount;        // 조회수
 
+    @Column
+    private long keywordSeq;                // 키워드 번호
+
     @Builder
     public CpOpinion(
             long userSeq,
@@ -40,5 +45,9 @@ public class CpOpinion extends BaseFullEntity {
                 .cpOpinionLocationSeq(cpOpinionDTO.getCpOpinionLocationSeq())
                 .cpOpinionContent(cpOpinionDTO.getCpOpinionContent())
                 .build();
+    }
+
+    public void editCpOpinionContent(String cpOpinionContent) {
+        this.cpOpinionContent = cpOpinionContent;
     }
 }

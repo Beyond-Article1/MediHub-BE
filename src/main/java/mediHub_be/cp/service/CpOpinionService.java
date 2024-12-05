@@ -130,17 +130,7 @@ public class CpOpinionService {
             RequestCpOpinionDTO requestBody) {
 
         // 입력값 유효성 검사
-        // 1. requestBody가 null인지 확인합니다.
-        // 2. cpOpinionContent가 null인지 확인합니다.
-        // 3. cpOpinionContent는 비어 있지 않아야 하며,
-        //    공백만으로 이루어진 문자열은 허용되지 않습니다.
-        // 4. cpOpinionContent의 길이는 1자 이상 65,535자 이하이어야 합니다.
-        //    (MariaDB의 TEXT 타입에 맞춰 설정)
-        if (requestBody == null || requestBody.getCpOpinionContent() == null ||
-                !requestBody.getCpOpinionContent().matches("^(?!\\s*$).{1,65535}$")) {
-            logger.warn("입력값 유효성 검사 실패: requestBody = {}, cpOpinionContent = {}", requestBody, requestBody != null ? requestBody.getCpOpinionContent() : "null");
-            throw new CustomException(ErrorCode.REQUIRED_FIELD_MISSING);
-        }
+        validateRequestCpOpinion(requestBody);
 
         // 입력값으로 DTO 생성
         logger.info("CP 의견 DTO 생성 중: cpOpinionLocationSeq = {}, 요청 본문 = {}", cpOpinionLocationSeq, requestBody);
@@ -177,10 +167,7 @@ public class CpOpinionService {
     @Transactional
     public void deleteCpOpinionByCpOpinionSeq(long cpOpinionSeq) {
         // 입력값 유효성 검사
-        if (cpOpinionSeq <= 0) {
-            logger.warn("유효하지 않은 cpOpinionSeq: {}", cpOpinionSeq);
-            throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
-        }
+        validateCpOpinionSeq(cpOpinionSeq);
 
         try {
             cpOpinionRepository.deleteById(cpOpinionSeq);
@@ -188,6 +175,84 @@ public class CpOpinionService {
         } catch (DataAccessException e) {
             logger.error("데이터베이스 삭제 중 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        }
+    }
+
+    /**
+     * 주어진 CP 의견 ID에 해당하는 CP 의견을 업데이트합니다.
+     *
+     * @param cpOpinionSeq 업데이트할 CP 의견의 ID
+     * @param requestBody  CP 의견 업데이트에 필요한 요청 본문
+     * @return 업데이트된 CP 의견의 DTO
+     * @throws CustomException 유효성 검사 실패, 의견이 존재하지 않거나 데이터베이스 오류가 발생할 경우
+     */
+    @Transactional
+    public CpOpinionDTO updateCpOpinionByCpOpinionSeq(long cpOpinionSeq, RequestCpOpinionDTO requestBody) {
+        // 입력값 유효성 검사
+        validateCpOpinionSeq(cpOpinionSeq); // CP 의견 ID 유효성 검사
+        validateRequestCpOpinion(requestBody); // 요청 본문 유효성 검사
+
+        // DB에서 현재 CP 의견 조회
+        CpOpinion cpOpinion = cpOpinionRepository.findById(cpOpinionSeq)
+                .orElseThrow(() -> {
+                    logger.warn("조회된 CP 의견이 없습니다. CP 의견 번호: {}", cpOpinionSeq);
+                    return new CustomException(ErrorCode.NOT_FOUND_CP_OPINION); // 의견이 존재하지 않을 경우 예외 발생
+                });
+
+        // 요청 본문으로부터 CP 의견 내용 업데이트
+        if (requestBody.getCpOpinionContent() != null) {
+            cpOpinion.editCpOpinionContent(requestBody.getCpOpinionContent()); // 의견 내용을 업데이트
+        }
+
+        if (requestBody.getKeywordList() != null) {
+            // 키워드 업데이트 로직을 구현해야 합니다.
+        }
+
+        try {
+            // 업데이트된 의견을 DB에 저장
+            cpOpinion = cpOpinionRepository.save(cpOpinion);
+            logger.info("CP 의견이 성공적으로 업데이트되었습니다. cpOpinionSeq: {}", cpOpinionSeq);
+        } catch (DataAccessException e) {
+            logger.error("데이터베이스 업데이트 중 오류 발생: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR); // 데이터베이스 오류 발생 시 예외 처리
+        }
+
+        // Entity -> DTO 변환
+        return CpOpinionDTO.toDto(cpOpinion); // 업데이트된 CP 의견의 DTO를 반환
+    }
+
+
+    /**
+     * 주어진 CP 의견 ID의 유효성을 검사합니다.
+     *
+     * @param cpOpinionSeq 검사할 CP 의견 ID
+     * @throws CustomException 유효하지 않은 ID인 경우 예외를 발생시킵니다.
+     */
+    private void validateCpOpinionSeq(long cpOpinionSeq) {
+        if (cpOpinionSeq <= 0) {
+            logger.warn("유효하지 않은 cpOpinionSeq: {}", cpOpinionSeq);
+            throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION); // 예외 발생
+        }
+    }
+
+    /**
+     * CP 의견 요청 본문의 유효성을 검사합니다.
+     *
+     * @param requestBody 검사할 CP 의견 요청 본문
+     * @throws CustomException 유효성 검사 실패 시 예외를 발생시킵니다.
+     */
+    private void validateRequestCpOpinion(RequestCpOpinionDTO requestBody) {
+        // 입력값 유효성 검사
+        // 1. requestBody가 null인지 확인합니다.
+        // 2. cpOpinionContent가 null인지 확인합니다.
+        // 3. cpOpinionContent는 비어 있지 않아야 하며,
+        //    공백만으로 이루어진 문자열은 허용되지 않습니다.
+        // 4. cpOpinionContent의 길이는 1자 이상 65,535자 이하이어야 합니다.
+        //    (MariaDB의 TEXT 타입에 맞춰 설정)
+        if (requestBody == null || requestBody.getCpOpinionContent() == null ||
+                !requestBody.getCpOpinionContent().matches("^(?!\\s*$).{1,65535}$")) {
+            logger.warn("입력값 유효성 검사 실패: requestBody = {}, cpOpinionContent = {}", requestBody, requestBody != null ? requestBody.getCpOpinionContent() : "null");
+            throw new CustomException(ErrorCode.REQUIRED_FIELD_MISSING);
         }
     }
 }

@@ -247,6 +247,7 @@ public class CpController {
 
         try {
             cpOpinionService.deleteCpOpinionByCpOpinionSeq(cpOpinionSeq);
+
             logger.info("CP 의견이 성공적으로 삭제되었습니다. cpOpinionSeq: {}", cpOpinionSeq);
             return ResponseEntity.noContent().build(); // 204 No Content
         } catch (CustomException e) {
@@ -258,4 +259,29 @@ public class CpController {
         }
     }
 
+    // CP 의견 수정
+// https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
+    @PutMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
+    public ResponseEntity<ApiResponse<CpOpinionDTO>> updateCpOpinion(
+            @PathVariable long cpVersionSeq,
+            @PathVariable long cpOpinionLocationSeq,
+            @PathVariable long cpOpinionSeq,
+            @RequestBody RequestCpOpinionDTO requestBody) {
+
+        logger.info("CP 의견 수정 요청: cpOpinionSeq = {}, 요청 본문 = {}", cpOpinionSeq, requestBody);
+
+        try {
+            // 요청 본문을 전달하여 CP 의견 업데이트
+            CpOpinionDTO cpOpinionDTO = cpOpinionService.updateCpOpinionByCpOpinionSeq(cpOpinionSeq, requestBody);
+
+            logger.info("CP 의견이 성공적으로 수정되었습니다: {}", cpOpinionDTO);
+            return ResponseEntity.ok(ApiResponse.ok(cpOpinionDTO));
+        } catch (CustomException e) {
+            logger.error("CP 의견 수정 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            logger.error("CP 의견 수정 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+    }
 }
