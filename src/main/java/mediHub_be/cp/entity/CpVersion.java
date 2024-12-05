@@ -1,9 +1,11 @@
 package mediHub_be.cp.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mediHub_be.common.aggregate.entity.CreateTimeEntity;
+import mediHub_be.cp.dto.CpVersionDTO;
 import mediHub_be.user.entity.User;
 
 @Entity
@@ -31,7 +33,15 @@ public class CpVersion extends CreateTimeEntity {
     @Column
     private String cpUrl;                           // cp url
 
-    public CpVersion(long cpSeq, long userSeq, String cpVersion, String cpVersionDescription, String cpUrl) {
+    @Builder
+    public CpVersion(
+            long cpVersionSeq,
+            long cpSeq,
+            long userSeq,
+            String cpVersion,
+            String cpVersionDescription,
+            String cpUrl) {
+        this.cpVersionSeq = cpVersionSeq;
         this.cpSeq = cpSeq;
         this.userSeq = userSeq;
         this.cpVersion = cpVersion;
