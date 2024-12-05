@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import mediHub_be.board.entity.Flag;
 import mediHub_be.common.aggregate.entity.CreateTimeEntity;
 import mediHub_be.user.entity.User;
 import org.hibernate.annotations.ColumnDefault;
@@ -18,6 +19,10 @@ public class Notify extends CreateTimeEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "noti_seq", nullable = false)
     private Long notiSeq;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "flag_seq")
+    private Flag flag;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "noti_is_read", nullable = false)
@@ -40,8 +45,9 @@ public class Notify extends CreateTimeEntity {
     private User receiver;
 
     @Builder
-    public Notify(User receiver, NotiType notiType, String notiContent, String notiUrl, NotiReadStatus isRead) {
+    public Notify(User receiver, Flag flag, NotiType notiType, String notiContent, String notiUrl, NotiReadStatus isRead) {
         this.receiver = receiver;
+        this.flag = flag;
         this.notiType = notiType;
         this.notiContent = notiContent;
         this.notiUrl = notiUrl;
