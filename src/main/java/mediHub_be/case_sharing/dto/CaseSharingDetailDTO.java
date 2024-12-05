@@ -25,5 +25,7 @@ public class CaseSharingDetailDTO {
 
     private Long caseSharingGroupSeq; // 그룹 ID (CaseSharingGroup 정보)
     private Boolean isLatestVersion; // 최신 버전 여부
+
+    private Long caseSharingViewCount; //조회수
 }
 

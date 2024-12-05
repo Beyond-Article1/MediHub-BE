@@ -1,6 +1,10 @@
 springdoc:
   swagger-ui:
     path: /swagger-ui
+    groups-order: DESC # path, query, body, response 순으로 출력
+    tags-sorter: alpha # 태그 알파벳 순서
+    operations-sorter: method  # delete - get - patch - post - put 순으로 정렬
+
 
 server:
   port: 8088

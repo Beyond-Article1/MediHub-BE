@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class CaseSharingCommentDTO {
-
     private Long commentSeq; // 댓글 ID
     private String userName; // 댓글 작성자명
     private String userRankName; //댓글 작성자 직위명
@@ -20,5 +19,6 @@ public class CaseSharingCommentDTO {
     private Integer startOffset; // 본문 시작 위치
     private Integer endOffset; // 본문 끝 위치
     private LocalDateTime createdAt; // 작성일
+
 }
 

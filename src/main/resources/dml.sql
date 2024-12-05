@@ -88,10 +88,10 @@ INSERT INTO flag (
 
 -- keyword 테이블 데이터 삽입
 INSERT INTO keyword (
-    keyword_seq, flag_seq, keyword_name, keyword_post_seq
+    keyword_seq, flag_seq, keyword_name
 ) VALUES
-      (1, 1, 'Orthopedics', 1),
-      (2, 1, 'Surgery', 1),
-      (3, 2, 'Rehabilitation', 2),
-      (4, 3, 'Heart', 3),
-      (5, 3, 'Transplant', 3);
+      (1, 1, 'Orthopedics'),
+      (2, 1, 'Surgery'),
+      (3, 2, 'Rehabilitation'),
+      (4, 3, 'Heart'),
+      (5, 3, 'Transplant');
