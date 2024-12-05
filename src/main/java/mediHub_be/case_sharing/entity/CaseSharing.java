@@ -42,8 +42,12 @@ public class CaseSharing extends BaseFullEntity {
 
     private Boolean caseSharingIsLatest; // 최신버전 여부
 
+    private Long caseSharingViewCount = 0L; // 조회수
+
     @Builder
-    public CaseSharing(User user, Part part, Template template, CaseSharingGroup caseSharingGroup, String caseSharingTitle, String caseSharingContent, Boolean caseSharingIsDraft, Boolean caseSharingIsLatest) {
+    public CaseSharing(User user, Part part, Template template, CaseSharingGroup caseSharingGroup,
+                       String caseSharingTitle, String caseSharingContent, Boolean caseSharingIsDraft,
+                       Boolean caseSharingIsLatest, Long caseSharingViewCount) {
         this.user = user;
         this.part = part;
         this.template = template;
@@ -52,6 +56,7 @@ public class CaseSharing extends BaseFullEntity {
         this.caseSharingContent = caseSharingContent;
         this.caseSharingIsDraft = caseSharingIsDraft;
         this.caseSharingIsLatest = caseSharingIsLatest;
+        this.caseSharingViewCount = caseSharingViewCount;
     }
 
     // 새 CaseSharing 생성
@@ -65,6 +70,7 @@ public class CaseSharing extends BaseFullEntity {
                 .caseSharingContent(content)
                 .caseSharingIsDraft(isDraft)
                 .caseSharingIsLatest(true) // 새로 생성된 경우 최신 버전으로 설정
+                .caseSharingViewCount(0L)
                 .build();
     }
     public void markAsLatest() {
@@ -78,10 +84,16 @@ public class CaseSharing extends BaseFullEntity {
         this.caseSharingIsLatest = false; // 삭제된 경우 최신 버전이 될 수 없음
     }
 
-
     public void updateContent(String title, String content) {
         this.caseSharingTitle = title;
         this.caseSharingContent = content;
     }
 
+    public void increaseViewCount() {
+        if (this.caseSharingViewCount == null) {
+            this.caseSharingViewCount = 1L;
+        } else {
+            this.caseSharingViewCount++;
+        }
+    }
 }

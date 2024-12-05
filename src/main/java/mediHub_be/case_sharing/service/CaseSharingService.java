@@ -1,7 +1,10 @@
 package mediHub_be.case_sharing.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.Util.ViewCountManager;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.service.KeywordService;
 import mediHub_be.case_sharing.dto.*;
@@ -35,6 +38,7 @@ public class CaseSharingService {
     private final KeywordRepository keywordRepository;
     private final TemplateRepository templateRepository;
     private final KeywordService keywordService;
+    private final ViewCountManager viewCountManager;
 
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
@@ -50,15 +54,16 @@ public class CaseSharingService {
                             caseSharing.getCaseSharingTitle(),
                             author.getUserName(),
                             author.getRanking().getRankingName(),
-                            caseSharing.getCreatedAt()
+                            caseSharing.getCreatedAt(),
+                            caseSharing.getCaseSharingViewCount()
                     );
                 }).collect(Collectors.toList());
     }
 
 
     //2. 케이스 공유 상세 조회
-    @Transactional(readOnly = true)
-    public CaseSharingDetailDTO getCaseSharingDetail(Long caseSharingSeq, String userId) {
+    @Transactional
+    public CaseSharingDetailDTO getCaseSharingDetail(Long caseSharingSeq, String userId, HttpServletRequest request, HttpServletResponse response) {
 
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
@@ -75,6 +80,16 @@ public class CaseSharingService {
         // 작성자 정보 조회
         User author = userRepository.findById(caseSharing.getUser().getUserSeq())
                 .orElseThrow(() -> new IllegalArgumentException("작성자 정보를 찾을 수 없습니다."));
+
+        boolean shouldIncrease = viewCountManager.shouldIncreaseViewCount(caseSharingSeq, request, response);
+        if (shouldIncrease) {
+            log.info("오늘 처음 조회한 게시물");
+            caseSharing.increaseViewCount(); // 조회수 증가
+            caseSharingRepository.save(caseSharing); // 변경 사항 저장
+        }
+        else{
+            log.info("이미 조회한적 있는 게시물");
+        }
 
         // 댓글 내역 반환
         List<CaseSharingComment> comments = commentRepository.findByCaseSharing_CaseSharingSeqAndDeletedAtIsNull(caseSharingSeq);
@@ -114,6 +129,7 @@ public class CaseSharingService {
                 .keywords(keywordDTOs) // 키워드 리스트
                 .caseSharingGroupSeq(caseSharing.getCaseSharingGroup().getCaseSharingGroupSeq()) // 그룹 ID
                 .isLatestVersion(caseSharing.getCaseSharingIsLatest()) // 최신 버전 여부
+                .caseSharingViewCount(caseSharing.getCaseSharingViewCount())
                 .build();
     }
 
@@ -269,7 +285,8 @@ public class CaseSharingService {
                             caseSharing.getCaseSharingTitle(), // 제목
                             author.getUserName(), // 작성자
                             author.getRanking().getRankingName(), // 작성자 직위명
-                            caseSharing.getCreatedAt() // 작성 일자
+                            caseSharing.getCreatedAt(), // 작성 일자
+                            caseSharing.getCaseSharingViewCount()
                     );
                 })
                 .toList();
@@ -292,7 +309,8 @@ public class CaseSharingService {
                 .map(cs -> new CaseSharingVersionListDTO(
                         cs.getCaseSharingSeq(),
                         cs.getCaseSharingTitle(),
-                        cs.getCreatedAt()
+                        cs.getCreatedAt(),
+                        cs.getCaseSharingViewCount()
                 ))
                 .toList();
     }
