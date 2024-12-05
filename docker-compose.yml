@@ -43,6 +43,19 @@ services:
 
     volumes:
       - mongo_data:/data/db
+    networks:
+      - springboot-network
+
+  redis:
+    image: redis:latest
+    restart: always
+    container_name: redis
+    hostname: ${DB_DATABASE}
+    ports:
+      - "6379:6379"
+    networks:
+      - springboot-network
+    command: redis-server --requirepass ${DB_PASSWORD}
 
 networks:
   springboot-network:
