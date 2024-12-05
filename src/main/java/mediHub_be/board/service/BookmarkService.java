@@ -20,20 +20,11 @@ public class BookmarkService {
     private final FlagRepository flagRepository;
     private final UserRepository userRepository;
 
-    /**
-     * 북마크 설정/해제 기능
-     * @param boardFlag 게시판 구분 플래그
-     * @param postSeq 게시글 ID
-     * @param userId 사용자 ID
-     * @return true: 북마크 설정됨, false: 북마크 해제됨
-     */
     @Transactional
     public boolean toggleBookmark(String boardFlag, Long postSeq, String userId) {
-        // 유저 조회
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
-        // Flag 조회
         Flag flag = flagRepository.findByFlagBoardFlagAndFlagPostSeq(boardFlag, postSeq)
                 .orElseThrow(() -> new IllegalArgumentException("게시글 정보를 찾을 수 없습니다."));
 
@@ -56,11 +47,9 @@ public class BookmarkService {
     }
 
     public boolean isBookmarked(String boardFlag, Long postSeq, String userId) {
-        // 유저 조회
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
-        // Flag 조회
         Flag flag = flagRepository.findByFlagBoardFlagAndFlagPostSeq(boardFlag, postSeq)
                 .orElseThrow(() -> new IllegalArgumentException("게시글 정보를 찾을 수 없습니다."));
 
