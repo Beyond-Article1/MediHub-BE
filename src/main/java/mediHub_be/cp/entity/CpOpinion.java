@@ -3,13 +3,13 @@ package mediHub_be.cp.entity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.cp.dto.CpOpinionDTO;
 
-import java.util.List;
-
 @Entity
 @Table(name = "cp_opinion")
+@NoArgsConstructor
 @Getter
 public class CpOpinion extends BaseFullEntity {
 
