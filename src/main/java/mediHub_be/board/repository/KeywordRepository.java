@@ -18,5 +18,8 @@ public interface KeywordRepository extends JpaRepository<Keyword, Long> {
             ")")
     List<Keyword> findByBoardFlagAndPostSeq(@Param("boardFlag") String boardFlag,
                                             @Param("postSeq") Long postSeq);
+
+
+    void deleteByFlagSeq(Long flagSeq);
 }
 
