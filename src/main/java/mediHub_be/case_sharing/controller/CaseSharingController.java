@@ -101,6 +101,14 @@ public class CaseSharingController {
         return ApiResponse.created(caseSharingSeq);
     }
 
+    @Operation(summary = "임시 저장 목록 조회", description = "임시 저장된 케이스 공유 글 목록을 조회합니다.")
+    @GetMapping("/drafts")
+    public ApiResponse<List<CaseSharingDraftListDTO>> getDrafts() {
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        List<CaseSharingDraftListDTO> drafts = caseSharingService.getDraftsByUser(userSeq);
+        return ApiResponse.ok(drafts);
+    }
+
 
 
 

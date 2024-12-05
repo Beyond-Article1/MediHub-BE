@@ -319,4 +319,18 @@ public class CaseSharingService {
 
         return caseSharing.getCaseSharingSeq();
     }
+
+    public List<CaseSharingDraftListDTO> getDraftsByUser(Long userSeq) {
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+
+        List<CaseSharing> drafts = caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftTrue(userSeq);
+        return drafts.stream()
+                .map(draft -> new CaseSharingDraftListDTO(
+                        draft.getCaseSharingSeq(),
+                        draft.getCaseSharingTitle(),
+                        draft.getCreatedAt()
+                ))
+                .toList();
+    }
 }
