@@ -23,7 +23,7 @@ public class CaseSharingController {
     private final CaseSharingService caseSharingService;
 
     @Operation(summary = "케이스 공유 전체 목록 조회",
-            description = "필터링 되지 않은 케이스 공유 전체 글 목록 조회")
+            description = "필터링 되지 않은 최신 버전 케이스 공유 전체 글 목록 조회")
     @GetMapping
     public ApiResponse<List<CaseSharingListDTO>> getAllCases() {
         List<CaseSharingListDTO> caseSharingList = caseSharingService.getCaseList();
@@ -31,11 +31,28 @@ public class CaseSharingController {
     }
 
     @Operation(summary = "케이스 공유 상세 조회",
-            description = "케이스 공유 내용,사진, 키워드 포함한 전체 글 조회 ")
+            description = "케이스 공유 내용,사진,키워드,버전정보 포함한 전체 글 조회 ")
     @GetMapping("/{caseSharingSeq}")
     public ApiResponse<CaseSharingDetailDTO> getCaseDetail(@PathVariable("caseSharingSeq") Long caseSharingSeq) {
         CaseSharingDetailDTO caseSharingDetailDTO = caseSharingService.getCaseSharingDetail(caseSharingSeq);
         return ApiResponse.ok(caseSharingDetailDTO);
+    }
+
+    @Operation(summary = "케이스 공유 파트 별 조회",
+            description = "파트에 따른 최신 버전 케이스 공유 글 목록 조회")
+    @GetMapping("/part/{partSeq}")
+    public ApiResponse<List<CaseSharingListDTO>> getCasesByPart(@PathVariable("partSeq") Long partSeq) {
+        List<CaseSharingListDTO> caseSharingList = caseSharingService.getCasesByPart(partSeq);
+        return ApiResponse.ok(caseSharingList);
+    }
+
+    @Operation(summary = "케이스 공유 버전 이력 조회",
+            description = "같은 케이스 공유 그룹 글의 버전 이력 조회")
+    @GetMapping("/versions/{caseSharingSeq}")
+    public ApiResponse<List<CaseSharingVersionListDTO>> getCasesByGroup(@PathVariable("caseSharingSeq") Long caseSharingSeq) {
+        List<CaseSharingVersionListDTO> caseSharingVersionListDTOList = caseSharingService.getCaseVersionList(caseSharingSeq);
+        return ApiResponse.ok(caseSharingVersionListDTOList);
+
     }
 
     @Operation(summary = "케이스 공유글 등록",
@@ -65,6 +82,9 @@ public class CaseSharingController {
         caseSharingService.deleteCaseSharing(caseSharingSeq);
         return ApiResponse.ok(null);
     }
+
+
+
 
 
 }
