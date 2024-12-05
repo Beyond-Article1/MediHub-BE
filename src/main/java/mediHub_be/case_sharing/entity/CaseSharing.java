@@ -79,5 +79,9 @@ public class CaseSharing extends BaseFullEntity {
     }
 
 
+    public void updateContent(String title, String content) {
+        this.caseSharingTitle = title;
+        this.caseSharingContent = content;
+    }
 
 }

@@ -11,9 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CaseSharingCreateRequestDTO {
-    private Long templateSeq; //템플릿 seq
-    private String title; // 케이스 공유 제목
-    private String content; // 케이스 공유 본문 내용
+public class CaseSharingDraftUpdateDTO {
+    private String caseSharingTitle; // 제목
+    private String caseSharingContent; // 본문 내용
     private List<String> keywords; // 키워드 리스트
 }
