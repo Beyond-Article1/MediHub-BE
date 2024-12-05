@@ -36,7 +36,10 @@ public class CaseSharingService {
 
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
-    public List<CaseSharingListDTO> getCaseList() {
+    public List<CaseSharingListDTO> getCaseList(Long userSeq) {
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+
         return caseSharingRepository.findAllLatestVersionsNotDraft().stream()
                 .map(caseSharing -> {
                     User author = caseSharing.getUser();
@@ -53,7 +56,11 @@ public class CaseSharingService {
 
     //2. 케이스 공유 상세 조회
     @Transactional(readOnly = true)
-    public CaseSharingDetailDTO getCaseSharingDetail(Long caseSharingSeq) {
+    public CaseSharingDetailDTO getCaseSharingDetail(Long caseSharingSeq, Long userSeq) {
+
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+
         // 게시글 정보 조회
         CaseSharing caseSharing = caseSharingRepository.findById(caseSharingSeq)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
@@ -109,10 +116,10 @@ public class CaseSharingService {
     }
 
     //3. 케이스 공유 등록
-    public Long createCaseSharing(CaseSharingCreateRequestDTO requestDTO) {
-        // 작성자 검증
-        User user = userRepository.findById(requestDTO.getUserSeq())
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
+    public Long createCaseSharing(CaseSharingCreateRequestDTO requestDTO, Long userSeq) {
+
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
         if (!"진료과".equals(user.getPart().getDept().getDeptName())) {
             throw new IllegalArgumentException("케이스 공유글은 의사만 작성할 수 있습니다.");
@@ -151,14 +158,13 @@ public class CaseSharingService {
     }
     //4. 케이스 공유 수정
     @Transactional
-    public Long createNewVersion(Long caseSharingSeq, CaseSharingUpdateRequestDTO requestDTO) {
+    public Long createNewVersion(Long caseSharingSeq, CaseSharingUpdateRequestDTO requestDTO, Long userSeq) {
         // 기존 CaseSharing 조회
         CaseSharing existingCaseSharing = caseSharingRepository.findById(caseSharingSeq)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
-        // 작성자 검증
-        User user = userRepository.findById(requestDTO.getUserSeq())
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자입니다."));
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
         if (!existingCaseSharing.getUser().equals(user)) {
             throw new IllegalArgumentException("작성자만 게시글을 수정할 수 있습니다.");
@@ -196,49 +202,61 @@ public class CaseSharingService {
 
     //5. 케이스 공유 소프트 삭제
     @Transactional
-    public void deleteCaseSharing(Long caseSharingSeq) {
+    public void deleteCaseSharing(Long caseSharingSeq, Long userSeq) {
 
+        // 1. 작성자 확인
         CaseSharing caseSharing = caseSharingRepository.findById(caseSharingSeq)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글 입니다."));
 
-        // 2. 삭제된 상태 확인
-        if (caseSharing.getDeletedAt() != null) {
-            throw new IllegalArgumentException("이미 삭제된 게시글입니다.");
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+
+        if (!caseSharing.getUser().equals(user)) {
+            throw new IllegalArgumentException("작성자만 게시글을 삭제할 수 있습니다.");
         }
-
-        // 3. 그룹 정보 가져오기
-        CaseSharingGroup caseSharingGroup = caseSharing.getCaseSharingGroup();
-        if (caseSharingGroup == null) {
-            throw new IllegalArgumentException("케이스 공유 그룹 정보가 없습니다.");
-        }
-
-        // 4. 최신 버전인지 확인 및 처리
-        if (caseSharing.getCaseSharingIsLatest()) {
-            // 최신 버전 해제
-            caseSharing.markAsNotLatest();
-            caseSharingRepository.save(caseSharing);
-
-            // 바로 이전 버전을 최신으로 설정
-            CaseSharing previousVersion = caseSharingRepository
-                    .findTopByCaseSharingGroupCaseSharingGroupSeqAndCaseSharingSeqNotAndIsDraftFalseAndDeletedAtIsNullOrderByCreatedAtDesc(
-                            caseSharingGroup.getCaseSharingGroupSeq(),
-                            caseSharingSeq
-                    ).orElse(null);
-
-            if (previousVersion != null) {
-                previousVersion.markAsLatest();
-                caseSharingRepository.save(previousVersion);
+            // 2. 삭제된 상태 확인
+            if (caseSharing.getDeletedAt() != null) {
+                throw new IllegalArgumentException("이미 삭제된 게시글입니다.");
             }
 
+            // 3. 그룹 정보 가져오기
+            CaseSharingGroup caseSharingGroup = caseSharing.getCaseSharingGroup();
+            if (caseSharingGroup == null) {
+                throw new IllegalArgumentException("케이스 공유 그룹 정보가 없습니다.");
+            }
+
+            // 4. 최신 버전인지 확인 및 처리
+            if (caseSharing.getCaseSharingIsLatest()) {
+                // 최신 버전 해제
+                caseSharing.markAsNotLatest();
+                caseSharingRepository.save(caseSharing);
+
+                // 바로 이전 버전을 최신으로 설정
+                CaseSharing previousVersion = caseSharingRepository
+                        .findTopByCaseSharingGroupCaseSharingGroupSeqAndCaseSharingSeqNotAndIsDraftFalseAndDeletedAtIsNullOrderByCreatedAtDesc(
+                                caseSharingGroup.getCaseSharingGroupSeq(),
+                                caseSharingSeq
+                        ).orElse(null);
+
+                if (previousVersion != null) {
+                    previousVersion.markAsLatest();
+                    caseSharingRepository.save(previousVersion);
+                }
+
+            }
+            // 5. 삭제 처리
+            caseSharing.markAsDeleted();
+            caseSharingRepository.save(caseSharing);
         }
-        // 5. 삭제 처리
-        caseSharing.markAsDeleted();
-        caseSharingRepository.save(caseSharing);
-    }
+
 
     // 6. 케이스 공유 파트별 조회
     @Transactional(readOnly = true)
-    public List<CaseSharingListDTO> getCasesByPart(Long partSeq) {
+    public List<CaseSharingListDTO> getCasesByPart(Long partSeq, Long userSeq) {
+
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+
         List<CaseSharing> caseSharings = caseSharingRepository.findByPartPartSeqAndCaseSharingIsLatestTrueAndIsDraftFalseAndDeletedAtIsNull(partSeq);
 
         return caseSharings.stream()
@@ -256,7 +274,10 @@ public class CaseSharingService {
     }
     //7. 케이스 공유 버전 조회
     @Transactional(readOnly = true)
-    public List<CaseSharingVersionListDTO> getCaseVersionList(Long caseSharingSeq) {
+    public List<CaseSharingVersionListDTO> getCaseVersionList(Long caseSharingSeq, Long userSeq) {
+
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
         CaseSharing caseSharing = caseSharingRepository.findById(caseSharingSeq)
                 .orElseThrow(() -> new IllegalArgumentException("해당 케이스 공유를 찾을 수 없습니다."));
@@ -272,5 +293,30 @@ public class CaseSharingService {
                         cs.getCreatedAt()
                 ))
                 .toList();
+    }
+
+    //8. 케이스 공유 임시 저장 등록
+    public Long saveDraft(CaseSharingCreateRequestDTO requestDTO, Long userSeq) {
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+
+        Template template = templateRepository.findById(requestDTO.getTemplateSeq())
+                .orElseThrow(() -> new IllegalArgumentException("해당 템플릿을 찾을 수 없습니다."));
+
+        CaseSharingGroup group = CaseSharingGroup.createNewGroup();
+        caseSharingGroupRepository.save(group);
+
+        CaseSharing caseSharing = CaseSharing.createNewCaseSharing(
+                user,
+                user.getPart(),
+                template,
+                group,
+                requestDTO.getTitle(),
+                requestDTO.getContent(),
+                true // 임시 저장 여부 설정
+        );
+        caseSharingRepository.save(caseSharing);
+
+        return caseSharing.getCaseSharingSeq();
     }
 }
