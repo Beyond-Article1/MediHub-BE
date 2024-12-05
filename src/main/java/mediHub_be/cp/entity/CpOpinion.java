@@ -1,8 +1,10 @@
 package mediHub_be.cp.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
+import mediHub_be.cp.dto.CpOpinionDTO;
 
 @Entity
 @Table(name = "cp_opinion")
@@ -24,4 +26,19 @@ public class CpOpinion extends BaseFullEntity {
 
     @Column
     private long cpOpinionViewCount;        // 조회수
+
+    @Builder
+    public CpOpinion(
+            long userSeq,
+            long cpOpinionLocationSeq,
+            String cpOpinionContent) {
+    }
+
+    public static CpOpinion toEntity(CpOpinionDTO cpOpinionDTO) {
+        return CpOpinion.builder()
+                .userSeq(cpOpinionDTO.getUserId())
+                .cpOpinionLocationSeq(cpOpinionDTO.getCpOpinionLocationSeq())
+                .cpOpinionContent(cpOpinionDTO.getCpOpinionContent())
+                .build();
+    }
 }

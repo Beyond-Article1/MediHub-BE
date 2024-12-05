@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
+import mediHub_be.cp.dto.CpOpinionDTO;
+import mediHub_be.cp.dto.RequestCpOpinionDTO;
 import mediHub_be.cp.dto.ResponseCpDTO;
 import mediHub_be.cp.dto.ResponseCpOpinionDTO;
 import mediHub_be.cp.service.CpOpinionService;
@@ -179,6 +181,7 @@ public class CpController {
         }
     }
 
+    // CP 의견 상세 조회
     // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
     @GetMapping("/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
     public ResponseEntity<ApiResponse<ResponseCpOpinionDTO>> getCpOpinionByCpOpinionSeq(
@@ -203,4 +206,34 @@ public class CpController {
         }
     }
 
+    // CP 의견 생성
+// https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}
+    @PostMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}")
+    public ResponseEntity<ApiResponse<CpOpinionDTO>> createCpOpinion(
+            @PathVariable long cpVersionSeq,
+            @PathVariable long cpOpinionLocationSeq,
+            @RequestBody RequestCpOpinionDTO requestBody) {
+
+        logger.info("CP 의견 생성 요청: cpVersionSeq = {}, cpOpinionLocationSeq = {}, 요청 본문 = {}", cpVersionSeq, cpOpinionLocationSeq, requestBody);
+
+        // 입력값 유효성 검사
+        if (requestBody == null || requestBody.getCpOpinionContent() == null ||
+                !requestBody.getCpOpinionContent().matches("^(?!\\s*$).{1,65535}$")) {
+            logger.warn("CP 의견 생성 요청 시 필수 입력값 누락: cpOpinionContent = {}", requestBody != null ? requestBody.getCpOpinionContent() : "null");
+            throw new CustomException(ErrorCode.REQUIRED_FIELD_MISSING);
+        }
+
+        try {
+            CpOpinionDTO cpOpinion = cpOpinionService.createCpOpinion(cpVersionSeq, cpOpinionLocationSeq, requestBody);
+
+            logger.info("CP 의견이 성공적으로 생성되었습니다. CP 의견 정보: {}", cpOpinion);
+            return ResponseEntity.ok(ApiResponse.created(cpOpinion));
+        } catch (CustomException e) {
+            logger.error("CP 의견 생성 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            logger.error("CP 의견 생성 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+    }
 }
