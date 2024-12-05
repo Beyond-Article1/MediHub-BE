@@ -2,7 +2,6 @@ package mediHub_be.cp.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import mediHub_be.user.entity.User;
 
 @Entity
 @Table(name = "cp")
