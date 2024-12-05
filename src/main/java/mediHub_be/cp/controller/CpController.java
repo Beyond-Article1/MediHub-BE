@@ -148,16 +148,17 @@ public class CpController {
         }
     }
 
-    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}
+    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/isDeleted=value
     @GetMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}")
     public ResponseEntity<ApiResponse<List<ResponseCpOpinionDTO>>> getCpOpinionListByCpOpinionLocationSeq(
             @PathVariable long cpVersionSeq,
-            @PathVariable long cpOpinionLocationSeq) {
+            @PathVariable long cpOpinionLocationSeq,
+            @RequestParam(required = false, defaultValue = "false") boolean isDeleted) {
         logger.info("CP 버전 시퀀스: {}의 CP 의견 위치 시퀀스: {}에 위치의 CP 의견 리스트 요청을 받았습니다.", cpVersionSeq, cpOpinionLocationSeq);
 
         try {
             // CP 번호로 CP 의견을 가져오는 서비스 호출
-            List<ResponseCpOpinionDTO> cpOpinionList = cpOpinionService.findCpOpinionListByCpVersionSeq(cpVersionSeq, cpOpinionLocationSeq);
+            List<ResponseCpOpinionDTO> cpOpinionList = cpOpinionService.findCpOpinionListByCpVersionSeq(cpVersionSeq, cpOpinionLocationSeq, isDeleted);
 
             if (cpOpinionList == null || cpOpinionList.isEmpty()) {
                 // 조회 결과 없음
@@ -166,7 +167,6 @@ public class CpController {
                 return ResponseEntity.ok(ApiResponse.ok(null));
             } else {
                 logger.info("조회된 CP 의견 리스트의 크기: {}", cpOpinionList.size());
-                logger.info("조호된 CP 의견 리스트: {}", cpOpinionList);
 
                 return ResponseEntity.ok(ApiResponse.ok(cpOpinionList));
             }
@@ -184,4 +184,36 @@ public class CpController {
                     .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
     }
+
+    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
+    @GetMapping("/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
+    public ResponseEntity<ApiResponse<ResponseCpOpinionDTO>> getCpOpinionByCpOpinionSeq(
+            @PathVariable long cpVersionSeq,
+            @PathVariable long cpOpinionLocationSeq,
+            @PathVariable long cpOpinionSeq,
+            @RequestParam(required = false, defaultValue = "false") boolean isDeleted) {
+
+        logger.info("CP 버전 번호: {}, CP 의견 위치 번호: {}, CP 의견 번호: {}로 조회 요청했습니다.", cpVersionSeq, cpOpinionLocationSeq, cpOpinionSeq);
+
+        try {
+            // CP 의견을 가져오는 서비스 호출
+            ResponseCpOpinionDTO cpOpinion = cpOpinionService.findCpOpinionByCpOpinionSeq(cpVersionSeq, cpOpinionLocationSeq, cpOpinionSeq, isDeleted);
+
+            if (cpOpinion == null) {
+                logger.warn("조회된 CP 의견이 없습니다. CP 버전 번호: {}, CP 의견 위치 번호: {}, CP 의견 번호: {}", cpVersionSeq, cpOpinionLocationSeq, cpOpinionSeq);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.ok(null));
+            }
+
+            logger.info("조회된 CP 의견: {}", cpOpinion);
+            return ResponseEntity.ok(ApiResponse.ok(cpOpinion));
+
+        } catch (CustomException e) {
+            logger.error("CP 의견 조회 중 CustomException 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            logger.error("CP 의견 조회 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+    }
+
 }

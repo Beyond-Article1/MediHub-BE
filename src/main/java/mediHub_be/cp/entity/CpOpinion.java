@@ -21,4 +21,7 @@ public class CpOpinion extends BaseFullEntity {
 
     @Column
     private String cpOpinionContent;        // cp 의견 내용
+
+    @Column
+    private long cpOpinionViewCount;        // 조회수
 }

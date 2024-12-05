@@ -32,4 +32,35 @@ public class CpOpinionService {
 
         return null;
     }
+
+    @Transactional(readOnly = true)
+    public ResponseCpOpinionDTO findCpOpinionByCpOpinionSeq(
+            long cpVersionSeq,
+            long cpOpinionLocationSeq,
+            long cpOpinionSeq,
+            boolean isDeleted) {
+
+        logger.info("CP 버전 번호: {}, CP 의견 위치 번호: {}, CP 의견 번호: {}로 조회 요청했습니다.", cpVersionSeq, cpOpinionLocationSeq, cpOpinionSeq);
+
+        // DB 조회
+        ResponseCpOpinionDTO cpOpinion;
+
+        if (isDeleted) {
+            logger.info("삭제된 의견을 조회합니다.");
+            cpOpinion = cpOpinionRepository.findByCpOpinionSeqAndDeletedAtIsNotNull(cpOpinionSeq);
+        } else {
+            logger.info("활성 상태의 의견을 조회합니다.");
+            cpOpinion = cpOpinionRepository.findByCpOpinionSeqAndDeletedAtIsNull(cpOpinionSeq);
+        }
+
+        // 조회 결과 확인
+        if (cpOpinion == null) {
+            logger.warn("조회된 CP 의견이 없습니다. CP 버전 번호: {}, CP 의견 위치 번호: {}, CP 의견 번호: {}", cpVersionSeq, cpOpinionLocationSeq, cpOpinionSeq);
+        } else {
+            logger.info("조회된 CP 의견: {}", cpOpinion);
+        }
+
+        // 반환
+        return cpOpinion;
+    }
 }

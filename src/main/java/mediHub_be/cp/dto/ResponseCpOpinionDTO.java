@@ -9,10 +9,13 @@ import java.time.LocalDateTime;
 @Builder
 public class ResponseCpOpinionDTO {
 
-    private String userName;                // 작성자명
-    private String userId;                  // 장성자 아이디
-    private String partName;                // 작성자 과명(ex: 외과/내과/안과 ...
-    private String cpOpinionContent;        // cp 의견 내용
-    private LocalDateTime createdAt;        // 생성일
-    private LocalDateTime updatedAt;        // 수정일
+    private long cpOpinionSeq;              // CP 의견 번호
+    private String cpOpinionContent;        // CP 의견 내용
+    private LocalDateTime createdAt;        // CP 의견 생성일
+    private LocalDateTime updatedAt;        // CP 의견 수정일
+    private LocalDateTime deletedAt;        // CP 의견 삭제일
+    private long cpOpinionViewCount;        // CP 의견 조회수
+    private String userName;                // CP 의견 작성자명
+    private String userId;                  // CP 의견 작성자 아이디
+    private String partName;                // CP 의견 과명 (ex: 외과, 내과)
 }
