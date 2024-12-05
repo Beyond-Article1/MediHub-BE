@@ -27,8 +27,8 @@ public class CaseSharingController {
             description = "필터링 되지 않은 최신 버전 케이스 공유 전체 글 목록 조회")
     @GetMapping
     public ApiResponse<List<CaseSharingListDTO>> getAllCases() {
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        List<CaseSharingListDTO> caseSharingList = caseSharingService.getCaseList(userSeq);
+        String userId = SecurityUtil.getCurrentUserId();
+        List<CaseSharingListDTO> caseSharingList = caseSharingService.getCaseList(userId);
         return ApiResponse.ok(caseSharingList);
     }
 
@@ -36,8 +36,8 @@ public class CaseSharingController {
             description = "케이스 공유 내용,사진,키워드,버전정보 포함한 전체 글 조회 ")
     @GetMapping("/{caseSharingSeq}")
     public ApiResponse<CaseSharingDetailDTO> getCaseDetail(@PathVariable("caseSharingSeq") Long caseSharingSeq) {
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        CaseSharingDetailDTO caseSharingDetailDTO = caseSharingService.getCaseSharingDetail(caseSharingSeq, userSeq);
+        String userId = SecurityUtil.getCurrentUserId();
+        CaseSharingDetailDTO caseSharingDetailDTO = caseSharingService.getCaseSharingDetail(caseSharingSeq, userId);
         return ApiResponse.ok(caseSharingDetailDTO);
     }
 
@@ -45,8 +45,8 @@ public class CaseSharingController {
             description = "파트에 따른 최신 버전 케이스 공유 글 목록 조회")
     @GetMapping("/part/{partSeq}")
     public ApiResponse<List<CaseSharingListDTO>> getCasesByPart(@PathVariable("partSeq") Long partSeq) {
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        List<CaseSharingListDTO> caseSharingList = caseSharingService.getCasesByPart(partSeq,userSeq);
+        String userId = SecurityUtil.getCurrentUserId();
+        List<CaseSharingListDTO> caseSharingList = caseSharingService.getCasesByPart(partSeq,userId);
         return ApiResponse.ok(caseSharingList);
     }
 
@@ -54,10 +54,9 @@ public class CaseSharingController {
             description = "같은 케이스 공유 그룹 글의 버전 이력 조회")
     @GetMapping("/versions/{caseSharingSeq}")
     public ApiResponse<List<CaseSharingVersionListDTO>> getCasesByGroup(@PathVariable("caseSharingSeq") Long caseSharingSeq) {
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        List<CaseSharingVersionListDTO> caseSharingVersionListDTOList = caseSharingService.getCaseVersionList(caseSharingSeq,userSeq);
+        String userId = SecurityUtil.getCurrentUserId();
+        List<CaseSharingVersionListDTO> caseSharingVersionListDTOList = caseSharingService.getCaseVersionList(caseSharingSeq,userId);
         return ApiResponse.ok(caseSharingVersionListDTOList);
-
     }
 
     @Operation(summary = "케이스 공유글 등록",
@@ -65,8 +64,8 @@ public class CaseSharingController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<Long> createCaseSharing(@RequestBody CaseSharingCreateRequestDTO requestDTO) {
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        Long caseSharingSeq = caseSharingService.createCaseSharing(requestDTO,userSeq);
+        String userId = SecurityUtil.getCurrentUserId();
+        Long caseSharingSeq = caseSharingService.createCaseSharing(requestDTO,userId);
         return ApiResponse.created(caseSharingSeq);
     }
 
@@ -78,16 +77,16 @@ public class CaseSharingController {
             @PathVariable Long caseSharingSeq,
             @RequestBody CaseSharingUpdateRequestDTO requestDTO
     ) {
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        Long newVersionSeq = caseSharingService.createNewVersion(caseSharingSeq, requestDTO,userSeq);
+        String userId = SecurityUtil.getCurrentUserId();
+        Long newVersionSeq = caseSharingService.createNewVersion(caseSharingSeq, requestDTO,userId);
         return ApiResponse.created(newVersionSeq); // 새로 생성된 버전 ID 반환
     }
 
     @DeleteMapping("/{caseSharingSeq}")
     @Operation(summary = "케이스 공유글 삭제", description = "케이스 공유글을 소프트 삭제합니다.")
     public ApiResponse<Void> deleteCaseSharing(@PathVariable Long caseSharingSeq) {
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        caseSharingService.deleteCaseSharing(caseSharingSeq,userSeq);
+        String userId = SecurityUtil.getCurrentUserId();
+        caseSharingService.deleteCaseSharing(caseSharingSeq,userId);
         return ApiResponse.ok(null);
     }
 
@@ -95,16 +94,16 @@ public class CaseSharingController {
     @PostMapping("/draft")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<Long> saveDraft(@RequestBody CaseSharingCreateRequestDTO requestDTO) {
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        Long caseSharingSeq = caseSharingService.saveDraft(requestDTO, userSeq);
+        String userId = SecurityUtil.getCurrentUserId();
+        Long caseSharingSeq = caseSharingService.saveDraft(requestDTO, userId);
         return ApiResponse.created(caseSharingSeq);
     }
 
     @Operation(summary = "임시 저장 목록 조회", description = "임시 저장된 케이스 공유 글 목록을 조회합니다.")
     @GetMapping("/drafts")
     public ApiResponse<List<CaseSharingDraftListDTO>> getDrafts() {
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        List<CaseSharingDraftListDTO> drafts = caseSharingService.getDraftsByUser(userSeq);
+        String userId = SecurityUtil.getCurrentUserId();
+        List<CaseSharingDraftListDTO> drafts = caseSharingService.getDraftsByUser(userId);
         return ApiResponse.ok(drafts);
     }
 
@@ -112,8 +111,8 @@ public class CaseSharingController {
             description = "임시 저장된 케이스 공유 내용, 키워드 포함한 상세 정보를 반환합니다.(임시 저장된 글 불러오기)")
     @GetMapping("/drafts/{caseSharingSeq}")
     public ApiResponse<CaseSharingDraftDetailDTO> getDraftsDetail(@PathVariable("caseSharingSeq") Long caseSharingSeq) {
-        Long userSeq = SecurityUtil.getCurrentUserSeq(); // 현재 인증된 사용자
-        CaseSharingDraftDetailDTO draftDetailDTO = caseSharingService.getDraftDetail(caseSharingSeq, userSeq);
+        String userId = SecurityUtil.getCurrentUserId();
+        CaseSharingDraftDetailDTO draftDetailDTO = caseSharingService.getDraftDetail(caseSharingSeq, userId);
         return ApiResponse.ok(draftDetailDTO);
     }
 
@@ -123,16 +122,16 @@ public class CaseSharingController {
             @PathVariable("caseSharingSeq") Long caseSharingSeq,
             @RequestBody CaseSharingDraftUpdateDTO updateDTO
     ) {
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        Long updatedSeq = caseSharingService.updateDraft(caseSharingSeq, userSeq, updateDTO);
+        String userId = SecurityUtil.getCurrentUserId();
+        Long updatedSeq = caseSharingService.updateDraft(caseSharingSeq, userId, updateDTO);
         return ApiResponse.ok(updatedSeq);
     }
 
     @Operation(summary = "임시 저장된 케이스 공유 삭제", description = "임시 저장된 케이스 공유를 삭제합니다.")
     @DeleteMapping("/drafts/{caseSharingSeq}")
     public ApiResponse<Void> deleteDraft(@PathVariable("caseSharingSeq") Long caseSharingSeq) {
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        caseSharingService.deleteDraft(caseSharingSeq, userSeq);
+        String userId = SecurityUtil.getCurrentUserId();
+        caseSharingService.deleteDraft(caseSharingSeq, userId);
         return ApiResponse.ok(null);
     }
 
