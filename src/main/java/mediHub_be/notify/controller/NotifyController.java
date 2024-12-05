@@ -29,9 +29,7 @@ public class NotifyController {
 
     @Operation(summary = "sse 세션연결")
     @GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(
-//            @AuthenticationPrincipal UserDetails principal,
-            @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId){
+    public SseEmitter subscribe(@RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId){
 
         String userId = SecurityUtil.getCurrentUserId();
         log.info(userId);

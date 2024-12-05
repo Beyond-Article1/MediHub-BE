@@ -15,6 +15,9 @@ spring:
     username: ${db.name}
     password: ${db.password}
 
+  profiles:
+    include: aws
+
   jpa:
     hibernate:
       dialect: org.hibernate.dialect.MariaDBDialect
@@ -33,10 +36,18 @@ spring:
       uri: mongodb://${mariadb.host}:${mongodb.port}
       database: ${db.name}
 
+#    redis:
+#      host: ${db.name}
+#      port: 6379
+#      password: ${db.password}
 
   web:
     resources:
       add-mappings: false # Disable static resource mapping (For NoHandlerFoundException), 스태틱 파일을 뒤져 보는 것을 방지
+
+#logging:
+#  level:
+#    root: DEBUG
 
 token:
   expiration_time: 7200000
