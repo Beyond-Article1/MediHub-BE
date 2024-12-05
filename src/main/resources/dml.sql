@@ -1,16 +1,18 @@
--- 데이터 삭제
+-- 기존 데이터 삭제
 DELETE FROM keyword;
 DELETE FROM flag;
-DELETE FROM version;
 DELETE FROM case_sharing_comment;
 DELETE FROM case_sharing;
+
+DELETE FROM case_sharing_group;
 DELETE FROM template;
 DELETE FROM user;
 DELETE FROM part;
 DELETE FROM dept;
 
+
 INSERT INTO dept (dept_seq, dept_name) VALUES
-                                           (1, 'Cardiology'),
+                                           (1, '진료과'),
                                            (2, 'Neurology'),
                                            (3, 'Pediatrics');
 -- Part 데이터 삽입
@@ -31,7 +33,6 @@ INSERT INTO ranking (dept_seq, ranking_num, ranking_name) VALUES
                                                               (3, 2, 'Senior Pediatrician'),
                                                               (3, 3, 'Chief Pediatrician');
 
-
 -- User 데이터 삽입
 INSERT INTO user (
    user_seq,part_seq, ranking_seq, picture_seq, user_id, user_password, user_name, user_email, user_phone, user_status, user_auth
@@ -49,13 +50,23 @@ INSERT INTO template (
       (2,2, 1, 'Template 2', 'This is the content of template 2.', 'CLASS_OPEN', NOW(), NOW()),
       (3,3, 2, 'Template 3', 'This is the content of template 3.', 'PRIVATE', NOW(), NOW());
 
+-- case_sharing_group 테이블 데이터 삽입
+INSERT INTO case_sharing_group (case_sharing_group_seq, created_at, updated_at) VALUES
+                                                                                    (1, NOW(), NOW()),
+                                                                                    (2, NOW(), NOW()),
+                                                                                    (3, NOW(), NOW());
+
+
+-- case_sharing 테이블 데이터 삽입
 -- case_sharing 테이블 데이터 삽입
 INSERT INTO case_sharing (
-     case_sharing_seq, user_seq, part_seq, template_seq, case_sharing_title, case_sharing_content, created_at, updated_at
+    case_sharing_seq, case_sharing_group_seq, user_seq, part_seq, template_seq, case_sharing_title,
+    case_sharing_content, case_sharing_is_latest, case_sharing_is_draft, created_at, updated_at
 ) VALUES
-      (1,1, 1, 1, 'Case Study 1', 'This is the content for case study 1.',  NOW(), NOW()),
-      (2,2, 1, 2, 'Case Study 2', 'This is the content for case study 2.', NOW(), NOW()),
-      (3, 3, 2, 3, 'Case Study 3', 'This is the content for case study 3.', NOW(), NOW());
+      (1, 1, 1, 1, 1, 'Case Study 1', 'This is the content for case study 1.', TRUE, FALSE, NOW(), NOW()),
+      (2, 2, 2, 1, 2, 'Case Study 2', 'This is the content for case study 2.', TRUE, FALSE, NOW(), NOW()),
+      (3, 3, 3, 2, 3, 'Case Study 3', 'This is the content for case study 3.', FALSE, FALSE, NOW(), NOW()),
+      (4, 3, 3, 2, 3, 'Case Study 4', 'This is the content for case study 4.', TRUE, FALSE, NOW(), NOW());
 
 -- case_sharing_comment 테이블 데이터 삽입
 INSERT INTO case_sharing_comment (
@@ -65,14 +76,6 @@ INSERT INTO case_sharing_comment (
       (2, 2, 'This is a comment on case study 2.', 20, 60, NOW(), NOW()),
       (3, 1, 'Another comment on case study 1.', 30, 70, NOW(), NOW());
 
--- version 테이블 데이터 삽입
-INSERT INTO version (
-    version_seq, case_sharing_seq, version_num, version_is_latest, created_at, updated_at
-) VALUES
-      (1, 1, 1, true, NOW(), NOW()),
-      (2, 1, 1, true, NOW(), NOW()),
-      (3, 2, 2, false, NOW(), NOW()),
-      (4, 3, 1, true, NOW(), NOW());
 
 -- flag 테이블 데이터 삽입
 INSERT INTO flag (
