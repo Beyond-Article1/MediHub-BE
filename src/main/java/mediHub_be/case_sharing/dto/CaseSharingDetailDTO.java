@@ -22,6 +22,8 @@ public class CaseSharingDetailDTO {
 
     private List<CaseSharingCommentDTO> comments; // 댓글 리스트
     private List<CaseSharingKeywordDTO> keywords; // 키워드 리스트
-    private List<VersionDTO> versions; // 버전 목록
+
+    private Long caseSharingGroupSeq; // 그룹 ID (CaseSharingGroup 정보)
+    private Boolean isLatestVersion; // 최신 버전 여부
 }
 

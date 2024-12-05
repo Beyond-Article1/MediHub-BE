@@ -7,7 +7,7 @@ server:
   
 spring:
   config:
-    import: "classpath:Application-KEY.properties"
+    import: "classpath:application-key.properties"
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
@@ -35,3 +35,7 @@ spring:
   web:
     resources:
       add-mappings: false # Disable static resource mapping (For NoHandlerFoundException), 스태틱 파일을 뒤져 보는 것을 방지
+
+token:
+  expiration_time: 7200000
+  secret: ${SECRET_KEY}

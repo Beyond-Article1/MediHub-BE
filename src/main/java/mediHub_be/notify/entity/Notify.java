@@ -20,9 +20,9 @@ public class Notify extends CreateTimeEntity {
     private Long notiSeq;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "is_read", nullable = false)
+    @Column(name = "noti_is_read", nullable = false)
     @ColumnDefault(value = "'N'")
-    private NotiReadStatus isRead;
+    private NotiReadStatus noti_isRead;
 
     @Column(name = "noti_content", nullable = false)
     private String notiContent;
@@ -45,14 +45,14 @@ public class Notify extends CreateTimeEntity {
         this.notiType = notiType;
         this.notiContent = notiContent;
         this.notiUrl = notiUrl;
-        this.isRead = isRead;
+        this.noti_isRead = isRead;
     }
 
     // === 도메인 로직 === //
 
     // 알림 읽음
     public void notiRead(){
-        this.isRead = NotiReadStatus.Y;
+        this.noti_isRead = NotiReadStatus.Y;
     }
 
 }

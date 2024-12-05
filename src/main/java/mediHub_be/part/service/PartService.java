@@ -1,6 +1,8 @@
 package mediHub_be.part.service;
 
 import lombok.RequiredArgsConstructor;
+import mediHub_be.dept.entity.Dept;
+import mediHub_be.dept.repository.DeptRepository;
 import mediHub_be.part.dto.PartDTO;
 import mediHub_be.part.entity.Part;
 import mediHub_be.part.repository.PartRepository;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 public class PartService {
 
     private final PartRepository partRepository;
+    private final DeptRepository deptRepository;
 
     @Transactional(readOnly = true)
     public List<PartDTO> getAllParts() {
@@ -22,7 +25,7 @@ public class PartService {
                 .stream()
                 .map(part -> PartDTO.builder()
                         .partSeq(part.getPartSeq())
-                        .deptSeq(part.getDeptSeq())
+                        .deptSeq(part.getDept().getDeptSeq()) // Dept 객체에서 ID 추출
                         .partName(part.getPartName())
                         .build())
                 .collect(Collectors.toList());
@@ -30,8 +33,12 @@ public class PartService {
 
     @Transactional
     public PartDTO createPart(PartDTO partDTO) {
+
+        Dept dept = deptRepository.findById(partDTO.getDeptSeq())
+                .orElseThrow(() -> new RuntimeException("Dept not found"));
+
         Part part = Part.builder()
-                .deptSeq(partDTO.getDeptSeq())
+                .dept(dept)
                 .partName(partDTO.getPartName())
                 .build();
 
@@ -39,7 +46,7 @@ public class PartService {
 
         return PartDTO.builder()
                 .partSeq(part.getPartSeq())
-                .deptSeq(part.getDeptSeq())
+                .deptSeq(part.getDept().getDeptSeq()) // Dept 객체에서 ID 추출
                 .partName(part.getPartName())
                 .build();
     }
@@ -49,11 +56,16 @@ public class PartService {
         Part part = partRepository.findById(partSeq)
                 .orElseThrow(() -> new RuntimeException("Part not found"));
 
-        part.updatePart(partDTO.getDeptSeq(), partDTO.getPartName());
+        // Dept 객체 조회
+        Dept dept = deptRepository.findById(partDTO.getDeptSeq())
+                .orElseThrow(() -> new RuntimeException("Dept not found"));
+
+        // Part 업데이트
+        part.updatePart(dept, partDTO.getPartName());
 
         return PartDTO.builder()
                 .partSeq(part.getPartSeq())
-                .deptSeq(part.getDeptSeq())
+                .deptSeq(part.getDept().getDeptSeq()) // Dept 객체에서 ID 추출
                 .partName(part.getPartName())
                 .build();
     }
