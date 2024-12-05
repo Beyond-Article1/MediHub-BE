@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.Util.ViewCountManager;
 import mediHub_be.board.entity.Flag;
+import mediHub_be.board.repository.FlagRepository;
+import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.KeywordService;
 import mediHub_be.case_sharing.dto.*;
 import mediHub_be.case_sharing.entity.CaseSharing;
@@ -39,6 +41,8 @@ public class CaseSharingService {
     private final TemplateRepository templateRepository;
     private final KeywordService keywordService;
     private final ViewCountManager viewCountManager;
+    private final FlagRepository flagRepository;
+    private final BookmarkService bookmarkService;
 
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
@@ -163,12 +167,18 @@ public class CaseSharingService {
         );
         caseSharingRepository.save(caseSharing);
 
+        Flag flag = Flag.builder()
+                .flagBoardFlag("CASE_SHARING") // 게시판 구분
+                .flagPostSeq(caseSharing.getCaseSharingSeq()) // 게시글 ID
+                .build();
+
+        flagRepository.save(flag); // Flag 저장
+
         // 키워드 저장
         if (requestDTO.getKeywords() != null && !requestDTO.getKeywords().isEmpty()) {
             keywordService.saveKeywords(
                     requestDTO.getKeywords(), // 키워드 리스트
-                    "CASE_SHARING",          // 게시판 플래그
-                    caseSharing.getCaseSharingSeq() // 저장된 케이스 공유 ID
+                    flag.getFlagSeq()
             );
         }
 
@@ -207,11 +217,18 @@ public class CaseSharingService {
         caseSharingRepository.save(newCaseSharing);
 
         // 새 키워드 저장
+        Flag flag = Flag.builder()
+                .flagBoardFlag("CASE_SHARING") // 게시판 구분
+                .flagPostSeq(newCaseSharing.getCaseSharingSeq()) // 게시글 ID
+                .build();
+
+        flagRepository.save(flag); // Flag 저장
+
+        // 키워드 저장
         if (requestDTO.getKeywords() != null && !requestDTO.getKeywords().isEmpty()) {
             keywordService.saveKeywords(
-                    requestDTO.getKeywords(),
-                    "CASE_SHARING",
-                    newCaseSharing.getCaseSharingSeq() // 새 CaseSharing의 ID 사용
+                    requestDTO.getKeywords(), // 키워드 리스트
+                    flag.getFlagSeq()
             );
         }
 
@@ -338,11 +355,18 @@ public class CaseSharingService {
         caseSharingRepository.save(caseSharing);
 
         // 키워드 저장
+        Flag flag = Flag.builder()
+                .flagBoardFlag("CASE_SHARING") // 게시판 구분
+                .flagPostSeq(caseSharing.getCaseSharingSeq()) // 게시글 ID
+                .build();
+
+        flagRepository.save(flag); // Flag 저장
+
+        // 키워드 저장
         if (requestDTO.getKeywords() != null && !requestDTO.getKeywords().isEmpty()) {
             keywordService.saveKeywords(
                     requestDTO.getKeywords(), // 키워드 리스트
-                    "CASE_SHARING",          // 게시판 플래그
-                    caseSharing.getCaseSharingSeq() // 저장된 케이스 공유 ID
+                    flag.getFlagSeq()
             );
         }
 
@@ -428,5 +452,11 @@ public class CaseSharingService {
 
         // 4. 임시 저장 데이터 삭제
         caseSharingRepository.delete(draft);
+    }
+
+    // 북마크 설정/해제
+    @Transactional
+    public boolean toggleBookmark(Long caseSharingSeq, String userId) {
+        return bookmarkService.toggleBookmark("CASE_SHARING", caseSharingSeq, userId);
     }
 }

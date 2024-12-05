@@ -11,7 +11,6 @@ public class ViewCountManager {
 
     private static final String COOKIE_NAME ="viewPosts";
 
-
     public boolean shouldIncreaseViewCount(Long postId, HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cookies = request.getCookies();
         if(cookies != null) {
@@ -41,7 +40,5 @@ public class ViewCountManager {
         response.addCookie(newCookie); //클라이언트로 쿠키 전송
 
         return true;
-
     }
-
 }
