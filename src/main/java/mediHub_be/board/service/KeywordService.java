@@ -21,14 +21,28 @@ public class KeywordService {
         // Flag 저장
         Flag flag = flagService.saveFlag(boardFlag, postSeq);
 
-        // Keyword 저장
+        // Keyword 저장 : flag에 받은 값 저장 후 keyword 저장
         for (String keywordName : keywords) {
             Keyword keyword = Keyword.builder()
                     .flagSeq(flag.getFlagSeq()) // 저장된 Flag의 ID를 참조
                     .keywordName(keywordName)
-                    .keywordPostSeq(postSeq)
                     .build();
             keywordRepository.save(keyword);
         }
+    }
+
+    @Transactional
+    public void deleteKeywords(String boardFlag, Long postSeq) {
+        // 키워드 삭제
+        keywordRepository.deleteByBoardFlagAndPostSeq(boardFlag, postSeq);
+    }
+
+    @Transactional
+    public void updateKeywords(List<String> keywords, String boardFlag, Long postSeq) {
+        // 기존 키워드 삭제
+        deleteKeywords(boardFlag, postSeq);
+
+        // 새 키워드 저장
+        saveKeywords(keywords, boardFlag, postSeq);
     }
 }

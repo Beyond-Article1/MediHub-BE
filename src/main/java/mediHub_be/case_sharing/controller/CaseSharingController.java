@@ -37,7 +37,6 @@ public class CaseSharingController {
     @GetMapping("/{caseSharingSeq}")
     public ApiResponse<CaseSharingDetailDTO> getCaseDetail(@PathVariable("caseSharingSeq") Long caseSharingSeq) {
         Long userSeq = SecurityUtil.getCurrentUserSeq();
-        log.info("내정보"+userSeq);
         CaseSharingDetailDTO caseSharingDetailDTO = caseSharingService.getCaseSharingDetail(caseSharingSeq, userSeq);
         return ApiResponse.ok(caseSharingDetailDTO);
     }
@@ -108,6 +107,27 @@ public class CaseSharingController {
         List<CaseSharingDraftListDTO> drafts = caseSharingService.getDraftsByUser(userSeq);
         return ApiResponse.ok(drafts);
     }
+
+    @Operation(summary = "임시 저장 내용 상세 조회",
+            description = "임시 저장된 케이스 공유 내용, 키워드 포함한 상세 정보를 반환합니다.(임시 저장된 글 불러오기)")
+    @GetMapping("/drafts/{caseSharingSeq}")
+    public ApiResponse<CaseSharingDraftDetailDTO> getDraftsDetail(@PathVariable("caseSharingSeq") Long caseSharingSeq) {
+        Long userSeq = SecurityUtil.getCurrentUserSeq(); // 현재 인증된 사용자
+        CaseSharingDraftDetailDTO draftDetailDTO = caseSharingService.getDraftDetail(caseSharingSeq, userSeq);
+        return ApiResponse.ok(draftDetailDTO);
+    }
+
+    @Operation(summary = "임시 저장 내용 수정", description = "임시 저장 글의 제목과 내용, keyword등을 수정합니다.")
+    @PutMapping("/drafts/{caseSharingSeq}")
+    public ApiResponse<Long> updateDraft(
+            @PathVariable("caseSharingSeq") Long caseSharingSeq,
+            @RequestBody CaseSharingDraftUpdateDTO updateDTO
+    ) {
+        Long userSeq = SecurityUtil.getCurrentUserSeq(); // 현재 사용자 ID
+        Long updatedSeq = caseSharingService.updateDraft(caseSharingSeq, userSeq, updateDTO);
+        return ApiResponse.ok(updatedSeq);
+    }
+
 
 
 

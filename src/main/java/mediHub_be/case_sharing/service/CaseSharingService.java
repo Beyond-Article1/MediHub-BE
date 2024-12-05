@@ -333,4 +333,52 @@ public class CaseSharingService {
                 ))
                 .toList();
     }
+
+    // 9. 임시저장 된 케이스공유 상세 조회(불러오기)
+    public CaseSharingDraftDetailDTO getDraftDetail(Long caseSharingSeq, Long userSeq) {
+        // 게시글 정보 조회
+        CaseSharing caseSharing = caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrue(caseSharingSeq)
+                .orElseThrow(() -> new IllegalArgumentException("해당 임시 저장 글을 찾을 수 없습니다."));
+
+        if (caseSharing.getUser().getUserSeq() != userSeq) {
+            throw new IllegalArgumentException("본인이 작성한 임시 저장 글만 조회할 수 있습니다.");
+        }
+
+        List<Keyword> keywords = keywordRepository.findByBoardFlagAndPostSeq("CASE_SHARING", caseSharingSeq);
+        List<CaseSharingKeywordDTO> keywordDTOs = keywords.stream()
+                .map(keyword -> new CaseSharingKeywordDTO(
+                        keyword.getKeywordSeq(),
+                        keyword.getKeywordName()
+                ))
+                .toList();
+
+        return CaseSharingDraftDetailDTO.builder()
+                .caseSharingSeq(caseSharing.getCaseSharingSeq()) // 게시글 ID
+                .caseSharingTitle(caseSharing.getCaseSharingTitle()) // 제목
+                .caseSharingContent(caseSharing.getCaseSharingContent()) // 본문 내용
+                .keywords(keywordDTOs) // 키워드 리스트
+                .caseSharingGroupSeq(caseSharing.getCaseSharingGroup().getCaseSharingGroupSeq()) // 그룹 ID
+                .build();
+    }
+
+
+    public Long updateDraft(Long caseSharingSeq, Long userSeq, CaseSharingDraftUpdateDTO requestDTO) {
+        // 1. 해당 임시 저장 데이터 조회
+        CaseSharing draft = caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrue(caseSharingSeq)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 임시 저장 데이터입니다."));
+
+        // 2. 작성자 검증
+        if (draft.getUser().getUserSeq() != userSeq) {
+            throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
+        }
+
+        // 3. 제목 및 내용 업데이트
+        draft.updateContent(requestDTO.getCaseSharingTitle(), requestDTO.getCaseSharingContent());
+        caseSharingRepository.save(draft);
+
+        // 4. 키워드 수정
+        keywordService.updateKeywords(requestDTO.getKeywords(), "CASE_SHARING", caseSharingSeq);
+
+        return draft.getCaseSharingSeq();
+    }
 }
