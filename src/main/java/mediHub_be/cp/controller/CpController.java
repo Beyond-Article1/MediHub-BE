@@ -207,7 +207,7 @@ public class CpController {
     }
 
     // CP 의견 생성
-// https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}
+    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}
     @PostMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}")
     public ResponseEntity<ApiResponse<CpOpinionDTO>> createCpOpinion(
             @PathVariable long cpVersionSeq,
