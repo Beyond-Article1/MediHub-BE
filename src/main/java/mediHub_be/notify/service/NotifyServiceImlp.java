@@ -30,7 +30,6 @@ public class NotifyServiceImlp implements NotifyService{
 
     private final SseRepositoryImpl sseRepository;
     private final NotifyRepository notifyRepository;
-    private final UserRepository userRepository;
 
     public SseEmitter subscribe(String userId, String lastEventId) {
 

@@ -19,22 +19,17 @@ public class KeywordService {
 
     // 키워드 저장
     @Transactional
-    public void saveKeywords(
-            List<String> keywords,
-            String boardFlag,
-            Long postSeq) {
-        // Flag 가져오기 (이미 존재하지 않으면 새로 생성)
-        Flag flag = flagService.saveFlag(boardFlag, postSeq);
-
+    public void saveKeywords(List<String> keywords, Long flagSeq) {
         // Keyword 저장
         for (String keywordName : keywords) {
             Keyword keyword = Keyword.builder()
-                    .flagSeq(flag.getFlagSeq()) // Flag의 ID 참조
+                    .flagSeq(flagSeq)
                     .keywordName(keywordName)
                     .build();
             keywordRepository.save(keyword);
         }
     }
+
 
     // 키워드 수정
     @Transactional
