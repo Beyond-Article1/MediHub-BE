@@ -94,16 +94,38 @@ public class CpOpinionService {
      *
      * @param responseCpOpinionDtoList CP 의견 DTO 리스트
      * @throws DataAccessException 데이터베이스 접근 중 오류가 발생한 경우
-     * @throws CustomException 사용자 정의 예외가 발생한 경우
-     * @throws RuntimeException 기타 예기치 않은 오류가 발생한 경우
+     * @throws CustomException     사용자 정의 예외가 발생한 경우
+     * @throws RuntimeException    기타 예기치 않은 오류가 발생한 경우
      */
     @Transactional(readOnly = true)
     public void setKeywordListForCpOpinions(List<ResponseCpOpinionDTO> responseCpOpinionDtoList) {
         try {
-            responseCpOpinionDtoList.forEach(dto -> {
-                // 각 CP 의견 DTO에 키워드 목록을 설정
-                dto.setKeywordList(keywordRepository.findByBoardFlagAndPostSeq(FlagService.CP_OPINION_BOARD_FLAG, dto.getCpOpinionSeq()));
-            });
+            responseCpOpinionDtoList.forEach(this::setKeywordForCpOpinion);
+        } catch (DataAccessException e) {
+            logger.error("데이터베이스 접근 오류: {}", e.getMessage());
+            throw e;
+        } catch (CustomException e) {
+            logger.error("사용자 정의 예외 발생: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logger.error("예기치 못한 오류 발생: {}", e.getMessage());
+            throw new RuntimeException("예기치 못한 오류가 발생했습니다.", e);
+        }
+    }
+
+    /**
+     * 주어진 CP 의견 DTO에 대해 키워드 목록을 설정합니다.
+     *
+     * @param dto 설정할 CP 의견 DTO
+     * @throws DataAccessException 데이터베이스 접근 중 오류가 발생한 경우
+     * @throws CustomException     사용자 정의 예외가 발생한 경우
+     * @throws RuntimeException    기타 예기치 않은 오류가 발생한 경우
+     */
+    @Transactional(readOnly = true)
+    public void setKeywordForCpOpinion(ResponseCpOpinionDTO dto) {
+        try {
+            // CP 의견 DTO에 키워드 목록을 설정
+            dto.setKeywordList(keywordRepository.findByBoardFlagAndPostSeq(FlagService.CP_OPINION_BOARD_FLAG, dto.getCpOpinionSeq()));
         } catch (DataAccessException e) {
             // 데이터 접근 예외 발생 시 로그 남기기
             logger.error("데이터베이스 접근 오류: {}", e.getMessage());
@@ -138,13 +160,20 @@ public class CpOpinionService {
             throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
         }
 
+        // 키워드 조회
+        logger.info("CP 의견 번호: {}에 대한 키워드 목록을 조회합니다.", cpOpinionSeq);
+        setKeywordForCpOpinion(result);
+
         if (result.getDeletedAt() == null) {
+            // 활성 상태
             logger.info("CP 의견 번호: {}는 활성 상태입니다.", cpOpinionSeq);
             incrementViewCount(cpOpinionSeq); // 조회수 증가 메서드 호출
+            logger.info("CP 의견 번호: {}의 조회수가 증가했습니다.", cpOpinionSeq);
             return result;
         } else {
+            // 삭제 상태
             logger.info("CP 의견 번호: {}는 삭제된 상태입니다.", cpOpinionSeq);
-            if (SecurityUtil.getCurrentUserAuthorities().equals(UserAuth.ADMIN)) {
+            if (isAdminUser()) {
                 logger.info("관리자 권한으로 CP 의견 번호: {}를 조회합니다.", cpOpinionSeq);
                 return result;
             } else {
@@ -153,6 +182,18 @@ public class CpOpinionService {
             }
         }
     }
+
+    /**
+     * 현재 사용자가 관리자 권한을 가지고 있는지 확인합니다.
+     *
+     * @return 관리자 권한 여부
+     */
+    private boolean isAdminUser() {
+        boolean isAdmin = SecurityUtil.getCurrentUserAuthorities().equals(UserAuth.ADMIN);
+        logger.info("현재 사용자는 관리자 권한: {}", isAdmin);
+        return isAdmin;
+    }
+
 
     /**
      * 주어진 CP 의견의 조회 수를 증가시킵니다.
@@ -206,7 +247,7 @@ public class CpOpinionService {
         logger.info("CP 의견 DTO로 변환 중: {}", cpOpinion);
         cpOpinionDTO = CpOpinionDTO.toDto(cpOpinion);
 
-        // 키워드 등록ㅎ
+        // 키워드 등록
         if (requestBody.getKeywordList() != null && !requestBody.getKeywordList().isEmpty()) {
             keywordService.saveKeywords(
                     requestBody.getKeywordList(),
@@ -319,7 +360,6 @@ public class CpOpinionService {
         // Entity -> DTO 변환
         return CpOpinionDTO.toDto(cpOpinion); // 업데이트된 CP 의견의 DTO를 반환
     }
-
 
     /**
      * 주어진 CP 의견 ID의 유효성을 검사합니다.
