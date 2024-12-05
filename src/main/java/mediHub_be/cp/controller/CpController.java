@@ -260,7 +260,7 @@ public class CpController {
     }
 
     // CP 의견 수정
-// https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
+    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
     @PutMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
     public ResponseEntity<ApiResponse<CpOpinionDTO>> updateCpOpinion(
             @PathVariable long cpVersionSeq,
