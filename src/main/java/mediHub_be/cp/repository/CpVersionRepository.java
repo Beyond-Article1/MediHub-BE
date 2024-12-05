@@ -24,7 +24,7 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "u.userId AS userId, " +
             "p.partName AS partName)" +
             "FROM CpVersion AS cv " +
-            "JOIN Cp AS≠ cp ON cv.cpSeq = cp.cpSeq " +
+            "JOIN Cp AS cp ON cv.cpSeq = cp.cpSeq " +
             "JOIN CpSearchData AS csd ON cv.cpVersionSeq = csd.cpVersionSeq " +
             "JOIN CpSearchCategoryData AS cscd ON csd.cpSearchCategoryDataSeq = cscd.cpSearchCategoryDataSeq " +
             "JOIN User AS u ON cv.userSeq = u.userSeq " +
