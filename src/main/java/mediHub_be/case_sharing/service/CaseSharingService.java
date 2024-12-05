@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -318,6 +319,15 @@ public class CaseSharingService {
         );
         caseSharingRepository.save(caseSharing);
 
+        // 키워드 저장
+        if (requestDTO.getKeywords() != null && !requestDTO.getKeywords().isEmpty()) {
+            keywordService.saveKeywords(
+                    requestDTO.getKeywords(), // 키워드 리스트
+                    "CASE_SHARING",          // 게시판 플래그
+                    caseSharing.getCaseSharingSeq() // 저장된 케이스 공유 ID
+            );
+        }
+
         return caseSharing.getCaseSharingSeq();
     }
 
@@ -341,7 +351,7 @@ public class CaseSharingService {
         CaseSharing caseSharing = caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrue(caseSharingSeq)
                 .orElseThrow(() -> new IllegalArgumentException("해당 임시 저장 글을 찾을 수 없습니다."));
 
-        if (caseSharing.getUser().getUserId() != userId) {
+        if (!Objects.equals(caseSharing.getUser().getUserId(), userId)) {
             throw new IllegalArgumentException("본인이 작성한 임시 저장 글만 조회할 수 있습니다.");
         }
 
@@ -369,7 +379,7 @@ public class CaseSharingService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 임시 저장 데이터입니다."));
 
         // 2. 작성자 검증
-        if (draft.getUser().getUserId() != userId) {
+        if (!Objects.equals(draft.getUser().getUserId(), userId)) {
             throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
         }
 
@@ -390,7 +400,7 @@ public class CaseSharingService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 임시 저장 데이터입니다."));
 
         // 2. 작성자 검증
-        if (draft.getUser().getUserId() != userId) {
+        if (!Objects.equals(draft.getUser().getUserId(), userId)) {
             throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
         }
 
