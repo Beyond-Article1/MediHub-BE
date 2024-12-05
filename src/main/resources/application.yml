@@ -28,9 +28,11 @@ spring:
         format_sql: true
 
   # MongoDB 설정
-#  data:
-#    mongodb:
-#      uri: mongodb://${db.username}:${db.password}@mongodb_boot:${mongodb.port}
+  data:
+    mongodb:
+      uri: mongodb://${mariadb.host}:${mongodb.port}
+      database: ${db.name}
+
 
   web:
     resources:

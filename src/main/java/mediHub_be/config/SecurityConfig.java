@@ -42,6 +42,7 @@ public class SecurityConfig {
         /* CSRF 비활성화 및 요청 경로 권한 설정 */
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
+                                .requestMatchers("/**").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/v1/user/login", "POST")).permitAll() // 로그인 API 허용
 //                        .requestMatchers(new AntPathRequestMatcher("/api/**")).permitAll() // 로그인 API 허용
                         .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
@@ -49,7 +50,7 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/case_sharing/**")).permitAll()
-                        .anyRequest().authenticated() // 그 외 요청은 인증 필요
+//                        .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 )
                 /* 세션 정책 설정 (Stateless) */
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

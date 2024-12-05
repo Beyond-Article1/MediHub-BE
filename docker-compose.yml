@@ -32,11 +32,12 @@ services:
 
   mongodb:
     image: mongo:latest
-    container_name: mongodb_boot
+    container_name: mongodb
     restart: always
     ports:
       - "27017:27017"
     environment:
+      MONGO_INITDB_DATABASE: ${DB_DATABASE}
       MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
 
