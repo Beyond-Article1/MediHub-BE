@@ -16,6 +16,7 @@ public class CpOpinionDTO {
     private Long cpOpinionLocationSeq;      // cp 의견 위치 번호
     private String cpOpinionContent;        // cp 의견 내용
     private Long cpOpinionViewCount;        // 조회수
+    private Long keywordSeq;                // 키워드 번호
     private LocalDateTime createdAt;        // 생성일
     private LocalDateTime updatedAt;        // 수정일
     private LocalDateTime deletedAt;        // 삭제일
@@ -29,6 +30,7 @@ public class CpOpinionDTO {
                 .cpOpinionLocationSeq(cpOpinionLocationSeq)
                 .cpOpinionContent(requestBody.getCpOpinionContent())
                 .cpOpinionViewCount(0L)
+                .keywordSeq(null)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(null)
                 .deletedAt(null)
@@ -42,6 +44,7 @@ public class CpOpinionDTO {
                 .cpOpinionLocationSeq(cpOpinion.getCpOpinionLocationSeq())
                 .cpOpinionContent(cpOpinion.getCpOpinionContent())
                 .cpOpinionViewCount(cpOpinion.getCpOpinionViewCount())
+                .keywordSeq(cpOpinion.getKeywordSeq())
                 .createdAt(cpOpinion.getCreatedAt())
                 .updatedAt(cpOpinion.getUpdatedAt())
                 .deletedAt(cpOpinion.getDeletedAt())
