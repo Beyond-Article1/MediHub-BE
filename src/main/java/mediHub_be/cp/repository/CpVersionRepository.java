@@ -54,18 +54,18 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "WHERE cp.cpName LIKE CONCAT('%', :cpName, '%')")
     List<Map<String, Object>> findByCpNameContainingIgnoreCase(@Param("cpName") String cpName);
 
-    @Query("SELECT new map(" +
-            "cp.cpName as cpName, " +
-            "cp.cpDescription as cpDescription, " +
-            "cp.cpViewCount as cpViewCount, " +
-            "cv.cpVersion as cpVersion, " +
-            "cv.cpVersionDescription as cpVersionDescription, " +
-            "cv.createdAt as createdAt, " +
-            "u.userName as userName, " +
-            "u.userId as userId, " +
-            "p.partName as partName)" +
+    @Query("SELECT new mediHub_be.cp.dto.ResponseCpDTO(" +
+            "cp.cpName, " +
+            "cp.cpDescription, " +
+            "cp.cpViewCount, " +
+            "cv.cpVersion, " +
+            "cv.cpVersionDescription, " +
+            "cv.createdAt, " +
+            "u.userName, " +
+            "u.userId, " +
+            "p.partName)" +
             "FROM CpVersion AS cv " +
-            "JOIN Cp as cp ON cv.cpSeq = cp.cpSeq " +
+            "JOIN Cp AS cp ON cv.cpSeq = cp.cpSeq " +
             "JOIN CpSearchData AS csd ON cv.cpVersionSeq = csd.cpVersionSeq " +
             "JOIN CpSearchCategoryData AS cscd ON csd.cpSearchCategoryDataSeq = cscd.cpSearchCategoryDataSeq " +
             "JOIN User AS u ON cv.userSeq = u.userSeq " +
