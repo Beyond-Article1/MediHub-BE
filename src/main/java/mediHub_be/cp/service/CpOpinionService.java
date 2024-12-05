@@ -2,6 +2,9 @@ package mediHub_be.cp.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.repository.KeywordRepository;
+import mediHub_be.board.service.FlagService;
+import mediHub_be.board.service.KeywordService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.CpOpinionDTO;
@@ -24,10 +27,14 @@ import java.util.List;
 @Slf4j
 public class CpOpinionService {
 
+    // Service
+    private final KeywordService keywordService;
+
     // Repository
     private final CpOpinionRepository cpOpinionRepository;
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpOpinionService");    // Logger
+    private final KeywordRepository keywordRepository;
 
     /**
      * 주어진 CP 버전 번호와 CP 의견 위치 번호에 따라 CP 의견 목록을 조회합니다.
@@ -46,26 +53,62 @@ public class CpOpinionService {
 
         logger.info("CP 버전 번호: {}의 CP 의견 위치 번호: {}로 조회 요청했습니다.", cpVersionSeq, cpOpinionLocationSeq);
 
-        List<ResponseCpOpinionDTO> result;
+        List<ResponseCpOpinionDTO> responseCpOpinionDtoList;
 
-        // DB 조회
-        if (isDeleted) {
-            logger.info("삭제된 의견을 조회합니다.");
-            result = cpOpinionRepository.findByCpOpinionLocationSeqAndDeletedAtIsNotNull(cpOpinionLocationSeq);
-        } else {
-            logger.info("활성 상태의 의견을 조회합니다.");
-            result = cpOpinionRepository.findByCpOpinionLocationSeqAndDeletedAtIsNull(cpOpinionLocationSeq);
+        try {
+            // DB 조회
+            if (isDeleted) {
+                logger.info("삭제된 CP 의견을 조회합니다.");
+                responseCpOpinionDtoList = cpOpinionRepository.findByCpOpinionLocationSeqAndDeletedAtIsNotNull(cpOpinionLocationSeq);
+            } else {
+                logger.info("활성 상태의 CP 의견을 조회합니다.");
+                responseCpOpinionDtoList = cpOpinionRepository.findByCpOpinionLocationSeqAndDeletedAtIsNull(cpOpinionLocationSeq);
+            }
+
+            // 키워드 목록 설정
+            setKeywordListForCpOpinions(responseCpOpinionDtoList);
+
+            // 결과 확인
+            if (responseCpOpinionDtoList.isEmpty()) {
+                logger.warn("조회된 CP 의견이 없습니다. CP 버전 번호: {}, CP 의견 위치 번호: {}", cpVersionSeq, cpOpinionLocationSeq);
+                throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
+            } else {
+                logger.info("조회된 CP 의견의 수: {}", responseCpOpinionDtoList.size());
+            }
+
+            return responseCpOpinionDtoList;
+        } catch (CustomException e) {
+            logger.error("사용자 정의 예외 발생: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        } catch (DataAccessException e) {
+            logger.error("데이터베이스 접근 오류: {}", e.getMessage());
+            throw new RuntimeException("데이터베이스 접근 오류가 발생했습니다.", e);
+        } catch (Exception e) {
+            logger.error("예기치 못한 오류 발생: {}", e.getMessage());
+            throw new RuntimeException("예기치 못한 오류가 발생했습니다.", e);
         }
+    }
 
-        // 결과 확인
-        if (result == null || result.isEmpty()) {
-            logger.warn("조회된 CP 의견이 없습니다. CP 버전 번호: {}, CP 의견 위치 번호: {}", cpVersionSeq, cpOpinionLocationSeq);
-            throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
-        } else {
-            logger.info("조회된 CP 의견의 수: {}", result.size());
+    @Transactional(readOnly = true)
+    public void setKeywordListForCpOpinions(List<ResponseCpOpinionDTO> responseCpOpinionDtoList) {
+        try {
+            responseCpOpinionDtoList.forEach(dto -> {
+                // 각 CP 의견 DTO에 키워드 목록을 설정
+                dto.setKeywordList(keywordRepository.findByBoardFlagAndPostSeq(FlagService.CP_OPINION_BOARD_FLAG, dto.getCpOpinionSeq()));
+            });
+        } catch (DataAccessException e) {
+            // 데이터 접근 예외 발생 시 로그 남기기
+            logger.error("데이터베이스 접근 오류: {}", e.getMessage());
+            throw e; // 필요에 따라 다시 던질 수 있음
+        } catch (CustomException e) {
+            // 사용자 정의 예외 발생 시 로그 남기기
+            logger.error("사용자 정의 예외 발생: {}", e.getMessage());
+            throw e; // 필요에 따라 다시 던질 수 있음
+        } catch (Exception e) {
+            // 일반 예외 발생 시 로그 남기기
+            logger.error("예기치 못한 오류 발생: {}", e.getMessage());
+            throw new RuntimeException("예기치 못한 오류가 발생했습니다.", e); // 새로운 런타임 예외로 감싸서 던짐
         }
-
-        return result;
     }
 
     /**
@@ -155,6 +198,14 @@ public class CpOpinionService {
         logger.info("CP 의견 DTO로 변환 중: {}", cpOpinion);
         cpOpinionDTO = CpOpinionDTO.toDto(cpOpinion);
 
+        // 키워드 등록ㅎ
+        if (requestBody.getKeywordList() != null && !requestBody.getKeywordList().isEmpty()) {
+            keywordService.saveKeywords(
+                    requestBody.getKeywordList(),
+                    FlagService.CP_OPINION_BOARD_FLAG,
+                    cpOpinion.getCpOpinionSeq());
+        }
+
         return cpOpinionDTO;
     }
 
@@ -170,12 +221,50 @@ public class CpOpinionService {
         validateCpOpinionSeq(cpOpinionSeq);
 
         try {
+            // CP 의견 조회 및 작성자 확인
+            CpOpinion cpOpinion = getCpOpinionAndCheckUnauthorizedAccess(cpOpinionSeq);
+
+            // CP 의견 삭제
             cpOpinionRepository.deleteById(cpOpinionSeq);
             logger.info("CP 의견이 성공적으로 삭제되었습니다. cpOpinionSeq: {}", cpOpinionSeq);
+
+            // 키워드 삭제
+            keywordService.deleteKeywords(FlagService.CP_OPINION_BOARD_FLAG, cpOpinion.getCpOpinionSeq());
         } catch (DataAccessException e) {
             logger.error("데이터베이스 삭제 중 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
         }
+    }
+
+    /**
+     * 주어진 CP 의견 ID에 대한 접근 권한을 확인하고,
+     * 해당 CP 의견을 반환합니다.
+     *
+     * @param cpOpinionSeq 확인할 CP 의견의 ID
+     * @return CP 의견 객체
+     * @throws CustomException - NOT_FOUND_CP_OPINION: 주어진 ID에 해당하는 CP 의견이 존재하지 않을 경우
+     *                         - UNAUTHORIZED_USER: 현재 사용자 ID가 null이거나,
+     *                         요청된 CP 의견의 작성자와 현재 사용자가 일치하지 않을 경우
+     */
+    @Transactional(readOnly = true)
+    public CpOpinion getCpOpinionAndCheckUnauthorizedAccess(long cpOpinionSeq) {
+
+        // DB에서 데이터 조회
+        CpOpinion cpOpinion = cpOpinionRepository.findById(cpOpinionSeq)
+                .orElseThrow(() -> {
+                    logger.warn("조회된 CP 의견이 없습니다. CP 의견 번호: {}", cpOpinionSeq);
+                    throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION); // 의견이 존재하지 않을 경우 예외 발생
+                });
+
+        // 로그인 유저 번호
+        Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
+
+        // 작성자 확인
+        if (currentUserSeq == null || !currentUserSeq.equals(cpOpinion.getUserSeq())) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+        }
+
+        return cpOpinion;
     }
 
     /**
@@ -192,20 +281,20 @@ public class CpOpinionService {
         validateCpOpinionSeq(cpOpinionSeq); // CP 의견 ID 유효성 검사
         validateRequestCpOpinion(requestBody); // 요청 본문 유효성 검사
 
-        // DB에서 현재 CP 의견 조회
-        CpOpinion cpOpinion = cpOpinionRepository.findById(cpOpinionSeq)
-                .orElseThrow(() -> {
-                    logger.warn("조회된 CP 의견이 없습니다. CP 의견 번호: {}", cpOpinionSeq);
-                    return new CustomException(ErrorCode.NOT_FOUND_CP_OPINION); // 의견이 존재하지 않을 경우 예외 발생
-                });
+        // DB에서 현재 CP 의견 조회 및 작성자 확인
+        CpOpinion cpOpinion = getCpOpinionAndCheckUnauthorizedAccess(cpOpinionSeq);
 
         // 요청 본문으로부터 CP 의견 내용 업데이트
         if (requestBody.getCpOpinionContent() != null) {
             cpOpinion.editCpOpinionContent(requestBody.getCpOpinionContent()); // 의견 내용을 업데이트
         }
 
+        // 키워드 업데이트
         if (requestBody.getKeywordList() != null) {
-            // 키워드 업데이트 로직을 구현해야 합니다.
+            keywordService.updateKeywords(
+                    requestBody.getKeywordList(),
+                    FlagService.CP_OPINION_BOARD_FLAG,
+                    cpOpinion.getCpOpinionSeq());
         }
 
         try {
@@ -214,7 +303,9 @@ public class CpOpinionService {
             logger.info("CP 의견이 성공적으로 업데이트되었습니다. cpOpinionSeq: {}", cpOpinionSeq);
         } catch (DataAccessException e) {
             logger.error("데이터베이스 업데이트 중 오류 발생: {}", e.getMessage());
-            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR); // 데이터베이스 오류 발생 시 예외 처리
+            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
 
         // Entity -> DTO 변환
