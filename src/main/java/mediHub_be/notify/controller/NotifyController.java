@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.notify.entity.NotiType;
 import mediHub_be.notify.service.NotifyService;
+import mediHub_be.notify.service.NotifyServiceImlp;
 import mediHub_be.security.util.SecurityUtil;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Tag(name = "SSE 연결", description = "SSE 연결")
 public class NotifyController {
 
-    private final NotifyService notifyService;
+    private final NotifyServiceImlp notifyService;
 
     @Operation(summary = "sse 세션연결")
     @GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
