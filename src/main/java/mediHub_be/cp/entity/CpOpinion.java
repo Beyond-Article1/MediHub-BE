@@ -3,7 +3,6 @@ package mediHub_be.cp.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
-import mediHub_be.user.entity.User;
 
 @Entity
 @Table(name = "cp_opinion")
