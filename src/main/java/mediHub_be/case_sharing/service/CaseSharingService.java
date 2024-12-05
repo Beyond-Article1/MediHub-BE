@@ -37,7 +37,7 @@ public class CaseSharingService {
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
     public List<CaseSharingListDTO> getCaseList() {
-        return caseSharingRepository.findAllLatestVersions().stream()
+        return caseSharingRepository.findAllLatestVersionsNotDraft().stream()
                 .map(caseSharing -> {
                     User author = caseSharing.getUser();
                     return new CaseSharingListDTO(
@@ -220,10 +220,10 @@ public class CaseSharingService {
 
             // 바로 이전 버전을 최신으로 설정
             CaseSharing previousVersion = caseSharingRepository
-                    .findTopByCaseSharingGroupCaseSharingGroupSeqAndCaseSharingSeqNotAndDeletedAtIsNullOrderByCreatedAtDesc(
+                    .findTopByCaseSharingGroupCaseSharingGroupSeqAndCaseSharingSeqNotAndIsDraftFalseAndDeletedAtIsNullOrderByCreatedAtDesc(
                             caseSharingGroup.getCaseSharingGroupSeq(),
                             caseSharingSeq
-                    ).orElse(null); // 이전 버전이 없을 경우 null 처리
+                    ).orElse(null);
 
             if (previousVersion != null) {
                 previousVersion.markAsLatest();
@@ -239,7 +239,7 @@ public class CaseSharingService {
     // 6. 케이스 공유 파트별 조회
     @Transactional(readOnly = true)
     public List<CaseSharingListDTO> getCasesByPart(Long partSeq) {
-        List<CaseSharing> caseSharings = caseSharingRepository.findByPartPartSeqAndCaseSharingIsLatestTrueAndDeletedAtIsNull(partSeq);
+        List<CaseSharing> caseSharings = caseSharingRepository.findByPartPartSeqAndCaseSharingIsLatestTrueAndIsDraftFalseAndDeletedAtIsNull(partSeq);
 
         return caseSharings.stream()
                 .map(caseSharing -> {
@@ -261,7 +261,7 @@ public class CaseSharingService {
         CaseSharing caseSharing = caseSharingRepository.findById(caseSharingSeq)
                 .orElseThrow(() -> new IllegalArgumentException("해당 케이스 공유를 찾을 수 없습니다."));
 
-        List<CaseSharing> caseSharings = caseSharingRepository.findByCaseSharingGroupCaseSharingGroupSeqAndDeletedAtIsNull(
+        List<CaseSharing> caseSharings = caseSharingRepository.findByCaseSharingGroupAndIsDraftFalseAndDeletedAtIsNull(
                 caseSharing.getCaseSharingGroup().getCaseSharingGroupSeq()
         );
 
