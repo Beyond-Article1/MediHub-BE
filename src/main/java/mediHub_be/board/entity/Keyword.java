@@ -21,4 +21,11 @@ public class Keyword {
     private Long flagSeq; // 게시판 식별 플래그
     private String keywordName; // 키워드 명
     private Long keywordPostSeq; // 관련 게시물 seq
+
+    @Builder
+    public Keyword(Long flagSeq, String keywordName, Long keywordPostSeq) {
+        this.flagSeq = flagSeq;
+        this.keywordName = keywordName;
+        this.keywordPostSeq = keywordPostSeq;
+    }
 }

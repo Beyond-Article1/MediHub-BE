@@ -4,10 +4,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.case_sharing.dto.CaseSharingListDTO;
-import mediHub_be.case_sharing.dto.CaseSharingDetailDTO;
+import mediHub_be.case_sharing.dto.*;
 import mediHub_be.case_sharing.service.CaseSharingService;
 import mediHub_be.common.response.ApiResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,8 +38,33 @@ public class CaseSharingController {
         return ApiResponse.ok(caseSharingDetailDTO);
     }
 
-
-    /*@Operation(summary = "케이스 공유글 등록",
+    @Operation(summary = "케이스 공유글 등록",
             description = "케이스 공유 템플릿 선택 후 글 작성 및 등록")
-    @GetMapping("/")*/
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<Long> createCaseSharing(@RequestBody CaseSharingCreateRequestDTO requestDTO) {
+        Long caseSharingSeq = caseSharingService.createCaseSharing(requestDTO);
+        return ApiResponse.created(caseSharingSeq);
+    }
+
+    @Operation(summary = "케이스 공유글 수정 (새 버전 생성)",
+            description = "기존 케이스 공유글을 수정하고 새로운 버전을 생성합니다.")
+    @PostMapping("/{caseSharingSeq}/versions")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<Long> createNewVersion(
+            @PathVariable Long caseSharingSeq,
+            @RequestBody CaseSharingUpdateRequestDTO requestDTO
+    ) {
+        Long newVersionSeq = caseSharingService.createNewVersion(caseSharingSeq, requestDTO);
+        return ApiResponse.created(newVersionSeq); // 새로 생성된 버전 ID 반환
+    }
+
+    @DeleteMapping("/{caseSharingSeq}")
+    @Operation(summary = "케이스 공유글 삭제", description = "케이스 공유글을 소프트 삭제합니다.")
+    public ApiResponse<Void> deleteCaseSharing(@PathVariable Long caseSharingSeq) {
+        caseSharingService.deleteCaseSharing(caseSharingSeq);
+        return ApiResponse.ok(null);
+    }
+
+
 }

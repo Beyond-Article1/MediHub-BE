@@ -33,6 +33,8 @@ public class CpController {
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpController"); // Logger
 
+    // https://medihub.info/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryDataArray=1,2,3
+    // example: https://medihub.info/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryData=1,2,3
     @GetMapping
     public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpSearchCategoryAndCpSearchCategoryData(
             @RequestParam(required = false) String cpSearchCategorySeq,
