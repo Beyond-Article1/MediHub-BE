@@ -216,13 +216,6 @@ public class CpController {
 
         logger.info("CP 의견 생성 요청: cpVersionSeq = {}, cpOpinionLocationSeq = {}, 요청 본문 = {}", cpVersionSeq, cpOpinionLocationSeq, requestBody);
 
-        // 입력값 유효성 검사
-        if (requestBody == null || requestBody.getCpOpinionContent() == null ||
-                !requestBody.getCpOpinionContent().matches("^(?!\\s*$).{1,65535}$")) {
-            logger.warn("CP 의견 생성 요청 시 필수 입력값 누락: cpOpinionContent = {}", requestBody != null ? requestBody.getCpOpinionContent() : "null");
-            throw new CustomException(ErrorCode.REQUIRED_FIELD_MISSING);
-        }
-
         try {
             CpOpinionDTO cpOpinion = cpOpinionService.createCpOpinion(cpVersionSeq, cpOpinionLocationSeq, requestBody);
 
