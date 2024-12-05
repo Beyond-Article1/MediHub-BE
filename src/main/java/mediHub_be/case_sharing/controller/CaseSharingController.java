@@ -134,12 +134,21 @@ public class CaseSharingController {
     @PatchMapping("/{caseSharingSeq}/bookmark")
     @Operation(summary = "케이스 공유글 북마크", description = "케이스 공유글 북마크를 등록/해제 합니다.")
     public ResponseEntity<ApiResponse<Boolean>> toggleBookmark(
-            @PathVariable Long caseSharingSeq,
-            @RequestParam("userId") String userId
+            @PathVariable Long caseSharingSeq
     ) {
+        String userId = SecurityUtil.getCurrentUserId();
         boolean isBookmarked = caseSharingService.toggleBookmark(caseSharingSeq, userId);
         return ResponseEntity.ok(ApiResponse.ok(isBookmarked));
     }
 
+    @Operation(summary = "북마크 여부 확인", description = "케이스 공유글에 대해 북마크 여부를 확인합니다.")
+    @GetMapping("/{caseSharingSeq}/bookmark")
+    public ResponseEntity<ApiResponse<Boolean>> isBookmarked(
+            @PathVariable Long caseSharingSeq
+    ) {
+        String userId = SecurityUtil.getCurrentUserId();
+        boolean isBookmarked = caseSharingService.isBookmarked(caseSharingSeq, userId);
+        return ResponseEntity.ok(ApiResponse.ok(isBookmarked));
+    }
 
 }

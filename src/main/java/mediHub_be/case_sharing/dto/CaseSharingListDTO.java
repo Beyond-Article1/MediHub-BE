@@ -18,4 +18,5 @@ public class CaseSharingListDTO {
     private LocalDateTime regDate; //작성 일자
     private Long caseSharingViewCount; //조회수
 
+
 }

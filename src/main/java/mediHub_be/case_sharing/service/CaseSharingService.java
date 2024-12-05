@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.Util.ViewCountManager;
 import mediHub_be.board.entity.Flag;
+import mediHub_be.board.repository.BookmarkRepository;
 import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.KeywordService;
@@ -43,6 +44,7 @@ public class CaseSharingService {
     private final ViewCountManager viewCountManager;
     private final FlagRepository flagRepository;
     private final BookmarkService bookmarkService;
+    private final BookmarkRepository bookmarkRepository;
 
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
@@ -53,6 +55,7 @@ public class CaseSharingService {
         return caseSharingRepository.findAllLatestVersionsNotDraft().stream()
                 .map(caseSharing -> {
                     User author = caseSharing.getUser();
+
                     return new CaseSharingListDTO(
                             caseSharing.getCaseSharingSeq(),
                             caseSharing.getCaseSharingTitle(),
@@ -121,7 +124,6 @@ public class CaseSharingService {
                         keyword.getKeywordName()
                 ))
                 .toList();
-
         // DTO 생성
         return CaseSharingDetailDTO.builder()
                 .caseSharingSeq(caseSharing.getCaseSharingSeq()) // 게시글 ID
@@ -459,4 +461,11 @@ public class CaseSharingService {
     public boolean toggleBookmark(Long caseSharingSeq, String userId) {
         return bookmarkService.toggleBookmark("CASE_SHARING", caseSharingSeq, userId);
     }
+
+    // 해당 게시글의 북마크 여부 반환
+    @Transactional
+    public boolean isBookmarked(Long caseSharingSeq, String userId) {
+        return bookmarkService.isBookmarked("CASE_SHARING", caseSharingSeq, userId);
+    }
+
 }
