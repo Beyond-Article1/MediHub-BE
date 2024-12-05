@@ -2,6 +2,8 @@ package mediHub_be.cp.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.entity.Flag;
+import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.KeywordRepository;
 import mediHub_be.board.service.FlagService;
 import mediHub_be.board.service.KeywordService;
@@ -28,12 +30,14 @@ import java.util.List;
 public class CpOpinionService {
 
     // Service
+    private final FlagService flagService;
     private final KeywordService keywordService;
 
     // Repository
     private final CpOpinionRepository cpOpinionRepository;
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpOpinionService");    // Logger
+    private final FlagRepository flagRepository;
     private final KeywordRepository keywordRepository;
 
     /**
@@ -249,10 +253,35 @@ public class CpOpinionService {
 
         // 키워드 등록
         if (requestBody.getKeywordList() != null && !requestBody.getKeywordList().isEmpty()) {
-            keywordService.saveKeywords(
-                    requestBody.getKeywordList(),
-                    FlagService.CP_OPINION_BOARD_FLAG,
-                    cpOpinion.getCpOpinionSeq());
+
+            try {
+                // 1. Flag 생성
+                Flag flag = Flag.builder()
+                        .flagSeq(null)
+                        .flagBoardFlag(FlagService.CP_OPINION_BOARD_FLAG)
+                        .flagPostSeq(cpOpinion.getCpOpinionSeq())
+                        .build();
+
+                flag = flagRepository.save(flag);
+
+                // 2. Keyword 생성
+                keywordService.saveKeywords(
+                        requestBody.getKeywordList(),
+                        flag.getFlagSeq());
+            } catch (DataAccessException e) {
+                // 데이터 접근 오류 처리
+                logger.error("데이터베이스 접근 오류: {}", e.getMessage());
+                throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+            } catch (CustomException e) {
+                // 사용자 정의 예외 처리
+                logger.error("사용자 정의 예외 발생: {}", e.getMessage());
+                throw e; // 사용자 정의 예외는 그대로 던짐
+            } catch (Exception e) {
+                // 일반 예외 처리
+                logger.error("예기치 못한 오류 발생: {}", e.getMessage());
+                throw new RuntimeException("예기치 못한 오류가 발생했습니다.", e);
+            }
+
         }
 
         return cpOpinionDTO;
