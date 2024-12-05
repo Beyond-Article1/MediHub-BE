@@ -89,6 +89,14 @@ public class CpOpinionService {
         }
     }
 
+    /**
+     * 주어진 CP 의견 DTO 리스트의 각 의견에 대해 키워드 목록을 설정합니다.
+     *
+     * @param responseCpOpinionDtoList CP 의견 DTO 리스트
+     * @throws DataAccessException 데이터베이스 접근 중 오류가 발생한 경우
+     * @throws CustomException 사용자 정의 예외가 발생한 경우
+     * @throws RuntimeException 기타 예기치 않은 오류가 발생한 경우
+     */
     @Transactional(readOnly = true)
     public void setKeywordListForCpOpinions(List<ResponseCpOpinionDTO> responseCpOpinionDtoList) {
         try {
