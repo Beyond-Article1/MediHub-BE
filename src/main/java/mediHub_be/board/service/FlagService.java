@@ -29,5 +29,9 @@ public class FlagService {
     public Optional<Flag> findFlag(String boardFlag, Long postSeq) {
         return flagRepository.findByFlagBoardFlagAndFlagPostSeq(boardFlag, postSeq);
     }
+
+    public void deleteFlag(Long flagSeq) {
+        flagRepository.deleteById(flagSeq);
+    }
 }
 

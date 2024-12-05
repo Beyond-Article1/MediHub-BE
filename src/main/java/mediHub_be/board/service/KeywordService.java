@@ -62,6 +62,7 @@ public class KeywordService {
 
         // 키워드 삭제
         keywordRepository.deleteByFlagSeq(flag.getFlagSeq());
+        flagService.deleteFlag(flag.getFlagSeq());
     }
 }
 
