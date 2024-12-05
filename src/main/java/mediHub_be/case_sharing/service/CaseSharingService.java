@@ -2,6 +2,7 @@ package mediHub_be.case_sharing.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.entity.Flag;
 import mediHub_be.board.service.KeywordService;
 import mediHub_be.case_sharing.dto.*;
 import mediHub_be.case_sharing.entity.CaseSharing;
@@ -361,7 +362,7 @@ public class CaseSharingService {
                 .build();
     }
 
-
+    // 10. 임시 저장된 케이스 공유 수정.
     public Long updateDraft(Long caseSharingSeq, Long userSeq, CaseSharingDraftUpdateDTO requestDTO) {
         // 1. 해당 임시 저장 데이터 조회
         CaseSharing draft = caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrue(caseSharingSeq)
@@ -377,8 +378,27 @@ public class CaseSharingService {
         caseSharingRepository.save(draft);
 
         // 4. 키워드 수정
-        keywordService.updateKeywords(requestDTO.getKeywords(), "CASE_SHARING", caseSharingSeq);
-
+        if (requestDTO.getKeywords() != null) {
+            keywordService.updateKeywords( requestDTO.getKeywords(),"CASE_SHARING", caseSharingSeq);
+        }
         return draft.getCaseSharingSeq();
+    }
+
+    public void deleteDraft(Long caseSharingSeq, Long userSeq) {
+        // 1. 해당 임시 저장 데이터 조회
+        CaseSharing draft = caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrue(caseSharingSeq)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 임시 저장 데이터입니다."));
+
+        // 2. 작성자 검증
+        if (draft.getUser().getUserSeq() != userSeq) {
+            throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
+        }
+
+        // 3. 키워드 삭제
+        caseSharingRepository.delete(draft);
+        keywordService.deleteKeywords("CASE_SHARING", caseSharingSeq);
+
+        // 4. 임시 저장 데이터 삭제
+        caseSharingRepository.delete(draft);
     }
 }

@@ -123,13 +123,18 @@ public class CaseSharingController {
             @PathVariable("caseSharingSeq") Long caseSharingSeq,
             @RequestBody CaseSharingDraftUpdateDTO updateDTO
     ) {
-        Long userSeq = SecurityUtil.getCurrentUserSeq(); // 현재 사용자 ID
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
         Long updatedSeq = caseSharingService.updateDraft(caseSharingSeq, userSeq, updateDTO);
         return ApiResponse.ok(updatedSeq);
     }
 
-
-
+    @Operation(summary = "임시 저장된 케이스 공유 삭제", description = "임시 저장된 케이스 공유를 삭제합니다.")
+    @DeleteMapping("/drafts/{caseSharingSeq}")
+    public ApiResponse<Void> deleteDraft(@PathVariable("caseSharingSeq") Long caseSharingSeq) {
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        caseSharingService.deleteDraft(caseSharingSeq, userSeq);
+        return ApiResponse.ok(null);
+    }
 
 
 }
