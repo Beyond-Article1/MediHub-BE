@@ -50,4 +50,11 @@ public class SecurityUtil {
                 .orElse(null); // 인증된 사용자가 없을 경우, null 반환
     }
 
+    // 현재 인증된 사용자의 userId 반환
+    public static String getCurrentUserId() {
+        return getCurrentUserDetails()
+                .map(UserDetails::getUsername)
+                .orElse(null); // 인증된 사용자가 없을 경우, null 반환
+    }
+
 }
