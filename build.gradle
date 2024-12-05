@@ -78,9 +78,6 @@ dependencies {
 //// .env 파일 읽기
 //loadEnv()
 
-// .env 파일 읽기
-loadEnv()
-
 //jib {
 //    from {
 //        image = 'openjdk:17.0.2-slim' // 베이스 이미지 지정

@@ -194,6 +194,7 @@ public class CaseSharingService {
         return newCaseSharing.getCaseSharingSeq();
     }
 
+    //5. 케이스 공유 소프트 삭제
     @Transactional
     public void deleteCaseSharing(Long caseSharingSeq) {
 
@@ -210,11 +211,8 @@ public class CaseSharingService {
         if (caseSharingGroup == null) {
             throw new IllegalArgumentException("케이스 공유 그룹 정보가 없습니다.");
         }
-        log.info("너 최신?"+ caseSharing.getCaseSharingIsLatest().toString());
 
-        log.info("여기까지 노문제");
-        // 5. 최신 버전인지 확인 및 처리
-        log.info("너 최신?"+ caseSharing.getCaseSharingIsLatest().toString());
+        // 4. 최신 버전인지 확인 및 처리
         if (caseSharing.getCaseSharingIsLatest()) {
             // 최신 버전 해제
             caseSharing.markAsNotLatest();
@@ -227,20 +225,52 @@ public class CaseSharingService {
                             caseSharingSeq
                     ).orElse(null); // 이전 버전이 없을 경우 null 처리
 
-            if (previousVersion.equals(null)){
-                log.info("응 null이야~");
-            }
-            log.info("이전버전{}", previousVersion.getCaseSharingSeq());
-
             if (previousVersion != null) {
                 previousVersion.markAsLatest();
                 caseSharingRepository.save(previousVersion);
             }
 
         }
-
-        // 4. 삭제 처리
+        // 5. 삭제 처리
         caseSharing.markAsDeleted();
         caseSharingRepository.save(caseSharing);
+    }
+
+    // 6. 케이스 공유 파트별 조회
+    @Transactional(readOnly = true)
+    public List<CaseSharingListDTO> getCasesByPart(Long partSeq) {
+        List<CaseSharing> caseSharings = caseSharingRepository.findByPartPartSeqAndCaseSharingIsLatestTrueAndDeletedAtIsNull(partSeq);
+
+        return caseSharings.stream()
+                .map(caseSharing -> {
+                    User author = caseSharing.getUser(); // 작성자 정보 조회
+                    return new CaseSharingListDTO(
+                            caseSharing.getCaseSharingSeq(), // seq값
+                            caseSharing.getCaseSharingTitle(), // 제목
+                            author.getUserName(), // 작성자
+                            author.getRanking().getRankingName(), // 작성자 직위명
+                            caseSharing.getCreatedAt() // 작성 일자
+                    );
+                })
+                .toList();
+    }
+    //7. 케이스 공유 버전 조회
+    @Transactional(readOnly = true)
+    public List<CaseSharingVersionListDTO> getCaseVersionList(Long caseSharingSeq) {
+
+        CaseSharing caseSharing = caseSharingRepository.findById(caseSharingSeq)
+                .orElseThrow(() -> new IllegalArgumentException("해당 케이스 공유를 찾을 수 없습니다."));
+
+        List<CaseSharing> caseSharings = caseSharingRepository.findByCaseSharingGroupCaseSharingGroupSeqAndDeletedAtIsNull(
+                caseSharing.getCaseSharingGroup().getCaseSharingGroupSeq()
+        );
+
+        return caseSharings.stream()
+                .map(cs -> new CaseSharingVersionListDTO(
+                        cs.getCaseSharingSeq(),
+                        cs.getCaseSharingTitle(),
+                        cs.getCreatedAt()
+                ))
+                .toList();
     }
 }
