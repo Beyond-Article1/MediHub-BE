@@ -160,16 +160,10 @@ public class CpController {
             // CP 번호로 CP 의견을 가져오는 서비스 호출
             List<ResponseCpOpinionDTO> cpOpinionList = cpOpinionService.findCpOpinionListByCpVersionSeq(cpVersionSeq, cpOpinionLocationSeq, isDeleted);
 
-            if (cpOpinionList == null || cpOpinionList.isEmpty()) {
-                // 조회 결과 없음
-                logger.info("주어진 CP 버전 번호에 대한 CP 의견 레코드가 없습니다.");
+            logger.info("CP 위치 번호로 CP 의견 리스트 조회 성공");
+            logger.info("조회된 CP 의견 리스트의 크기: {}", cpOpinionList.size());
 
-                return ResponseEntity.ok(ApiResponse.ok(null));
-            } else {
-                logger.info("조회된 CP 의견 리스트의 크기: {}", cpOpinionList.size());
-
-                return ResponseEntity.ok(ApiResponse.ok(cpOpinionList));
-            }
+            return ResponseEntity.ok(ApiResponse.ok(cpOpinionList));
         } catch (CustomException e) {
             logger.error("CP 의견 위치 리스트를 가져오는 동안 CustomException이 발생했습니다: {}", e.getMessage());
             // 예외 발생 시 실패 응답 반환
@@ -190,23 +184,16 @@ public class CpController {
     public ResponseEntity<ApiResponse<ResponseCpOpinionDTO>> getCpOpinionByCpOpinionSeq(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
-            @PathVariable long cpOpinionSeq,
-            @RequestParam(required = false, defaultValue = "false") boolean isDeleted) {
+            @PathVariable long cpOpinionSeq) {
 
         logger.info("CP 버전 번호: {}, CP 의견 위치 번호: {}, CP 의견 번호: {}로 조회 요청했습니다.", cpVersionSeq, cpOpinionLocationSeq, cpOpinionSeq);
 
         try {
             // CP 의견을 가져오는 서비스 호출
-            ResponseCpOpinionDTO cpOpinion = cpOpinionService.findCpOpinionByCpOpinionSeq(cpVersionSeq, cpOpinionLocationSeq, cpOpinionSeq, isDeleted);
+            ResponseCpOpinionDTO cpOpinion = cpOpinionService.findCpOpinionByCpOpinionSeq(cpOpinionSeq);
 
-            if (cpOpinion == null) {
-                logger.warn("조회된 CP 의견이 없습니다. CP 버전 번호: {}, CP 의견 위치 번호: {}, CP 의견 번호: {}", cpVersionSeq, cpOpinionLocationSeq, cpOpinionSeq);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.ok(null));
-            }
-
-            logger.info("조회된 CP 의견: {}", cpOpinion);
+            logger.info("CP 의견 번호로 CP 의견 조회 성공");
             return ResponseEntity.ok(ApiResponse.ok(cpOpinion));
-
         } catch (CustomException e) {
             logger.error("CP 의견 조회 중 CustomException 발생: {}", e.getMessage());
             return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
