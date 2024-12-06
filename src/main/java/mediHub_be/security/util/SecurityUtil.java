@@ -1,6 +1,7 @@
 package mediHub_be.security.util;
 
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.security.securitycustom.CustomUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,7 +48,7 @@ public class SecurityUtil {
                         return null; // 숫자 형식이 아닌 경우, null 반환
                     }
                 })
-                .orElse(null); // 인증된 사용자가 없을 경우, null 반환
+                .orElse(null); // 인증되지 않은 경우 null 반환
     }
 
     // 현재 인증된 사용자의 userId 반환

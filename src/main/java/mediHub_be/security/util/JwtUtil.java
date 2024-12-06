@@ -4,6 +4,7 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.security.securitycustom.CustomUserDetails;
 import mediHub_be.user.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,6 +35,10 @@ public class JwtUtil {
         this.userService = userService;
     }
 
+    public Key getKey() {
+        return this.key;
+    }
+
     public String createToken(String userId, String role) {
         String token = Jwts.builder()
                 .setSubject(userId)
@@ -51,6 +56,7 @@ public class JwtUtil {
 
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            log.info("Token is valid: {}", token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("Invalid JWT Token {}", e);
@@ -67,13 +73,19 @@ public class JwtUtil {
 
     /* 넘어온 AccessToken으로 인증 객체 추출 */
     public Authentication getAuthentication(String token) {
+        Claims claims = parseClaims(token);
+        String userId = claims.getSubject();
+        Long userSeq = claims.get("userseq", Long.class); // userSeq 추출
 
-        /* 토큰을 들고 왔던 들고 오지 않았던(로그인 시) 동일하게 security가 관리 할 UserDetails 타입을 정의 */
-        UserDetails userDetails = userService.loadUserByUsername(this.getUserId(token));
-
+        UserDetails userDetails = userService.loadUserByUsername(userId); // userId로 UserDetails 조회
+        if (userDetails instanceof CustomUserDetails customUserDetails) {
+            // CustomUserDetails에 userSeq 설정 확인
+            log.info("Loaded userSeq from token: {}", customUserDetails.getUserSeq());
+        }
 
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
+
 
     /* Token에서 Claims 추출 */
     public Claims parseClaims(String token) {
