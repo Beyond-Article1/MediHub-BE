@@ -44,14 +44,24 @@ public class Notify extends CreateTimeEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User receiver;
 
+    @Column(name = "noti_sender_user_name")
+    private String notiSenderUserName;
+
+    @Column(name = "noti_sender_user_part")
+    private String notiSenderUserPart;
+
     @Builder
-    public Notify(User receiver, Flag flag, NotiType notiType, String notiContent, String notiUrl, NotiReadStatus isRead) {
+    public Notify(User receiver, Flag flag, NotiType notiType,
+                  String notiContent, String notiUrl, NotiReadStatus isRead,
+                  String senderUserName, String senderUserPart) {
         this.receiver = receiver;
         this.flag = flag;
         this.notiType = notiType;
         this.notiContent = notiContent;
         this.notiUrl = notiUrl;
         this.noti_isRead = isRead;
+        this.notiSenderUserName = senderUserName;
+        this.notiSenderUserPart = senderUserPart;
     }
 
     // === 도메인 로직 === //

@@ -32,8 +32,7 @@ public enum ErrorCode {
      * == 403 FORBIDDEN ==
      */
     // 사용자 (user)
-    UNAUTHORIZED_USER(40300, HttpStatus.FORBIDDEN, "자신의 게시물이 아닙니다."),
-
+    UNAUTHORIZED_USER(40300, HttpStatus.FORBIDDEN, "해당하는 권한이 없습니다."),
 
     /**
      * == 404 NOT_FOUND ==
@@ -41,6 +40,9 @@ public enum ErrorCode {
     // 사용자 (user)
     NOT_FOUND_USER(40400, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     NOT_FOUND_END_POINT(40401, HttpStatus.NOT_FOUND, "존재하지 않는 API입니다."),
+
+    // 알림 (notify)
+    NOT_FOUND_NOTIFY(40402, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
 
     /**
      * == 409 CONFLICT ==
