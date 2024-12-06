@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CaseSharingService {
     private final CaseSharingRepository caseSharingRepository;
-    private final CaseSharingCommentRepository commentRepository;
     private final CaseSharingGroupRepository caseSharingGroupRepository;
     private final UserRepository userRepository;
     private final KeywordRepository keywordRepository;
@@ -44,7 +43,8 @@ public class CaseSharingService {
     private final ViewCountManager viewCountManager;
     private final FlagRepository flagRepository;
     private final BookmarkService bookmarkService;
-    private final BookmarkRepository bookmarkRepository;
+
+    private static final String caseSharingBoardFlag = "case_sharing";
 
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
@@ -98,26 +98,8 @@ public class CaseSharingService {
             log.info("이미 조회한적 있는 게시물");
         }
 
-        // 댓글 내역 반환
-        List<CaseSharingComment> comments = commentRepository.findByCaseSharing_CaseSharingSeqAndDeletedAtIsNull(caseSharingSeq);
-        List<CaseSharingCommentDTO> commentDTOs = comments.stream()
-                .map(comment -> {
-                    // 댓글 작성자 정보 조회
-                    User commentAuthor = userRepository.findById(comment.getUser().getUserSeq())
-                            .orElseThrow(() -> new IllegalArgumentException("댓글 작성자 정보를 찾을 수 없습니다."));
-                    return CaseSharingCommentDTO.builder()
-                            .commentSeq(comment.getCaseSharingCommentSeq())
-                            .userName(commentAuthor.getUserName()) // 댓글 작성자 이름
-                            .userRankName(commentAuthor.getRanking().getRankingName()) // 댓글 작성자 직위명
-                            .content(comment.getCaseSharingCommentContent())
-                            .startOffset(comment.getCaseSharingCommentStartOffset())
-                            .endOffset(comment.getCaseSharingCommentEndOffset())
-                            .createdAt(comment.getCreatedAt())
-                            .build();
-                }).toList();
-
         // 키워드 내역 반환
-        List<Keyword> keywords = keywordRepository.findByBoardFlagAndPostSeq( "CASE_SHARING",caseSharingSeq);
+        List<Keyword> keywords = keywordRepository.findByBoardFlagAndPostSeq( caseSharingBoardFlag,caseSharingSeq);
         List<CaseSharingKeywordDTO> keywordDTOs = keywords.stream()
                 .map(keyword -> new CaseSharingKeywordDTO(
                         keyword.getKeywordSeq(),
@@ -131,7 +113,6 @@ public class CaseSharingService {
                 .caseSharingContent(caseSharing.getCaseSharingContent()) // 게시글 내용
                 .caseAuthor(author.getUserName()) // 작성자 이름
                 .caseAuthorRankName(author.getRanking().getRankingName()) // 작성자 직위명
-                .comments(commentDTOs) // 댓글 리스트
                 .keywords(keywordDTOs) // 키워드 리스트
                 .caseSharingGroupSeq(caseSharing.getCaseSharingGroup().getCaseSharingGroupSeq()) // 그룹 ID
                 .isLatestVersion(caseSharing.getCaseSharingIsLatest()) // 최신 버전 여부
@@ -140,6 +121,7 @@ public class CaseSharingService {
     }
 
     //3. 케이스 공유 등록
+    @Transactional
     public Long createCaseSharing(CaseSharingCreateRequestDTO requestDTO, String userId) {
 
         User user = userRepository.findByUserId(userId)
@@ -170,7 +152,7 @@ public class CaseSharingService {
         caseSharingRepository.save(caseSharing);
 
         Flag flag = Flag.builder()
-                .flagBoardFlag("CASE_SHARING") // 게시판 구분
+                .flagBoardFlag(caseSharingBoardFlag) // 게시판 구분
                 .flagPostSeq(caseSharing.getCaseSharingSeq()) // 게시글 ID
                 .build();
 
@@ -220,7 +202,7 @@ public class CaseSharingService {
 
         // 새 키워드 저장
         Flag flag = Flag.builder()
-                .flagBoardFlag("CASE_SHARING") // 게시판 구분
+                .flagBoardFlag(caseSharingBoardFlag) // 게시판 구분
                 .flagPostSeq(newCaseSharing.getCaseSharingSeq()) // 게시글 ID
                 .build();
 
@@ -335,6 +317,7 @@ public class CaseSharingService {
     }
 
     //8. 케이스 공유 임시 저장 등록
+    @Transactional
     public Long saveDraft(CaseSharingCreateRequestDTO requestDTO, String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
@@ -358,7 +341,7 @@ public class CaseSharingService {
 
         // 키워드 저장
         Flag flag = Flag.builder()
-                .flagBoardFlag("CASE_SHARING") // 게시판 구분
+                .flagBoardFlag(caseSharingBoardFlag) // 게시판 구분
                 .flagPostSeq(caseSharing.getCaseSharingSeq()) // 게시글 ID
                 .build();
 
@@ -390,6 +373,7 @@ public class CaseSharingService {
     }
 
     // 9. 임시저장 된 케이스공유 상세 조회(불러오기)
+    @Transactional
     public CaseSharingDraftDetailDTO getDraftDetail(Long caseSharingSeq, String userId) {
         // 게시글 정보 조회
         CaseSharing caseSharing = caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrue(caseSharingSeq)
@@ -399,7 +383,7 @@ public class CaseSharingService {
             throw new IllegalArgumentException("본인이 작성한 임시 저장 글만 조회할 수 있습니다.");
         }
 
-        List<Keyword> keywords = keywordRepository.findByBoardFlagAndPostSeq("CASE_SHARING", caseSharingSeq);
+        List<Keyword> keywords = keywordRepository.findByBoardFlagAndPostSeq(caseSharingBoardFlag, caseSharingSeq);
         List<CaseSharingKeywordDTO> keywordDTOs = keywords.stream()
                 .map(keyword -> new CaseSharingKeywordDTO(
                         keyword.getKeywordSeq(),
@@ -417,6 +401,7 @@ public class CaseSharingService {
     }
 
     // 10. 임시 저장된 케이스 공유 수정.
+    @Transactional
     public Long updateDraft(Long caseSharingSeq, String userId, CaseSharingDraftUpdateDTO requestDTO) {
         // 1. 해당 임시 저장 데이터 조회
         CaseSharing draft = caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrue(caseSharingSeq)
@@ -433,11 +418,12 @@ public class CaseSharingService {
 
         // 4. 키워드 수정
         if (requestDTO.getKeywords() != null) {
-            keywordService.updateKeywords( requestDTO.getKeywords(),"CASE_SHARING", caseSharingSeq);
+            keywordService.updateKeywords(requestDTO.getKeywords(),caseSharingBoardFlag, caseSharingSeq);
         }
         return draft.getCaseSharingSeq();
     }
 
+    @Transactional
     public void deleteDraft(Long caseSharingSeq, String userId) {
         // 1. 해당 임시 저장 데이터 조회
         CaseSharing draft = caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrue(caseSharingSeq)
@@ -450,7 +436,7 @@ public class CaseSharingService {
 
         // 3. 키워드 삭제
         caseSharingRepository.delete(draft);
-        keywordService.deleteKeywords("CASE_SHARING", caseSharingSeq);
+        keywordService.deleteKeywords(caseSharingBoardFlag, caseSharingSeq);
 
         // 4. 임시 저장 데이터 삭제
         caseSharingRepository.delete(draft);
@@ -459,13 +445,13 @@ public class CaseSharingService {
     // 북마크 설정/해제
     @Transactional
     public boolean toggleBookmark(Long caseSharingSeq, String userId) {
-        return bookmarkService.toggleBookmark("CASE_SHARING", caseSharingSeq, userId);
+        return bookmarkService.toggleBookmark(caseSharingBoardFlag, caseSharingSeq, userId);
     }
 
     // 해당 게시글의 북마크 여부 반환
     @Transactional
     public boolean isBookmarked(Long caseSharingSeq, String userId) {
-        return bookmarkService.isBookmarked("CASE_SHARING", caseSharingSeq, userId);
+        return bookmarkService.isBookmarked(caseSharingBoardFlag, caseSharingSeq, userId);
     }
 
 }
