@@ -1,6 +1,9 @@
 springdoc:
   swagger-ui:
-    path: /
+    path: /swagger-ui
+    groups-order: DESC # path, query, body, response 순으로 출력
+    tags-sorter: alpha # 태그 알파벳 순서
+    operations-sorter: method  # delete - get - patch - post - put 순으로 정렬
 
 server:
   port: 8088
@@ -11,9 +14,12 @@ spring:
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://${mariadb.host}:${mariadb.port}/${mariadb.dbname}
-    username: ${db.username}
+    url: jdbc:mariadb://${mariadb.host}:${mariadb.port}/${db.name}
+    username: ${db.name}
     password: ${db.password}
+
+  profiles:
+    include: aws
 
   jpa:
     hibernate:
@@ -28,10 +34,24 @@ spring:
         format_sql: true
 
   # MongoDB 설정
-#  data:
-#    mongodb:
-#      uri: mongodb://${db.username}:${db.password}@mongodb_boot:${mongodb.port}
+  data:
+    mongodb:
+      uri: mongodb://${mariadb.host}:${mongodb.port}
+      database: ${db.name}
+
+#    redis:
+#      host: ${db.name}
+#      port: 6379
+#      password: ${db.password}
 
   web:
     resources:
       add-mappings: false # Disable static resource mapping (For NoHandlerFoundException), 스태틱 파일을 뒤져 보는 것을 방지
+
+#logging:
+#  level:
+#    root: DEBUG
+
+token:
+  expiration_time: 7200000
+  secret: ${SECRET_KEY}

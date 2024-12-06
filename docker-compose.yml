@@ -6,26 +6,61 @@ services:
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${DB_DATABASE}
+      MARIADB_DATABASE: ${DB_NAME}
       MARIADB_USER: ${DB_USER}
       MARIADB_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3309:3306"
     volumes:
       - db_data:/var/lib/mysql
+ # my-app:
+  #  image: ${DOCKER_USERNAME}/medihub:latest
+  #  container_name: medihub
+  #  restart: always
+  #  environment:
+    #  DB_PORT: ${DB_PORT}
+    #  DB_NAME: ${DB_NAME}
+    #  DB_USER: ${DB_USER}
+    #  DB_PASSWORD: ${DB_PASSWORD}
+   # ports:
+    #  - "8089:8088" # 호스트 포트:컨테이너 내부 포트
+    # depends_on:
+     # - mediHub_db
+    # networks:
+     # - springboot-network
+    # command: ["/wait-for-it.sh", "mariadb:3306", "java", "-jar", "app.jar"]
 
   mongodb:
     image: mongo:latest
-    container_name: mongodb_boot
+    container_name: mongodb
     restart: always
     ports:
       - "27017:27017"
     environment:
+      MONGO_INITDB_DATABASE: ${DB_DATABASE}
       MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
 
     volumes:
       - mongo_data:/data/db
+    networks:
+      - springboot-network
+
+  redis:
+    image: redis:latest
+    restart: always
+    container_name: redis
+    hostname: ${DB_DATABASE}
+    ports:
+      - "6379:6379"
+    networks:
+      - springboot-network
+    command: redis-server --requirepass ${DB_PASSWORD}
+
+networks:
+  springboot-network:
+    driver: bridge
+
 
 volumes:
   db_data:
