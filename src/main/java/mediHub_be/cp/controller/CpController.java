@@ -39,11 +39,15 @@ public class CpController {
     // https://medihub.info/cp?cpSearchCategorySeq=values&cpSearchCategoryDataArray=values
     // example: https://medihub.info/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryData=1,2,3
     @GetMapping
-    @Operation(summary = "CP 리스트 조회",
-            description = "주어진 카테고리 시퀀스와 카테고리 데이터를 사용하여 CP 리스트를 조회합니다.")
+    @Operation(
+            summary = "CP 리스트 조회",
+            description = "주어진 카테고리 시퀀스와 카테고리 데이터를 사용하여 CP 리스트를 조회합니다.",
+            operationId = "getCpListByCategory"
+    )
     public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpSearchCategoryAndCpSearchCategoryData(
-            @RequestParam(required = false) String cpSearchCategorySeq,
-            @RequestParam(required = false) String cpSearchCategoryData) {
+            @RequestParam(required = false, defaultValue = "null") String cpSearchCategorySeq,
+            @RequestParam(required = false, defaultValue = "null") String cpSearchCategoryData) {
+
         logger.info("카테고리 시퀀스: {} 및 카테고리 데이터: {}를 사용하여 CP 리스트 요청을 받았습니다.", cpSearchCategorySeq, cpSearchCategoryData);
 
         // RequestParam 값을 List에 저장(없으면, null)
@@ -65,24 +69,20 @@ public class CpController {
 
             if (cpList == null || cpList.isEmpty()) {
                 logger.info("주어진 카테고리 시퀀스 및 카테고리 데이터에 대한 CP 레코드가 없습니다.");
-
                 return ResponseEntity.ok(ApiResponse.ok(null));
             } else {
                 // 성공적인 응답 반환
                 logger.info("조회된 CP 리스트 크기: {}", cpList.size());
                 logger.info("조회된 CP 리스트: {}", cpList);
-
                 return ResponseEntity.ok(ApiResponse.ok(cpList));
             }
         } catch (CustomException e) {
             logger.error("CP 리스트를 가져오는 동안 CustomException이 발생했습니다: {}", e.getMessage());
-            // 예외 발생 시 실패 응답 반환
             return ResponseEntity
                     .status(e.getErrorCode().getHttpStatus())
                     .body(ApiResponse.fail(e));
         } catch (Exception e) {
             logger.error("CP 리스트를 가져오는 동안 예기치 않은 오류가 발생했습니다: {}", e.getMessage(), e);
-            // 일반 예외 처리
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
@@ -91,9 +91,12 @@ public class CpController {
 
     // https://medihub.info/cp?cpName=value
     @GetMapping(params = "cpName") // 중복된 매핑 방지
-    @Operation(summary = "CP 리스트 조회",
-            description = "주어진 CP 이름을 사용하여 CP 리스트를 조회합니다.")
-    public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpName(@RequestParam String cpName) {
+    @Operation(
+            summary = "CP 리스트 조회",
+            description = "주어진 CP 이름을 사용하여 CP 리스트를 조회합니다.",
+            operationId = "getCpListByName"
+    )
+    public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpName(@RequestParam(required = false, defaultValue = "") String cpName) {
         logger.info("이름: {}으로 CP를 가져오는 요청을 받았습니다.", cpName);
 
         try {
@@ -110,13 +113,11 @@ public class CpController {
             return ResponseEntity.ok(ApiResponse.ok(cpList));
         } catch (CustomException e) {
             logger.error("이름으로 CP를 가져오는 동안 CustomException이 발생했습니다: {}", e.getMessage());
-            // 예외 발생 시 실패 응답 반환
             return ResponseEntity
                     .status(e.getErrorCode().getHttpStatus())
                     .body(ApiResponse.fail(e));
         } catch (Exception e) {
             logger.error("이름으로 CP를 가져오는 동안 예기치 않은 오류가 발생했습니다: {}", e.getMessage(), e);
-            // 일반 예외 처리
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
@@ -143,7 +144,7 @@ public class CpController {
             // 성공적인 응답 반환
             return ResponseEntity.ok(ApiResponse.ok(cpList));
         } catch (CustomException e) {
-            logger.error("버전 시퀀스로 CP를 가져오는 동안 CustomException이 발생했습니다: {}", e.getMessage());
+            logger.error("버전 시퀀스로 CP를 가져오는 동안 CustomException이 발생했습니다: {}", e.getMessage(), e);
             // 예외 발생 시 실패 응답 반환
             return ResponseEntity
                     .status(e.getErrorCode().getHttpStatus())
