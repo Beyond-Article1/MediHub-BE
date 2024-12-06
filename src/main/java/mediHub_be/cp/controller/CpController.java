@@ -8,7 +8,6 @@ import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.cp.dto.*;
-import mediHub_be.cp.entity.CpOpinionLocation;
 import mediHub_be.cp.service.CpOpinionLocationService;
 import mediHub_be.cp.service.CpOpinionService;
 import mediHub_be.cp.service.CpService;
@@ -39,42 +38,46 @@ public class CpController {
     // https://medihub.info/cp?cpSearchCategorySeq=values&cpSearchCategoryDataArray=values
     // example: https://medihub.info/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryData=1,2,3
     @GetMapping
-    @Operation(summary = "CP 리스트 조회",
-            description = "주어진 카테고리 시퀀스와 카테고리 데이터를 사용하여 CP 리스트를 조회합니다.",
-            operationId = "getCpListByCategory")
-    public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpSearchCategoryAndCpSearchCategoryData(
-            @RequestParam(required = false, defaultValue = "null") String cpSearchCategorySeq,
-            @RequestParam(required = false, defaultValue = "null") String cpSearchCategoryData) {
+    @Operation(
+            summary = "CP 리스트 조회",
+            description = "주어진 카테고리 시퀀스와 카테고리 데이터를 사용하여 CP 리스트를 조회하거나, 주어진 CP 이름으로 조회합니다.")
+    public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpList(
+            @RequestParam(required = false) String cpSearchCategorySeq,
+            @RequestParam(required = false) String cpSearchCategoryData,
+            @RequestParam(required = false) String cpName) {
 
-        logger.info("카테고리 시퀀스: {} 및 카테고리 데이터: {}를 사용하여 CP 리스트 요청을 받았습니다.", cpSearchCategorySeq, cpSearchCategoryData);
+        logger.info("카테고리 시퀀스: {}, 카테고리 데이터: {}, 이름: {}로 CP 리스트 요청을 받았습니다.", cpSearchCategorySeq, cpSearchCategoryData, cpName);
 
-        // RequestParam 값을 List에 저장(없으면, null)
-        List<Long> cpSearchCategorySeqList = cpSearchCategorySeq != null && !cpSearchCategorySeq.equals("null")
+        List<Long> cpSearchCategorySeqList = cpSearchCategorySeq != null && !cpSearchCategorySeq.isEmpty()
                 ? Arrays.stream(cpSearchCategorySeq.split(","))
                 .map(Long::valueOf)
                 .collect(Collectors.toList()) : null;
 
-        // RequestParam 값을 List에 저장(없으면, null)
-        List<Long> cpSearchCategoryDataList = cpSearchCategoryData != null && !cpSearchCategoryData.equals("null")
+        List<Long> cpSearchCategoryDataList = cpSearchCategoryData != null && !cpSearchCategoryData.isEmpty()
                 ? Arrays.stream(cpSearchCategoryData.split(","))
                 .map(Long::valueOf)
                 .collect(Collectors.toList()) : null;
 
-        // 계산된 리스트의 내용을 로그로 출력
-        logger.info("계산된 카테고리 시퀀스 리스트: {}", cpSearchCategorySeqList);
-        logger.info("계산된 카테고리 데이터 리스트: {}", cpSearchCategoryDataList);
-
         try {
-            // 입력받은 데이터를 통하여 CP 리스트를 가져오는 서비스 호출
-            List<ResponseCpDTO> cpList = cpService.getCpListByCpSearchCategoryAndCpSearchCategoryData(cpSearchCategorySeqList, cpSearchCategoryDataList);
+            List<ResponseCpDTO> cpList;
+
+            // 카테고리 시퀀스 또는 카테고리 데이터로 검색
+            if (cpSearchCategorySeqList != null || cpSearchCategoryDataList != null) {
+                logger.info("카테고리 기반 검색 수행. 호출할 메서드: getCpListByCpSearchCategoryAndCpSearchCategoryData");
+                cpList = cpService.getCpListByCpSearchCategoryAndCpSearchCategoryData(cpSearchCategorySeqList, cpSearchCategoryDataList);
+            } else if (cpName != null && !cpName.isEmpty()) {
+                logger.info("이름 기반 검색 수행. 호출할 메서드: getCpListByCpName");
+                cpList = cpService.getCpListByCpName(cpName);
+            } else {
+                logger.info("전체 검색 수행. 호출할 메서드: getCpList");
+                cpList = cpService.getCpList();
+            }
 
             if (cpList == null || cpList.isEmpty()) {
-                logger.info("주어진 카테고리 시퀀스 및 카테고리 데이터에 대한 CP 레코드가 없습니다.");
+                logger.info("검색 결과가 없습니다.");
                 return ResponseEntity.ok(ApiResponse.ok(null));
             } else {
-                // 성공적인 응답 반환
                 logger.info("조회된 CP 리스트 크기: {}", cpList.size());
-                logger.info("조회된 CP 리스트: {}", cpList);
                 return ResponseEntity.ok(ApiResponse.ok(cpList));
             }
         } catch (CustomException e) {
@@ -84,42 +87,6 @@ public class CpController {
                     .body(ApiResponse.fail(e));
         } catch (Exception e) {
             logger.error("CP 리스트를 가져오는 동안 예기치 않은 오류가 발생했습니다: {}", e.getMessage(), e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
-        }
-    }
-
-
-    // https://medihub.info/cp?cpName=value
-    @GetMapping(params = "cpName") // 중복된 매핑 방지
-    @Operation(
-            summary = "CP 리스트 조회",
-            description = "주어진 CP 이름을 사용하여 CP 리스트를 조회합니다.",
-            operationId = "getCpListByName"
-    )
-    public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpName(@RequestParam(required = false, defaultValue = "") String cpName) {
-        logger.info("이름: {}으로 CP를 가져오는 요청을 받았습니다.", cpName);
-
-        try {
-            // 이름을 통하여 Cp 를 가져오는 서비스 호출
-            List<ResponseCpDTO> cpList = cpService.getCpListByCpName(cpName);
-
-            if (cpList == null || cpList.isEmpty()) {
-                logger.warn("이름 '{}'에 대한 CP 레코드가 없습니다.", cpName);
-            } else {
-                logger.info("이름으로 성공적으로 CP를 가져왔습니다: {}", cpList.size());
-            }
-
-            // 성공적인 응답 반환
-            return ResponseEntity.ok(ApiResponse.ok(cpList));
-        } catch (CustomException e) {
-            logger.error("이름으로 CP를 가져오는 동안 CustomException이 발생했습니다: {}", e.getMessage());
-            return ResponseEntity
-                    .status(e.getErrorCode().getHttpStatus())
-                    .body(ApiResponse.fail(e));
-        } catch (Exception e) {
-            logger.error("이름으로 CP를 가져오는 동안 예기치 않은 오류가 발생했습니다: {}", e.getMessage(), e);
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));

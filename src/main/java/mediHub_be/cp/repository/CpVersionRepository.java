@@ -71,5 +71,22 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "JOIN Part AS p ON u.part.partSeq = p.partSeq " +
             "WHERE cv.cpVersionSeq = :cpVersionSeq")
     ResponseCpDTO findByCpVersionSeq(@Param("cpVersionSeq") long cpVersionSeq);
+
+    @Query("SELECT new mediHub_be.cp.dto.ResponseCpDTO(" +
+            "cv.cpVersionSeq ," +
+            "cp.cpName, " +
+            "cp.cpDescription, " +
+            "cp.cpViewCount, " +
+            "cv.cpVersion, " +
+            "cv.cpVersionDescription, " +
+            "cv.createdAt, " +
+            "u.userName, " +
+            "u.userId, " +
+            "p.partName)" +
+            "FROM CpVersion AS cv " +
+            "JOIN Cp AS cp ON cv.cpSeq = cp.cpSeq " +
+            "JOIN User AS u ON cv.userSeq = u.userSeq " +
+            "JOIN Part AS p ON u.part.partSeq = p.partSeq")
+    List<ResponseCpDTO> findCp();
 }
 
