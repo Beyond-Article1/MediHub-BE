@@ -37,7 +37,7 @@ public class TemplateService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
-        return templateRepository.findAll().stream()
+        return templateRepository.findByDeletedAtIsNull().stream() // 삭제되지 않은 템플릿만 조회
                 .map(template -> {
                     // Flag 조회
                     Optional<Flag> flagOptional = flagRepository.findByFlagBoardFlagAndFlagPostSeq("template_preview", template.getTemplateSeq());
@@ -64,7 +64,7 @@ public class TemplateService {
 
     @Transactional(readOnly = true)
     public TemplateDetailDTO getTemplateDetail(Long templateSeq) {
-        Template template = templateRepository.findById(templateSeq)
+        Template template = templateRepository.findByTemplateSeqAndDeletedAtIsNull(templateSeq) // 삭제되지 않은 템플릿만 조회
                 .orElseThrow(() -> new IllegalArgumentException("템플릿을 찾을 수 없습니다."));
 
         Part part = template.getPart();
@@ -86,11 +86,11 @@ public class TemplateService {
 
         List<Template> filteredTemplates = switch (filter.toLowerCase()) {
             case "my" -> // 내가 작성한 템플릿
-                    templateRepository.findByUser_UserSeq(user.getUserSeq());
+                    templateRepository.findByUser_UserSeqAndDeletedAtIsNull(user.getUserSeq());
             case "shared" -> // 과에서 공유된 템플릿
-                    templateRepository.findByPart_PartSeqAndOpenScope(user.getPart().getPartSeq(), OpenScope.CLASS_OPEN);
+                    templateRepository.findByPart_PartSeqAndOpenScopeAndDeletedAtIsNull(user.getPart().getPartSeq(), OpenScope.CLASS_OPEN);
             case "public" -> // 전체 공개 템플릿
-                    templateRepository.findByOpenScope(OpenScope.PUBLIC);
+                    templateRepository.findByOpenScopeAndDeletedAtIsNull(OpenScope.PUBLIC);
             default -> throw new IllegalArgumentException("잘못된 필터 값입니다. (my, shared, public 중 선택)");
         };
 
