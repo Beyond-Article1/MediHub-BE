@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class CpOpinionLocationService {
      * @return CP 의견 위치 DTO 리스트
      * @throws CustomException 데이터베이스 접근 오류 또는 기타 예외 발생 시
      */
+    @Transactional(readOnly = true)
     public List<CpOpinionLocationDTO> getCpOpinionLocationListByCpVersionSeq(long cpVersionSeq) {
         List<CpOpinionLocation> entityList;
 
@@ -58,14 +60,40 @@ public class CpOpinionLocationService {
                 .toList();
     }
 
+    @Transactional
     public CpOpinionLocationDTO createCpOpinionLocation(long cpVersionSeq, RequestCpOpinionLocationDTO requestBody) {
 
+        // Logger 인스턴스 생성
+        Logger logger = LoggerFactory.getLogger(getClass());
+
+        // 메서드 설명
+        logger.info("CP 의견 위치 생성 요청. CP 버전 번호: {}, 요청 데이터: {}", cpVersionSeq, requestBody);
+
         CpOpinionLocation entity;
+        CpOpinionLocationDTO dto;
 
-//        try{
-//            entity = cpOpinionLocationRepository.save()
-//        }
+        try {
+            // CP 의견 위치 엔티티 생성
+            CpOpinionLocation temp = CpOpinionLocation.create(cpVersionSeq, requestBody);
+            logger.info("CP 의견 위치 엔티티 생성 완료. 엔티티: {}", temp);
 
-        return null;
+            // 데이터베이스에 저장
+            entity = cpOpinionLocationRepository.save(temp);
+            logger.info("CP 의견 위치 데이터베이스에 저장 완료. 저장된 엔티티: {}", entity);
+
+            // DTO로 변환
+            dto = CpOpinionLocationDTO.toDto(entity);
+            logger.info("CP 의견 위치 DTO 변환 완료. DTO: {}", dto);
+
+        } catch (DataAccessException e) {
+            logger.error("데이터베이스 접근 오류 발생: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        } catch (Exception e) {
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+        logger.info("CP 의견 위치 생성 완료. 반환된 DTO: {}", dto);
+        return dto;
     }
 }
