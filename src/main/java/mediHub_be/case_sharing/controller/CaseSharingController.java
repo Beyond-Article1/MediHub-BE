@@ -2,6 +2,8 @@ package mediHub_be.case_sharing.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.case_sharing.dto.*;
@@ -33,9 +35,11 @@ public class CaseSharingController {
 
     @Operation(summary = "케이스 공유 상세 조회", description = "케이스 공유 내용, 사진, 키워드, 버전 정보 포함한 전체 글 조회")
     @GetMapping("/{caseSharingSeq}")
-    public ResponseEntity<ApiResponse<CaseSharingDetailDTO>> getCaseDetail(@PathVariable("caseSharingSeq") Long caseSharingSeq) {
+    public ResponseEntity<ApiResponse<CaseSharingDetailDTO>> getCaseDetail(@PathVariable("caseSharingSeq") Long caseSharingSeq,
+                                                                           HttpServletRequest request,
+                                                                           HttpServletResponse response) {
         String userId = SecurityUtil.getCurrentUserId();
-        CaseSharingDetailDTO caseSharingDetailDTO = caseSharingService.getCaseSharingDetail(caseSharingSeq, userId);
+        CaseSharingDetailDTO caseSharingDetailDTO = caseSharingService.getCaseSharingDetail(caseSharingSeq, userId,request,response);
         return ResponseEntity.ok(ApiResponse.ok(caseSharingDetailDTO));
     }
 
@@ -124,4 +128,25 @@ public class CaseSharingController {
         caseSharingService.deleteDraft(caseSharingSeq, userId);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
+
+    @PatchMapping("/{caseSharingSeq}/bookmark")
+    @Operation(summary = "케이스 공유글 북마크", description = "케이스 공유글 북마크를 등록/해제 합니다.")
+    public ResponseEntity<ApiResponse<Boolean>> toggleBookmark(
+            @PathVariable Long caseSharingSeq
+    ) {
+        String userId = SecurityUtil.getCurrentUserId();
+        boolean isBookmarked = caseSharingService.toggleBookmark(caseSharingSeq, userId);
+        return ResponseEntity.ok(ApiResponse.ok(isBookmarked));
+    }
+
+    @Operation(summary = "북마크 여부 확인", description = "케이스 공유글에 대해 북마크 여부를 확인합니다.")
+    @GetMapping("/{caseSharingSeq}/bookmark")
+    public ResponseEntity<ApiResponse<Boolean>> isBookmarked(
+            @PathVariable Long caseSharingSeq
+    ) {
+        String userId = SecurityUtil.getCurrentUserId();
+        boolean isBookmarked = caseSharingService.isBookmarked(caseSharingSeq, userId);
+        return ResponseEntity.ok(ApiResponse.ok(isBookmarked));
+    }
+
 }

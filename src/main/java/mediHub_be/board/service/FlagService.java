@@ -14,15 +14,8 @@ public class FlagService {
 
     private final FlagRepository flagRepository;
 
-    // Flag 가져오기 (없으면 생성)
-    @Transactional
-    public Flag saveFlag(String boardFlag, Long postSeq) {
-        return flagRepository.findByFlagBoardFlagAndFlagPostSeq(boardFlag, postSeq)
-                .orElseGet(() -> flagRepository.save(Flag.builder()
-                        .flagBoardFlag(boardFlag)
-                        .flagPostSeq(postSeq)
-                        .build()));
-    }
+    // boardFlag
+    public static final String CP_OPINION_BOARD_FLAG = "cp_opinion";
 
     // Flag 조회 (존재하지 않으면 빈 Optional 반환)
     @Transactional(readOnly = true)

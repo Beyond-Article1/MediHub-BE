@@ -13,4 +13,5 @@ public class CaseSharingVersionListDTO {
     private Long caseSharingSeq; // seq값
     private String caseSharingTitle; //제목
     private LocalDateTime regDate; //작성 일자
+    private Long caseSharingViewCount; //조회수
 }

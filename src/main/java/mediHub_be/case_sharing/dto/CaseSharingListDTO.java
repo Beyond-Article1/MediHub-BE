@@ -16,5 +16,7 @@ public class CaseSharingListDTO {
     private String caseAuthor; // 작성자
     private String caseAuthorRankName; //작성자 직위명
     private LocalDateTime regDate; //작성 일자
+    private Long caseSharingViewCount; //조회수
+
 
 }

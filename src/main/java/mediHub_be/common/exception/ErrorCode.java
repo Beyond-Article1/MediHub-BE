@@ -19,6 +19,9 @@ public enum ErrorCode {
     // 시간관련
     NEED_AFTER_TIME(40002, HttpStatus.BAD_REQUEST, "현재 시간 이후로만 설정이 가능합니다."),
 
+    // 필력 필드 관련
+    REQUIRED_FIELD_MISSING(40003, HttpStatus.BAD_REQUEST, "필수 입력값이 누락되었습니다. 모든 필드를 확인해 주세요."),
+
     /**
      * == 401 UNAUTHORIZED ==
      */
@@ -41,8 +44,11 @@ public enum ErrorCode {
     NOT_FOUND_USER(40400, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     NOT_FOUND_END_POINT(40401, HttpStatus.NOT_FOUND, "존재하지 않는 API입니다."),
 
+    NOT_FOUDN_CP_VERSION(40402, HttpStatus.NOT_FOUND, "CP 버전을 찾을 수 없습니다."),
+    NOT_FOUND_CP_OPINION(40403, HttpStatus.NOT_FOUND, "CP 의견을 찾을 수 없습니다."),
+
     // 알림 (notify)
-    NOT_FOUND_NOTIFY(40402, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
+    NOT_FOUND_NOTIFY(40404, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
 
     /**
      * == 409 CONFLICT ==
@@ -58,7 +64,9 @@ public enum ErrorCode {
      */
     // 서버오류
     INTERNAL_SERVER_ERROR(50000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류입니다."),
-    INTERNAL_SERVER_IO_ERROR(50001, HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다.");
+    INTERNAL_SERVER_IO_ERROR(50001, HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
+    INTERNAL_DATABASE_ERROR(50002, HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 업로드 오류입니다.");
+
 
 
     private final Integer code;

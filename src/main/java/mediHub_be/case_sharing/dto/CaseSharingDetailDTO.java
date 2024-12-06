@@ -20,10 +20,11 @@ public class CaseSharingDetailDTO {
     private String caseAuthor; // 작성자
     private String caseAuthorRankName; //작성자 직위명
 
-    private List<CaseSharingCommentDTO> comments; // 댓글 리스트
     private List<CaseSharingKeywordDTO> keywords; // 키워드 리스트
 
     private Long caseSharingGroupSeq; // 그룹 ID (CaseSharingGroup 정보)
     private Boolean isLatestVersion; // 최신 버전 여부
+
+    private Long caseSharingViewCount; //조회수
 }
 

@@ -4,10 +4,12 @@ import mediHub_be.case_sharing.entity.CaseSharing;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+@Repository
 public interface CaseSharingRepository extends JpaRepository<CaseSharing, Long> {
     // 최신 버전의 케이스 공유 목록만 조회
     @Query("SELECT c FROM CaseSharing c WHERE c.caseSharingIsLatest = true AND c.caseSharingIsDraft = false AND c.deletedAt IS NULL")
