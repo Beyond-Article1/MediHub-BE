@@ -35,7 +35,7 @@ public class CpController {
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpController"); // Logger
 
-    // https://medihub.info/cp?cpSearchCategorySeq=values&cpSearchCategoryDataArray=values
+    // CP 검색 조회
     // example: https://medihub.info/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryData=1,2,3
     @GetMapping
     @Operation(
@@ -93,7 +93,7 @@ public class CpController {
         }
     }
 
-    // https://medihub.info/cp/{cpVersionSeq}
+    // CP 버전 번호로 CP 조회
     @GetMapping(value = "/{cpVersionSeq}")
     @Operation(summary = "CP 조회",
             description = "주어진 CP 버전 시퀀스를 사용하여 CP를 조회합니다.")
@@ -127,8 +127,10 @@ public class CpController {
         }
     }
 
-    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/isDeleted=value
-    @GetMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}")
+    // CP 의견 리스트 조회
+    @GetMapping(value = "/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}")
+    @Operation(summary = "CP 의견 리스트 조회",
+            description = "주어진 CP 버전 시퀀스와 CP 의견 위치 시퀀스를 기준으로 CP 의견 리스트를 조회합니다.")
     public ResponseEntity<ApiResponse<List<ResponseCpOpinionDTO>>> getCpOpinionListByCpOpinionLocationSeq(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
@@ -159,8 +161,7 @@ public class CpController {
     }
 
     // CP 의견 상세 조회
-    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
-    @GetMapping("/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
+    @GetMapping("/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}/{cpOpinionSeq}")
     @Operation(summary = "CP 의견 조회",
             description = "주어진 CP 버전 시퀀스와 CP 의견 위치, CP 의견 번호를 사용하여 CP 의견을 조회합니다.")
     public ResponseEntity<ApiResponse<ResponseCpOpinionDTO>> getCpOpinionByCpOpinionSeq(
@@ -186,8 +187,7 @@ public class CpController {
     }
 
     // CP 의견 생성
-    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}
-    @PostMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}")
+    @PostMapping(value = "/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}")
     @Operation(summary = "CP 의견 생성",
             description = "주어진 CP 버전 시퀀스와 CP 의견 위치를 사용하여 CP 의견을 생성합니다.")
     public ResponseEntity<ApiResponse<CpOpinionDTO>> createCpOpinion(

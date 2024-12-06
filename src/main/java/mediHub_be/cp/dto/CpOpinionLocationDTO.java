@@ -8,7 +8,7 @@ import mediHub_be.cp.entity.CpOpinionLocation;
 @Builder
 public class CpOpinionLocationDTO {
 
-    private Long cpOpinionLocationSeq;      // cp 의견위치 번호
+    private long cpOpinionLocationSeq;      // cp 의견위치 번호
     private long cpVersionSeq;              // cp 버전 번호
     private double cpOpinionLocationX;      // x 좌표
     private double cpOpinionLocationY;      // y 좌표
