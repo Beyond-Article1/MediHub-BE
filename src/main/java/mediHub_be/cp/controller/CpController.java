@@ -1,5 +1,6 @@
 package mediHub_be.cp.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,8 @@ public class CpController {
     // https://medihub.info/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryDataArray=1,2,3
     // example: https://medihub.info/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryData=1,2,3
     @GetMapping
+    @Operation(summary = "CP 리스트 조회",
+            description = "주어진 카테고리 시퀀스와 카테고리 데이터를 사용하여 CP 리스트를 조회합니다.")
     public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpSearchCategoryAndCpSearchCategoryData(
             @RequestParam(required = false) String cpSearchCategorySeq,
             @RequestParam(required = false) String cpSearchCategoryData) {
@@ -88,6 +91,8 @@ public class CpController {
 
     // https://medihub.info/cp?cpName=value
     @GetMapping(params = "cpName") // 중복된 매핑 방지
+    @Operation(summary = "CP 리스트 조회",
+            description = "주어진 CP 이름을 사용하여 CP 리스트를 조회합니다.")
     public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpName(@RequestParam String cpName) {
         logger.info("이름: {}으로 CP를 가져오는 요청을 받았습니다.", cpName);
 
@@ -120,6 +125,8 @@ public class CpController {
 
     // https://medihub.info/cp/{cpVersionSeq}
     @GetMapping(value = "/{cpVersionSeq}")
+    @Operation(summary = "CP 조회",
+            description = "주어진 CP 버전 시퀀스를 사용하여 CP를 조회합니다.")
     public ResponseEntity<ApiResponse<ResponseCpDTO>> getCpByCpVersionSeq(@PathVariable long cpVersionSeq) {
         logger.info("버전 시퀀스: {}로 CP를 가져오는 요청을 받았습니다.", cpVersionSeq);
 
