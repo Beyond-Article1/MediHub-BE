@@ -326,7 +326,8 @@ public class CpOpinionService {
             CpOpinion cpOpinion = getCpOpinionAndCheckUnauthorizedAccess(cpOpinionSeq);
 
             // CP 의견 삭제
-            cpOpinionRepository.deleteById(cpOpinionSeq);
+            cpOpinion.delete();
+            cpOpinionRepository.save(cpOpinion);
             logger.info("CP 의견이 성공적으로 삭제되었습니다. cpOpinionSeq: {}", cpOpinionSeq);
 
             // 키워드 삭제
