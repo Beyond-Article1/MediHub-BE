@@ -191,6 +191,8 @@ public class CpController {
     // CP 의견 상세 조회
     // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
     @GetMapping("/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
+    @Operation(summary = "CP 의견 조회",
+            description = "주어진 CP 버전 시퀀스와 CP 의견 위치, CP 의견 번호를 사용하여 CP 의견을 조회합니다.")
     public ResponseEntity<ApiResponse<ResponseCpOpinionDTO>> getCpOpinionByCpOpinionSeq(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
@@ -216,6 +218,8 @@ public class CpController {
     // CP 의견 생성
     // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}
     @PostMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}")
+    @Operation(summary = "CP 의견 생성",
+            description = "주어진 CP 버전 시퀀스와 CP 의견 위치를 사용하여 CP 의견을 생성합니다.")
     public ResponseEntity<ApiResponse<CpOpinionDTO>> createCpOpinion(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
@@ -240,6 +244,8 @@ public class CpController {
     // CP 의견 삭제
     // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
     @DeleteMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
+    @Operation(summary = "CP 의견 삭제",
+            description = "주어진 CP 버전 시퀀스와 CP 의견 위치, CP 의견 번호를 사용하여 CP 의견을 삭제합니다.")
     public ResponseEntity<ApiResponse<Void>> deleteCpOpinionByCpOpinionSeq(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
@@ -262,6 +268,8 @@ public class CpController {
     // CP 의견 수정
     // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
     @PutMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
+    @Operation(summary = "CP 의견 수정",
+            description = "주어진 CP 버전 시퀀스와 CP 의견 위치, CP 의견 번호를 사용하여 CP 의견을 수정합니다.")
     public ResponseEntity<ApiResponse<CpOpinionDTO>> updateCpOpinion(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
