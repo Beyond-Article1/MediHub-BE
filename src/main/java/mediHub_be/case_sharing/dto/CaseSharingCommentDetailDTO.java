@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CaseSharingCommentDTO {
-    private Long commentSeq; // 댓글 ID
+public class CaseSharingCommentDetailDTO {
+
     private String userName; // 댓글 작성자명
     private String userRankName; //댓글 작성자 직위명
     private String content; // 댓글 내용
