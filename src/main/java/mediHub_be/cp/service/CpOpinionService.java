@@ -339,30 +339,34 @@ public class CpOpinionService {
     }
 
     /**
-     * 주어진 CP 의견 ID에 대한 접근 권한을 확인하고,
-     * 해당 CP 의견을 반환합니다.
+     * CP 의견을 조회하고, 현재 사용자의 접근 권한을 검증하는 메서드입니다.
      *
-     * @param cpOpinionSeq 확인할 CP 의견의 ID
-     * @return CP 의견 객체
-     * @throws CustomException - NOT_FOUND_CP_OPINION: 주어진 ID에 해당하는 CP 의견이 존재하지 않을 경우
-     *                         - UNAUTHORIZED_USER: 현재 사용자 ID가 null이거나,
-     *                         요청된 CP 의견의 작성자와 현재 사용자가 일치하지 않을 경우
+     * @param cpOpinionSeq CP 의견의 고유 식별자
+     * @return CpOpinion 조회된 CP 의견 객체
+     * @throws CustomException 데이터베이스 접근 오류, 권한 없음 등의 예외가 발생할 경우
      */
     @Transactional(readOnly = true)
     public CpOpinion getCpOpinionAndCheckUnauthorizedAccess(long cpOpinionSeq) {
 
-        // DB에서 데이터 조회
+        // DB에서 CP 의견 조회
         CpOpinion cpOpinion = cpOpinionRepository.findById(cpOpinionSeq)
                 .orElseThrow(() -> {
                     logger.warn("조회된 CP 의견이 없습니다. CP 의견 번호: {}", cpOpinionSeq);
                     throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION); // 의견이 존재하지 않을 경우 예외 발생
                 });
 
-        // 로그인 유저 번호
+        // 로그인 유저 번호 및 권한 확인
         Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
+        String currentUserAuth = SecurityUtil.getCurrentUserAuthorities();
+
+        // 어드민 여부 확인
+        if (currentUserAuth.equals(UserAuth.ADMIN)) {
+            return cpOpinion; // 어드민이면 즉시 CP 의견 반환
+        }
 
         // 작성자 확인
         if (currentUserSeq == null || !currentUserSeq.equals(cpOpinion.getUserSeq())) {
+            logger.warn("작성자 확인 실패. 현재 사용자 번호: {}, 요구되는 사용자 번호: {}", currentUserSeq, cpOpinion.getUserSeq());
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
