@@ -14,6 +14,7 @@ import java.util.Map;
 public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
 
     @Query("SELECT new map(" +
+            "cv.cpVersionSeq AS cpVersionSeq," +
             "cp.cpName AS cpName, " +
             "cp.cpDescription AS cpDescription, " +
             "cp.cpViewCount AS cpViewCount, " +
@@ -36,6 +37,7 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             @Param("cpSearchCategoryDataArray") List<Long> cpSearchCategoryDataArray);
 
     @Query("SELECT new map(" +
+            "cv.cpVersionSeq AS cpVersionSeq," +
             "cp.cpName AS cpName, " +
             "cp.cpDescription AS cpDescription, " +
             "cp.cpViewCount AS cpViewCount, " +
@@ -47,14 +49,13 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "p.partName AS partName)" +
             "FROM CpVersion AS cv " +
             "JOIN Cp AS cp ON cv.cpSeq = cp.cpSeq " +
-            "JOIN CpSearchData AS csd ON cv.cpVersionSeq = csd.cpVersionSeq " +
-            "JOIN CpSearchCategoryData AS cscd ON csd.cpSearchCategoryDataSeq = cscd.cpSearchCategoryDataSeq " +
             "JOIN User AS u ON cv.userSeq = u.userSeq " +
             "JOIN Part AS p ON u.part.partSeq = p.partSeq " +
             "WHERE cp.cpName LIKE CONCAT('%', :cpName, '%')")
     List<Map<String, Object>> findByCpNameContainingIgnoreCase(@Param("cpName") String cpName);
 
     @Query("SELECT new mediHub_be.cp.dto.ResponseCpDTO(" +
+            "cv.cpVersionSeq ," +
             "cp.cpName, " +
             "cp.cpDescription, " +
             "cp.cpViewCount, " +
@@ -66,11 +67,26 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "p.partName)" +
             "FROM CpVersion AS cv " +
             "JOIN Cp AS cp ON cv.cpSeq = cp.cpSeq " +
-            "JOIN CpSearchData AS csd ON cv.cpVersionSeq = csd.cpVersionSeq " +
-            "JOIN CpSearchCategoryData AS cscd ON csd.cpSearchCategoryDataSeq = cscd.cpSearchCategoryDataSeq " +
             "JOIN User AS u ON cv.userSeq = u.userSeq " +
             "JOIN Part AS p ON u.part.partSeq = p.partSeq " +
-            "WHERE cv.cpVersion = :cpVersionSeq")
+            "WHERE cv.cpVersionSeq = :cpVersionSeq")
     ResponseCpDTO findByCpVersionSeq(@Param("cpVersionSeq") long cpVersionSeq);
+
+    @Query("SELECT new mediHub_be.cp.dto.ResponseCpDTO(" +
+            "cv.cpVersionSeq ," +
+            "cp.cpName, " +
+            "cp.cpDescription, " +
+            "cp.cpViewCount, " +
+            "cv.cpVersion, " +
+            "cv.cpVersionDescription, " +
+            "cv.createdAt, " +
+            "u.userName, " +
+            "u.userId, " +
+            "p.partName)" +
+            "FROM CpVersion AS cv " +
+            "JOIN Cp AS cp ON cv.cpSeq = cp.cpSeq " +
+            "JOIN User AS u ON cv.userSeq = u.userSeq " +
+            "JOIN Part AS p ON u.part.partSeq = p.partSeq")
+    List<ResponseCpDTO> findCp();
 }
 
