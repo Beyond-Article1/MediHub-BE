@@ -7,10 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
-import mediHub_be.cp.dto.CpOpinionDTO;
-import mediHub_be.cp.dto.RequestCpOpinionDTO;
-import mediHub_be.cp.dto.ResponseCpDTO;
-import mediHub_be.cp.dto.ResponseCpOpinionDTO;
+import mediHub_be.cp.dto.*;
+import mediHub_be.cp.entity.CpOpinionLocation;
+import mediHub_be.cp.service.CpOpinionLocationService;
 import mediHub_be.cp.service.CpOpinionService;
 import mediHub_be.cp.service.CpService;
 import org.slf4j.Logger;
@@ -32,6 +31,7 @@ public class CpController {
 
     // Service
     private final CpService cpService;
+    private final CpOpinionLocationService cpOpinionLocationService;
     private final CpOpinionService cpOpinionService;
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpController"); // Logger
@@ -289,6 +289,54 @@ public class CpController {
             return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
         } catch (Exception e) {
             logger.error("CP 의견 수정 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+    }
+
+    // CP 의견 위치 조회
+    // https://medihub.info/cp/{cpVersionSeq}/cpOpinionLocation
+    @GetMapping(value = "/{cpVersionSeq}/cpOpinionLocation")
+    @Operation(summary = "CP 의견 위치 조회",
+            description = "주어진 CP 버전 시퀀스를 사용하여 CP 의견 위치 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<List<CpOpinionLocationDTO>>> getCpOpinionLocation(@PathVariable long cpVersionSeq) {
+        logger.info("CP 버전 시퀀스: {}로 CP 의견 위치 조회 요청을 받았습니다.", cpVersionSeq);
+
+        try {
+            List<CpOpinionLocationDTO> cpOpinionLocationDtoList = cpOpinionLocationService.getCpOpinionLocationListByCpVersionSeq(cpVersionSeq);
+
+            logger.info("CP 의견 위치 목록 조회 성공: {}", cpOpinionLocationDtoList);
+            return ResponseEntity.ok(ApiResponse.ok(cpOpinionLocationDtoList));
+        } catch (CustomException e) {
+            logger.error("CP 의견 위치 조회 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            logger.error("CP 의견 위치 조회 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+    }
+
+    // CP 의견 위치 생성
+    @PostMapping(value = "/{cpVersionSeq}/cpOpinionLocation")
+    @Operation(summary = "CP 의견 위치 생성",
+            description = "주어진 CP 버전 시퀀스를 사용하여 새로운 CP 의견 위치를 생성합니다.")
+    public ResponseEntity<ApiResponse<CpOpinionLocationDTO>> createCpOpinionLocation(
+            @PathVariable long cpVersionSeq,
+            @RequestBody RequestCpOpinionLocationDTO requestBody) {
+
+        logger.info("CP 버전 시퀀스: {}로 새로운 CP 의견 위치 생성 요청을 받았습니다. 요청 본문: {}", cpVersionSeq, requestBody);
+
+        try {
+            // CP 의견 위치 생성
+            CpOpinionLocationDTO dto = cpOpinionLocationService.createCpOpinionLocation(cpVersionSeq, requestBody);
+
+            logger.info("CP 의견 위치가 성공적으로 생성되었습니다. 생성된 정보: {}", dto);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(dto)); // 201 Created
+        } catch (CustomException e) {
+            logger.error("CP 의견 위치 생성 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            logger.error("CP 의견 위치 생성 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
     }

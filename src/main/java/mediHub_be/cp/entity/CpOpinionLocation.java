@@ -21,4 +21,6 @@ public class CpOpinionLocation extends BaseCreateDeleteEntity {
 
     @Column
     private double cpOpinionLocationY;      // y 좌표
+
+//    public static CpOpinionLocation create()
 }
