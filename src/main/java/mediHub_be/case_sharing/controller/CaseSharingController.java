@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.board.service.BookmarkService;
 import mediHub_be.case_sharing.dto.*;
 import mediHub_be.case_sharing.service.CaseSharingService;
 import mediHub_be.common.response.ApiResponse;
@@ -25,7 +24,6 @@ import java.util.List;
 public class CaseSharingController {
 
     private final CaseSharingService caseSharingService;
-    private final BookmarkService bookmarkService;
 
     @Operation(summary = "케이스 공유 전체 목록 조회", description = "필터링 되지 않은 최신 버전 케이스 공유 전체 글 목록 조회")
     @GetMapping
