@@ -2,6 +2,8 @@ package mediHub_be.cp.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpDTO;
 import mediHub_be.cp.repository.CpVersionRepository;
 import org.slf4j.Logger;
@@ -37,13 +39,13 @@ public class CpService {
         );
 
         if (findCpList.isEmpty()) {
-            logger.warn("조회 결과 없음: 카테고리 시퀀스와 데이터로 찾은 CP가 없습니다.");
-            return null;
+            logger.info("조회 결과 없음: 카테고리 시퀀스와 데이터로 찾은 CP가 없습니다.");
+            throw new CustomException(ErrorCode.NOT_FOUDN_CP_VERSION);
         } else {
-            logger.info("조회된 CP 리스트 크기: {}, 내용: {}", findCpList.size(), findCpList);
+            logger.info("조회된 CP 리스트 크기: {}", findCpList.size());
             // Map을 ResponseCpDTO로 변환
             return findCpList.stream()
-                    .map(ResponseCpDTO::buildResponseCpDTO)
+                    .map(ResponseCpDTO::toDto)
                     .collect(Collectors.toList());
         }
     }
@@ -56,13 +58,13 @@ public class CpService {
         List<Map<String, Object>> findCpList = cpVersionRepository.findByCpNameContainingIgnoreCase(cpName);    // Logger
 
         if (findCpList.isEmpty()) {
-            logger.warn("조회 결과 없음: CP 이름 '{}'에 대한 결과가 없습니다.", cpName);
-            return null;
+            logger.info("조회 결과 없음: CP 이름 '{}'에 대한 결과가 없습니다.", cpName);
+            throw new CustomException(ErrorCode.NOT_FOUDN_CP_VERSION);
         } else {
-            logger.info("조회된 CP 리스트 크기: {}, 내용: {}", findCpList.size(), findCpList);
+            logger.info("조회된 CP 리스트 크기: {}", findCpList.size());
             // Map을 ResponseCpDTO로 변환
             return findCpList.stream()
-                    .map(ResponseCpDTO::buildResponseCpDTO)
+                    .map(ResponseCpDTO::toDto)
                     .collect(Collectors.toList());
         }
     }
@@ -76,8 +78,9 @@ public class CpService {
 
         if (findCp == null) {
             // 조회 결과 없음
-            logger.warn("조회 결과 없음: CP 버전 시퀀스 '{}'에 대한 결과가 없습니다.", cpVersionSeq);
-            return null;
+            logger.info("조회 결과 없음: CP 버전 시퀀스 '{}'에 대한 결과가 없습니다.", cpVersionSeq);
+            throw new CustomException(ErrorCode.NOT_FOUDN_CP_VERSION);
+
         } else {
             logger.info("조회된 CP: {}", findCp);
             // 조회된 결과 반환

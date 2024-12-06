@@ -14,6 +14,7 @@ import java.util.Map;
 public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
 
     @Query("SELECT new map(" +
+            "cv.cpVersionSeq ," +
             "cp.cpName AS cpName, " +
             "cp.cpDescription AS cpDescription, " +
             "cp.cpViewCount AS cpViewCount, " +
@@ -36,6 +37,7 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             @Param("cpSearchCategoryDataArray") List<Long> cpSearchCategoryDataArray);
 
     @Query("SELECT new map(" +
+            "cv.cpVersionSeq ," +
             "cp.cpName AS cpName, " +
             "cp.cpDescription AS cpDescription, " +
             "cp.cpViewCount AS cpViewCount, " +
@@ -55,6 +57,7 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
     List<Map<String, Object>> findByCpNameContainingIgnoreCase(@Param("cpName") String cpName);
 
     @Query("SELECT new mediHub_be.cp.dto.ResponseCpDTO(" +
+            "cv.cpVersionSeq ," +
             "cp.cpName, " +
             "cp.cpDescription, " +
             "cp.cpViewCount, " +
