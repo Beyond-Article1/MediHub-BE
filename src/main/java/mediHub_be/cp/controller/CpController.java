@@ -36,7 +36,7 @@ public class CpController {
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpController"); // Logger
 
-    // https://medihub.info/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryDataArray=1,2,3
+    // https://medihub.info/cp?cpSearchCategorySeq=values&cpSearchCategoryDataArray=values
     // example: https://medihub.info/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryData=1,2,3
     @GetMapping
     @Operation(summary = "CP 리스트 조회",
