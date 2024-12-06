@@ -5,13 +5,12 @@ springdoc:
     tags-sorter: alpha # 태그 알파벳 순서
     operations-sorter: method  # delete - get - patch - post - put 순으로 정렬
 
-
 server:
   port: 8088
   
 spring:
   config:
-    import: "classpath:application-key.properties"
+    import: "classpath:Application-KEY.properties"
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver

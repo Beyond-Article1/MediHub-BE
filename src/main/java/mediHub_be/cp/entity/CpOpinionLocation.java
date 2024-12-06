@@ -2,11 +2,12 @@ package mediHub_be.cp.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import mediHub_be.common.aggregate.entity.BaseCreateDeleteEntity;
 
 @Entity
 @Table(name = "cp_opinion_location")
 @Getter
-public class CpOpinionLocation {
+public class CpOpinionLocation extends BaseCreateDeleteEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
