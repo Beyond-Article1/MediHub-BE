@@ -60,6 +60,14 @@ public class CpOpinionLocationService {
                 .toList();
     }
 
+    /**
+     * CP 의견 위치를 생성하고 데이터베이스에 저장하는 메서드입니다.
+     *
+     * @param cpVersionSeq    CP 버전의 고유 식별자
+     * @param requestBody     CP 의견 위치 생성에 필요한 데이터가 포함된 요청 DTO
+     * @return CpOpinionLocationDTO    생성된 CP 의견 위치의 DTO
+     * @throws CustomException    데이터베이스 접근 오류나 기타 예기치 않은 오류가 발생할 경우
+     */
     @Transactional
     public CpOpinionLocationDTO createCpOpinionLocation(long cpVersionSeq, RequestCpOpinionLocationDTO requestBody) {
 
