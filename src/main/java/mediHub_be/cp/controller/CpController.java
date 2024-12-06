@@ -39,11 +39,9 @@ public class CpController {
     // https://medihub.info/cp?cpSearchCategorySeq=values&cpSearchCategoryDataArray=values
     // example: https://medihub.info/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryData=1,2,3
     @GetMapping
-    @Operation(
-            summary = "CP 리스트 조회",
+    @Operation(summary = "CP 리스트 조회",
             description = "주어진 카테고리 시퀀스와 카테고리 데이터를 사용하여 CP 리스트를 조회합니다.",
-            operationId = "getCpListByCategory"
-    )
+            operationId = "getCpListByCategory")
     public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpSearchCategoryAndCpSearchCategoryData(
             @RequestParam(required = false, defaultValue = "null") String cpSearchCategorySeq,
             @RequestParam(required = false, defaultValue = "null") String cpSearchCategoryData) {
@@ -51,17 +49,20 @@ public class CpController {
         logger.info("카테고리 시퀀스: {} 및 카테고리 데이터: {}를 사용하여 CP 리스트 요청을 받았습니다.", cpSearchCategorySeq, cpSearchCategoryData);
 
         // RequestParam 값을 List에 저장(없으면, null)
-        List<Long> cpSearchCategorySeqList = cpSearchCategorySeq != null
+        List<Long> cpSearchCategorySeqList = cpSearchCategorySeq != null && !cpSearchCategorySeq.equals("null")
                 ? Arrays.stream(cpSearchCategorySeq.split(","))
                 .map(Long::valueOf)
                 .collect(Collectors.toList()) : null;
 
         // RequestParam 값을 List에 저장(없으면, null)
-        List<Long> cpSearchCategoryDataList =
-                cpSearchCategoryData != null
-                        ? Arrays.stream(cpSearchCategoryData.split(","))
-                        .map(Long::valueOf)
-                        .collect(Collectors.toList()) : null;
+        List<Long> cpSearchCategoryDataList = cpSearchCategoryData != null && !cpSearchCategoryData.equals("null")
+                ? Arrays.stream(cpSearchCategoryData.split(","))
+                .map(Long::valueOf)
+                .collect(Collectors.toList()) : null;
+
+        // 계산된 리스트의 내용을 로그로 출력
+        logger.info("계산된 카테고리 시퀀스 리스트: {}", cpSearchCategorySeqList);
+        logger.info("계산된 카테고리 데이터 리스트: {}", cpSearchCategoryDataList);
 
         try {
             // 입력받은 데이터를 통하여 CP 리스트를 가져오는 서비스 호출
@@ -88,6 +89,7 @@ public class CpController {
                     .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
     }
+
 
     // https://medihub.info/cp?cpName=value
     @GetMapping(params = "cpName") // 중복된 매핑 방지

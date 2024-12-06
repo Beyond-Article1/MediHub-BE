@@ -14,7 +14,7 @@ import java.util.Map;
 public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
 
     @Query("SELECT new map(" +
-            "cv.cpVersionSeq ," +
+            "cv.cpVersionSeq AS cpVersionSeq," +
             "cp.cpName AS cpName, " +
             "cp.cpDescription AS cpDescription, " +
             "cp.cpViewCount AS cpViewCount, " +
