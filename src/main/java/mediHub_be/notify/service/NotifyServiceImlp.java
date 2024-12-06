@@ -2,7 +2,6 @@ package mediHub_be.notify.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.board.entity.Flag;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.notify.dto.NotifyDTO;
@@ -12,8 +11,8 @@ import mediHub_be.notify.entity.Notify;
 import mediHub_be.notify.repository.NotifyRepository;
 import mediHub_be.notify.repository.SseRepositoryImpl;
 import mediHub_be.user.entity.User;
-import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
@@ -51,6 +50,7 @@ public class NotifyServiceImlp implements NotifyService{
         return emitter;
     }
 
+    // 아이디 생셩
     private String makeTimeIncludeId(String userId) {
         return userId + "_" + System.currentTimeMillis();
     }
@@ -68,10 +68,12 @@ public class NotifyServiceImlp implements NotifyService{
         }
     }
 
+    // 미수신 알림이 있는 경우
     private boolean hasLostData(String lastEventId) {
         return !lastEventId.isEmpty();
     }
 
+    // 마지막 데이터들 넘겨보내기
     public void sendLostData(String lastEventId, String userId, String emitterId, SseEmitter emitter) {
         Map<String, Object> eventCaches = sseRepository.findAllEventCacheStartWithByMemberId(String.valueOf(userId));
         eventCaches.entrySet().stream()
@@ -81,11 +83,12 @@ public class NotifyServiceImlp implements NotifyService{
 
     // 받는 사람이 한명인 경우 (ex. 게시글에 대한 댓글 발생 -> 게시글 작성자에게만 알림 생성)
     @Override
+    @Transactional
     public void send(User sender, User receiver, NotiType notiType, String url) {
 
         log.debug("receiver 확인 {}", receiver);
 
-        Notify notification = notifyRepository.save(createNotification(receiver, notiType, notiType.getMessage(), url));
+        Notify notification = notifyRepository.save(createNotification(receiver, notiType, notiType.getMessage(), url, sender.getUserId(), sender.getPart().getPartName()));
 
         String receiverUserId = receiver.getUserId();
         String eventId = receiverUserId + "_" + System.currentTimeMillis();
@@ -93,19 +96,20 @@ public class NotifyServiceImlp implements NotifyService{
         emitters.forEach(
                 (key, emitter) -> {
                     sseRepository.saveEventCache(key, notification);
-                    sendNotification(emitter, eventId, key, NotifyDTO.Response.createResponse(notification));
+                    sendNotification(emitter, eventId, key, NotifyDTO.createResponse(notification, sender.getUserName(), sender.getPart().getPartName()));
                 }
         );
     }
 
     // 받는 사람이 여러명인 경우 (ex. 게시글 또는 케이스공유 작성시 팔로워들한테 알림 발생)
     @Override
+    @Transactional
     public void send(User sender, List<User> receivers, NotiType notiType, String url) {
 
         log.debug("sender 확인 {}", sender);
 
         for (User receiver : receivers) {
-            Notify notification = notifyRepository.save(createNotification(receiver, notiType, notiType.getMessage(), url));
+            Notify notification = notifyRepository.save(createNotification(receiver, notiType, notiType.getMessage(), url, sender.getUserId(), sender.getPart().getPartName()));
 
             String receiverUserId = receiver.getUserId();
             String eventId = receiverUserId + "_" + System.currentTimeMillis();
@@ -113,15 +117,16 @@ public class NotifyServiceImlp implements NotifyService{
             emitters.forEach(
                     (key, emitter) -> {
                         sseRepository.saveEventCache(key, notification);
-                        sendNotification(emitter, eventId, key, NotifyDTO.Response.createResponse(notification));
+                        sendNotification(emitter, eventId, key, NotifyDTO.createResponse(notification, sender.getUserName(), sender.getPart().getPartName()));
                     }
             );
         }
 
     }
 
-    private Notify createNotification(User receiver, NotiType notificationType, String content, String url) {
-//    private Notify createNotification(User receiver, Flag flag, NotiType notificationType, String content, String url) {
+    // 알림 생성 로직
+    private Notify createNotification(User receiver, NotiType notificationType, String content, String url, String senderUserName, String senderUserPart) {
+//    private Notify createNotification(User receiver, Flag flag, NotiType notificationType, String content, String url, String senderUserId, String senderUserPart) {
         return Notify.builder()
                 .receiver(receiver)
 //                .flag(flag)
@@ -129,7 +134,70 @@ public class NotifyServiceImlp implements NotifyService{
                 .notiContent(content)
                 .notiUrl(url)
                 .isRead(NotiReadStatus.N)
+                .senderUserName(senderUserName)
+                .senderUserPart(senderUserPart)
                 .build();
     }
 
+    // 알림 전체 조회
+    @Transactional
+    public List<NotifyDTO> notiAll(String userId){
+
+        return notifyRepository.findAllByUserId(userId)
+                .stream()
+                .map(NotifyDTO::new)
+                .toList();
+    }
+
+    // 알림 단일 읽음
+    @Transactional
+    public void readNotify(String userId, Long notiSeq){
+
+        Notify notify = checkNotifyAndUserId(userId, notiSeq);
+
+        // 읽음 처리
+        notify.notiRead();
+    }
+
+    // 알림 단일 삭제
+    @Transactional
+    public void deleteNotify(String userId, Long notiSeq){
+
+        Notify notify = checkNotifyAndUserId(userId, notiSeq);
+
+        // 삭제 처리
+        notifyRepository.delete(notify);
+    }
+
+    // 알림 전체 읽음
+    @Transactional
+    public void readAllNotify(String userId){
+
+        List<Notify> notReadNotifyByUserId =
+                notifyRepository.findNotReadNotifyByUserId(userId);
+
+        notReadNotifyByUserId
+                .forEach(Notify::notiRead);
+    }
+
+    // 알림 전체 삭제
+    @Transactional
+    public void deleteAllNotify(String userId){
+
+        List<Notify> allByUserId = notifyRepository.findAllByUserId(userId);
+
+        notifyRepository.deleteAll(allByUserId);
+    }
+
+    // Notify의 수신자 아이디와 로그인 한 요청자의 ID 비교
+    private Notify checkNotifyAndUserId(String userId, Long notiSeq){
+        Notify notify = notifyRepository.findById(notiSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_NOTIFY));
+
+        if (userId.equals(notify.getReceiver().getUserId())){
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+        }
+
+        return notify;
+    }
 }
