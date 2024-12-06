@@ -38,6 +38,23 @@ public class TemplateService {
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
         return templateRepository.findByDeletedAtIsNull().stream() // 삭제되지 않은 템플릿만 조회
+                .filter(template -> {
+                    // 공개 범위에 따른 필터링
+                    return switch (template.getOpenScope()) {
+                        case PRIVATE ->
+                            // PRIVATE 템플릿은 작성자 본인만 조회 가능
+                                template.getUser().equals(user);
+                        case CLASS_OPEN ->
+                            // CLASS_OPEN 템플릿은 같은 부서(dept)의 회원만 조회 가능
+                                template.getPart() != null
+                                        && user.getPart() != null
+                                        && template.getPart().equals(user.getPart());
+                        case PUBLIC ->
+                            // PUBLIC 템플릿은 모두 조회 가능
+                                true;
+                        default -> false;
+                    };
+                })
                 .map(template -> {
                     // Flag 조회
                     Optional<Flag> flagOptional = flagRepository.findByFlagBoardFlagAndFlagPostSeq("template_preview", template.getTemplateSeq());
@@ -51,6 +68,7 @@ public class TemplateService {
                         }
                     }
 
+                    // TemplateListDTO 생성
                     return TemplateListDTO.builder()
                             .templateSeq(template.getTemplateSeq())
                             .templateTitle(template.getTemplateTitle())
