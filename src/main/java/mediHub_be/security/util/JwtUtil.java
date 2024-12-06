@@ -75,9 +75,9 @@ public class JwtUtil {
     public Authentication getAuthentication(String token) {
         Claims claims = parseClaims(token);
         String userId = claims.getSubject();
-        Long userSeq = claims.get("userseq", Long.class); // userSeq 추출
+        Long userSeq = claims.get("userseq", Long.class);
 
-        UserDetails userDetails = userService.loadUserByUsername(userId); // userId로 UserDetails 조회
+        UserDetails userDetails = userService.loadUserByUsername(userId);
         if (userDetails instanceof CustomUserDetails customUserDetails) {
             // CustomUserDetails에 userSeq 설정 확인
             log.info("Loaded userSeq from token: {}", customUserDetails.getUserSeq());

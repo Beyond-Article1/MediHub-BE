@@ -43,6 +43,8 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         claims.put("username", username);
         claims.put("auth", authorities);
 
+        log.info("userseq는 뭐시냐 도대체" + userSeq);
+
         String token = Jwts.builder()
                 .setClaims(claims) // userSeq 포함
                 .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(env.getProperty("token.expiration_time"))))
