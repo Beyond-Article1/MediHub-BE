@@ -32,16 +32,30 @@ services:
 
   mongodb:
     image: mongo:latest
-    container_name: mongodb_boot
+    container_name: mongodb
     restart: always
     ports:
       - "27017:27017"
     environment:
+      MONGO_INITDB_DATABASE: ${DB_DATABASE}
       MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
 
     volumes:
       - mongo_data:/data/db
+    networks:
+      - springboot-network
+
+  redis:
+    image: redis:latest
+    restart: always
+    container_name: redis
+    hostname: ${DB_DATABASE}
+    ports:
+      - "6379:6379"
+    networks:
+      - springboot-network
+    command: redis-server --requirepass ${DB_PASSWORD}
 
 networks:
   springboot-network:

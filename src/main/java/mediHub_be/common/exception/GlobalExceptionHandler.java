@@ -21,7 +21,6 @@ public class GlobalExceptionHandler {
                 .body(apiResponse);
     }
 
-
     // 커스텀 예외
     @ExceptionHandler(value = {CustomException.class})
     public ResponseEntity<ApiResponse<?>> handleCustomException(CustomException e) {

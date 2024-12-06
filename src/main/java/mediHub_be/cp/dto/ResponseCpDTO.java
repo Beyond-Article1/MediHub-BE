@@ -18,7 +18,7 @@ public class ResponseCpDTO {
     private LocalDateTime createdAt;            // cp 버전 생성일
     private String userName;                    // 작성자명
     private String userId;                      // 작성자 아이디
-    private String partName;                    // 작성자 부서명
+    private String partName;                    // 작성자 과명(ex: 외과/내과/안과 ...)
 
     // 변환 메소드
     public static ResponseCpDTO buildResponseCpDTO(Map<String, Object> map) {

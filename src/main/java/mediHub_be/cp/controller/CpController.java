@@ -6,7 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
+import mediHub_be.cp.dto.CpOpinionDTO;
+import mediHub_be.cp.dto.RequestCpOpinionDTO;
 import mediHub_be.cp.dto.ResponseCpDTO;
+import mediHub_be.cp.dto.ResponseCpOpinionDTO;
+import mediHub_be.cp.service.CpOpinionService;
 import mediHub_be.cp.service.CpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +31,7 @@ public class CpController {
 
     // Service
     private final CpService cpService;
+    private final CpOpinionService cpOpinionService;
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpController"); // Logger
 
@@ -36,7 +41,6 @@ public class CpController {
     public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpSearchCategoryAndCpSearchCategoryData(
             @RequestParam(required = false) String cpSearchCategorySeq,
             @RequestParam(required = false) String cpSearchCategoryData) {
-
         logger.info("카테고리 시퀀스: {} 및 카테고리 데이터: {}를 사용하여 CP 리스트 요청을 받았습니다.", cpSearchCategorySeq, cpSearchCategoryData);
 
         // RequestParam 값을 List에 저장(없으면, null)
@@ -58,11 +62,15 @@ public class CpController {
 
             if (cpList == null || cpList.isEmpty()) {
                 logger.info("주어진 카테고리 시퀀스 및 카테고리 데이터에 대한 CP 레코드가 없습니다.");
+
+                return ResponseEntity.ok(ApiResponse.ok(null));
+            } else {
+                // 성공적인 응답 반환
+                logger.info("조회된 CP 리스트 크기: {}", cpList.size());
+                logger.info("조회된 CP 리스트: {}", cpList);
+
                 return ResponseEntity.ok(ApiResponse.ok(cpList));
             }
-            // 성공적인 응답 반환
-            logger.info("조회된 CP 리스트 크기: {}", cpList.size());
-            return ResponseEntity.ok(ApiResponse.ok(cpList));
         } catch (CustomException e) {
             logger.error("CP 리스트를 가져오는 동안 CustomException이 발생했습니다: {}", e.getMessage());
             // 예외 발생 시 실패 응답 반환
@@ -80,20 +88,21 @@ public class CpController {
 
     // https://medihub.info/cp?cpName=value
     @GetMapping(params = "cpName") // 중복된 매핑 방지
-    public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpByCpName(@RequestParam String cpName) {
+    public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpListByCpName(@RequestParam String cpName) {
         logger.info("이름: {}으로 CP를 가져오는 요청을 받았습니다.", cpName);
+
         try {
             // 이름을 통하여 Cp 를 가져오는 서비스 호출
-            List<ResponseCpDTO> findCp = cpService.getCpListByCpName(cpName);
+            List<ResponseCpDTO> cpList = cpService.getCpListByCpName(cpName);
 
-            if (findCp == null || findCp.isEmpty()) {
+            if (cpList == null || cpList.isEmpty()) {
                 logger.warn("이름 '{}'에 대한 CP 레코드가 없습니다.", cpName);
             } else {
-                logger.info("이름으로 성공적으로 CP를 가져왔습니다: {}", findCp.size());
+                logger.info("이름으로 성공적으로 CP를 가져왔습니다: {}", cpList.size());
             }
 
             // 성공적인 응답 반환
-            return ResponseEntity.ok(ApiResponse.ok(findCp));
+            return ResponseEntity.ok(ApiResponse.ok(cpList));
         } catch (CustomException e) {
             logger.error("이름으로 CP를 가져오는 동안 CustomException이 발생했습니다: {}", e.getMessage());
             // 예외 발생 시 실패 응답 반환
@@ -113,18 +122,19 @@ public class CpController {
     @GetMapping(value = "/{cpVersionSeq}")
     public ResponseEntity<ApiResponse<ResponseCpDTO>> getCpByCpVersionSeq(@PathVariable long cpVersionSeq) {
         logger.info("버전 시퀀스: {}로 CP를 가져오는 요청을 받았습니다.", cpVersionSeq);
+
         try {
             // Cp 버전을 통하여 Cp 를 가져오는 서비스 호출
-            ResponseCpDTO findCp = cpService.getCpByCpVersionSeq(cpVersionSeq);
+            ResponseCpDTO cpList = cpService.getCpByCpVersionSeq(cpVersionSeq);
 
-            if (findCp == null) {
+            if (cpList == null) {
                 logger.warn("버전 시퀀스 '{}'에 대한 CP 레코드가 없습니다.", cpVersionSeq);
                 return ResponseEntity.ok(ApiResponse.ok(null)); // 빈 응답
             }
 
-            logger.info("버전 시퀀스로 성공적으로 CP를 가져왔습니다: {}", findCp);
+            logger.info("버전 시퀀스로 성공적으로 CP를 가져왔습니다: {}", cpList);
             // 성공적인 응답 반환
-            return ResponseEntity.ok(ApiResponse.ok(findCp));
+            return ResponseEntity.ok(ApiResponse.ok(cpList));
         } catch (CustomException e) {
             logger.error("버전 시퀀스로 CP를 가져오는 동안 CustomException이 발생했습니다: {}", e.getMessage());
             // 예외 발생 시 실패 응답 반환
@@ -137,6 +147,134 @@ public class CpController {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+    }
+
+    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/isDeleted=value
+    @GetMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}")
+    public ResponseEntity<ApiResponse<List<ResponseCpOpinionDTO>>> getCpOpinionListByCpOpinionLocationSeq(
+            @PathVariable long cpVersionSeq,
+            @PathVariable long cpOpinionLocationSeq,
+            @RequestParam(required = false, defaultValue = "false") boolean isDeleted) {
+        logger.info("CP 버전 시퀀스: {}의 CP 의견 위치 시퀀스: {}에 위치의 CP 의견 리스트 요청을 받았습니다.", cpVersionSeq, cpOpinionLocationSeq);
+
+        try {
+            // CP 번호로 CP 의견을 가져오는 서비스 호출
+            List<ResponseCpOpinionDTO> cpOpinionList = cpOpinionService.findCpOpinionListByCpVersionSeq(cpVersionSeq, cpOpinionLocationSeq, isDeleted);
+
+            logger.info("CP 위치 번호로 CP 의견 리스트 조회 성공");
+            logger.info("조회된 CP 의견 리스트의 크기: {}", cpOpinionList.size());
+
+            return ResponseEntity.ok(ApiResponse.ok(cpOpinionList));
+        } catch (CustomException e) {
+            logger.error("CP 의견 위치 리스트를 가져오는 동안 CustomException이 발생했습니다: {}", e.getMessage());
+            // 예외 발생 시 실패 응답 반환
+            return ResponseEntity
+                    .status(e.getErrorCode().getHttpStatus())
+                    .body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            logger.error("CP 의견 위치 리스트를 가져오는 동안 예기치 않은 오류가 발생했습니다: {}", e.getMessage(), e);
+            // 일반 예외 처리
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+    }
+
+    // CP 의견 상세 조회
+    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
+    @GetMapping("/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
+    public ResponseEntity<ApiResponse<ResponseCpOpinionDTO>> getCpOpinionByCpOpinionSeq(
+            @PathVariable long cpVersionSeq,
+            @PathVariable long cpOpinionLocationSeq,
+            @PathVariable long cpOpinionSeq) {
+
+        logger.info("CP 버전 번호: {}, CP 의견 위치 번호: {}, CP 의견 번호: {}로 조회 요청했습니다.", cpVersionSeq, cpOpinionLocationSeq, cpOpinionSeq);
+
+        try {
+            // CP 의견을 가져오는 서비스 호출
+            ResponseCpOpinionDTO cpOpinion = cpOpinionService.findCpOpinionByCpOpinionSeq(cpOpinionSeq);
+
+            logger.info("CP 의견 번호로 CP 의견 조회 성공");
+            return ResponseEntity.ok(ApiResponse.ok(cpOpinion));
+        } catch (CustomException e) {
+            logger.error("CP 의견 조회 중 CustomException 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            logger.error("CP 의견 조회 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+    }
+
+    // CP 의견 생성
+    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}
+    @PostMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}")
+    public ResponseEntity<ApiResponse<CpOpinionDTO>> createCpOpinion(
+            @PathVariable long cpVersionSeq,
+            @PathVariable long cpOpinionLocationSeq,
+            @RequestBody RequestCpOpinionDTO requestBody) {
+
+        logger.info("CP 의견 생성 요청: cpVersionSeq = {}, cpOpinionLocationSeq = {}, 요청 본문 = {}", cpVersionSeq, cpOpinionLocationSeq, requestBody);
+
+        try {
+            CpOpinionDTO cpOpinion = cpOpinionService.createCpOpinion(cpVersionSeq, cpOpinionLocationSeq, requestBody);
+
+            logger.info("CP 의견이 성공적으로 생성되었습니다. CP 의견 정보: {}", cpOpinion);
+            return ResponseEntity.ok(ApiResponse.created(cpOpinion));
+        } catch (CustomException e) {
+            logger.error("CP 의견 생성 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            logger.error("CP 의견 생성 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+    }
+
+    // CP 의견 삭제
+    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
+    @DeleteMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
+    public ResponseEntity<ApiResponse<Void>> deleteCpOpinionByCpOpinionSeq(
+            @PathVariable long cpVersionSeq,
+            @PathVariable long cpOpinionLocationSeq,
+            @PathVariable long cpOpinionSeq) {
+
+        try {
+            cpOpinionService.deleteCpOpinionByCpOpinionSeq(cpOpinionSeq);
+
+            logger.info("CP 의견이 성공적으로 삭제되었습니다. cpOpinionSeq: {}", cpOpinionSeq);
+            return ResponseEntity.noContent().build(); // 204 No Content
+        } catch (CustomException e) {
+            logger.error("CP 의견 삭제 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            logger.error("CP 의견 삭제 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+    }
+
+    // CP 의견 수정
+    // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
+    @PutMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
+    public ResponseEntity<ApiResponse<CpOpinionDTO>> updateCpOpinion(
+            @PathVariable long cpVersionSeq,
+            @PathVariable long cpOpinionLocationSeq,
+            @PathVariable long cpOpinionSeq,
+            @RequestBody RequestCpOpinionDTO requestBody) {
+
+        logger.info("CP 의견 수정 요청: cpOpinionSeq = {}, 요청 본문 = {}", cpOpinionSeq, requestBody);
+
+        try {
+            // 요청 본문을 전달하여 CP 의견 업데이트
+            CpOpinionDTO cpOpinionDTO = cpOpinionService.updateCpOpinionByCpOpinionSeq(cpOpinionSeq, requestBody);
+
+            logger.info("CP 의견이 성공적으로 수정되었습니다: {}", cpOpinionDTO);
+            return ResponseEntity.ok(ApiResponse.ok(cpOpinionDTO));
+        } catch (CustomException e) {
+            logger.error("CP 의견 수정 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            logger.error("CP 의견 수정 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
     }
 }

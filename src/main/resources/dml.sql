@@ -39,7 +39,8 @@ INSERT INTO user (
 ) VALUES
       (1,1, 1, NULL, 'john_doe', 'encrypted_password1', 'John Doe', 'john.doe@example.com', '010-1234-5678', 'ACTIVE', 'USER'),
       (2,2, 2, NULL, 'jane_smith', 'encrypted_password2', 'Jane Smith', 'jane.smith@example.com', '010-9876-5432', 'ACTIVE', 'ADMIN'),
-      (3,3, 3, NULL, 'alice_jones', 'encrypted_password3', 'Alice Jones', 'alice.jones@example.com', '010-5678-1234', 'ACTIVE', 'USER');
+      (3,3, 3, NULL, 'alice_jones', 'encrypted_password3', 'Alice Jones', 'alice.jones@example.com', '010-5678-1234', 'ACTIVE', 'USER'),
+(4,3, 3, NULL, '1234', '12345', 'Alice Jones', 'alice.jones@example.com', '010-5678-1234', 'ACTIVE', 'USER');
 
 
 -- template 테이블 데이터 삽입
@@ -87,10 +88,10 @@ INSERT INTO flag (
 
 -- keyword 테이블 데이터 삽입
 INSERT INTO keyword (
-    keyword_seq, flag_seq, keyword_name, keyword_post_seq
+    keyword_seq, flag_seq, keyword_name
 ) VALUES
-      (1, 1, 'Orthopedics', 1),
-      (2, 1, 'Surgery', 1),
-      (3, 2, 'Rehabilitation', 2),
-      (4, 3, 'Heart', 3),
-      (5, 3, 'Transplant', 3);
+      (1, 1, 'Orthopedics'),
+      (2, 1, 'Surgery'),
+      (3, 2, 'Rehabilitation'),
+      (4, 3, 'Heart'),
+      (5, 3, 'Transplant');
