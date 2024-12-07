@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.response.ApiResponse;
+import mediHub_be.notify.dto.NotifyDTO;
 import mediHub_be.notify.entity.NotiType;
 import mediHub_be.notify.service.NotifyService;
 import mediHub_be.notify.service.NotifyServiceImlp;
@@ -14,12 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.List;
+
 @RestController
+@RequestMapping("/notify")
 @Slf4j
 @RequiredArgsConstructor
 @Tag(name = "SSE 연결", description = "SSE 연결")
@@ -36,15 +38,62 @@ public class NotifyController {
 
         return notifyService.subscribe(userId, lastEventId);
     }
+    
+    @Operation(summary = "알림 전체 조회")
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<NotifyDTO>>> notiAll(){
+        String userId = SecurityUtil.getCurrentUserId();
 
-//    @Operation(summary = "sse 연결된 사람한테 테스트 알림 전송")
-//    @GetMapping("/send/connects")
-//    public ResponseEntity<ApiResponse<?>> sendConnects(@AuthenticationPrincipal User principal){
-//
-//        notifyService.send(NotiType.BOARD, "알림 발생", "/test/ui");
-//
-//        return ResponseEntity.ok(
-//                ApiResponse.ok("ok")
-//        );
-//    }
+        return ResponseEntity.ok(
+                ApiResponse.ok(notifyService.notiAll(userId))
+        );
+    }
+
+    @Operation(summary = "알림 단일 읽음")
+    @GetMapping("/{notiSeq}")
+    public ResponseEntity<ApiResponse<String>> readNoti(@RequestParam(name = "notiSeq") Long notiSeq){
+
+        String userId = SecurityUtil.getCurrentUserId();
+        notifyService.readNotify(userId, notiSeq);
+
+        return ResponseEntity.ok(
+                ApiResponse.ok("OK")
+        );
+    }
+
+    @Operation(summary = "알림 단일 삭제")
+    @DeleteMapping("/{notiSeq}")
+    public ResponseEntity<ApiResponse<String>> deleteNoti(@RequestParam(name = "notiSeq") Long notiSeq){
+
+        String userId = SecurityUtil.getCurrentUserId();
+        notifyService.deleteNotify(userId, notiSeq);
+
+        return ResponseEntity.ok(
+                ApiResponse.ok("OK")
+        );
+    }
+
+    @Operation(summary = "알림 전체 읽음")
+    @GetMapping("/read")
+    public ResponseEntity<ApiResponse<String>> readAllNoti(){
+
+        String userId = SecurityUtil.getCurrentUserId();
+        notifyService.readAllNotify(userId);
+
+        return ResponseEntity.ok(
+                ApiResponse.ok("OK")
+        );
+    }
+
+    @Operation(summary = "알림 전체 삭제")
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<String>> deleteAllNoti(){
+
+        String userId = SecurityUtil.getCurrentUserId();
+        notifyService.deleteAllNotify(userId);
+
+        return ResponseEntity.ok(
+                ApiResponse.ok("OK")
+        );
+    }
 }
