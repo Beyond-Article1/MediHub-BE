@@ -64,6 +64,9 @@ dependencies {
     // redis
 //    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    // WebClient를 위한 의존성 (webFlux)
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
 }
 
 //// .env 파일 로드

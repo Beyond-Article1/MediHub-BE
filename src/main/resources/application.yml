@@ -10,7 +10,7 @@ server:
   
 spring:
   config:
-    import: "classpath:Application-KEY.properties"
+    import: "classpath:application-key.properties"
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
@@ -50,7 +50,8 @@ spring:
 
 #logging:
 #  level:
-#    root: DEBUG
+#    root: info
+#    mediHub_be: debug
 
 token:
   expiration_time: 7200000
