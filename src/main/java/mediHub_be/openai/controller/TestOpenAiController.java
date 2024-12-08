@@ -2,12 +2,15 @@ package mediHub_be.openai.controller;
 
 import lombok.RequiredArgsConstructor;
 import mediHub_be.common.response.ApiResponse;
+import mediHub_be.openai.dto.ResponsePubmedDTO;
 import mediHub_be.openai.service.OpenAiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -41,7 +44,7 @@ public class TestOpenAiController {
 //    }
 
     @GetMapping("/chat")
-    public ResponseEntity<ApiResponse<String>> chat(@RequestParam(name = "prompt") String prompt){
+    public ResponseEntity<ApiResponse<List<ResponsePubmedDTO>>> chat(@RequestParam(name = "prompt") String prompt){
 
         return ResponseEntity.ok(
                 ApiResponse.ok(openAiService.changePubmedKeywords(prompt))

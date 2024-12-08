@@ -1,6 +1,7 @@
 package mediHub_be.openai.service;
 
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.openai.dto.ResponsePubmedDTO;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -50,7 +51,7 @@ public class OpenAiService {
      * @param naturalRequest
      * @return
      */
-    public String changePubmedKeywords(String naturalRequest){
+    public List<ResponsePubmedDTO> changePubmedKeywords(String naturalRequest){
         Map<String, Object> requestBody = Map.of(
                 "model", model,
                 "messages", List.of(
@@ -87,11 +88,15 @@ public class OpenAiService {
 
             log.info("pubmed keyword {}", pubmedKeyword);
 
-            List<String> strings = searchPubmed(pubmedKeyword, 20);
+            List<String> pmids = searchPubmed(pubmedKeyword, 20);
 
-            log.info("strings {}", strings);
+            log.info("pmids {}", pmids);
 
-            return strings.get(0);
+            List<ResponsePubmedDTO> responsePubmedDTOS = fetchPubmedDetails(pmids);
+
+            log.info("responsePubmedDTOS {}", responsePubmedDTOS);
+
+            return responsePubmedDTOS;
 
         } catch (WebClientResponseException e){
             throw new RuntimeException("OpenAI API 호출 오류: " + e.getMessage());
@@ -122,28 +127,6 @@ public class OpenAiService {
                 .collect(Collectors.joining(" "));
 
         return pubmedQuery;
-    }
-
-    /**
-     * 키워드들을 조합해서 pubmed 검색어로 바꿔주는 메서드
-     * @param keywords
-     * @return ex. 독에 의한 ADHD에 관한 논문을 찾아줘 개는 빼고 -> ADHD AND POISON NOT DOG
-     */
-    public String buildPubmed(Map<String, String> keywords){
-        StringBuilder pubmedQuery = new StringBuilder();
-
-        for (Map.Entry<String, String> entry : keywords.entrySet()) {
-            String keyword = entry.getKey();
-            String operator = entry.getValue();     // AND, OR, NOT
-
-            if (!pubmedQuery.isEmpty()) {
-                pubmedQuery.append(" ").append(operator).append(" ");
-            }
-            pubmedQuery.append(keyword);
-        }
-
-        // 생성된 검색문 (ex. 식중독 AND 발생 AND 원인)
-        return pubmedQuery.toString();
     }
 
     /**
@@ -205,8 +188,12 @@ public class OpenAiService {
         return pubMedIds;
     }
 
-    // PMID로 논문들 가져오기
-    public List<Map<String, String>> fetchPubmedDetails(List<String> pmids) {
+    /**
+     * PMID로 논문들 가져오는 메서드
+     * @param pmids
+     * @return
+     */
+    public List<ResponsePubmedDTO> fetchPubmedDetails(List<String> pmids) {
         String response = apiWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/esummary.fcgi")
@@ -220,12 +207,94 @@ public class OpenAiService {
         return parsePubmedDetailsFromXml(response);
     }
 
-    private List<Map<String, String>> parsePubmedDetailsFromXml(String xmlResponse) {
+    /**
+     * 논문 XML 변환 메서드
+     * === 예시 데이터 ===
+     * <eSummaryResult>
+     *   <DocSum>
+     *     <Id>37165056</Id>
+     *     <Item Name="Title">Title of the paper</Item>
+     *     <Item Name="Source">Journal Name</Item>
+     *     <Item Name="SourceAbbrev">J. Name</Item>
+     *     <Item Name="SourceType">Journal</Item>
+     *     <Item Name="PubDate">2023 Dec 1</Item>
+     *     <Item Name="Volume">12</Item>
+     *     <Item Name="Issue">4</Item>
+     *     <Item Name="Pages">123-130</Item>
+     *     <Item Name="Authors">
+     *       <Item Name="Author">John Doe</Item>
+     *       <Item Name="Author">Jane Smith</Item>
+     *     </Item>
+     *     <Item Name="ISSN">1234-5678</Item>
+     *     <Item Name="PMID">37165056</Item>
+     *     <Item Name="DOI">10.1234/abcd.123456</Item>
+     *     <Item Name="PublicationStatus">Published</Item>
+     *     <Item Name="Language">English</Item>
+     *     <Item Name="ArticleType">Research Article</Item>
+     *     <Item Name="PubType">Research Support, N.I.H., Extramural</Item>
+     *   </DocSum>
+     * </eSummaryResult>
+     * pubmed 논문 데이터 여기서
+     * Title(제목), SourceAbbrev(논문이 게재된 저널의 약어), PubDate(발행일), Volume(저널의 권),
+     * Pages(논문이 실린 페이지 범위), Authors(저자목록), DOI(논문의 DOI)
+     * 만 가져온다.
+     *
+     * DTO에 담아서 반환한다.
+     * @param xmlResponse
+     * @return List<ResponsePubmedDTO>
+     */
+    private List<ResponsePubmedDTO> parsePubmedDetailsFromXml(String xmlResponse) {
         // XML 파싱하여 논문 제목, 저자 등 반환
-        return List.of(
-                Map.of("title", "Novel cancer therapy approaches", "source", "Nature"),
-                Map.of("title", "Advancements in cancer immunotherapy", "source", "Science")
-        );
+        List<ResponsePubmedDTO> articles = new ArrayList<>();
+
+        try {
+            Document doc = Jsoup.parse(xmlResponse, "", org.jsoup.parser.Parser.xmlParser());
+            Elements docSumElements = doc.select("DocSum");
+
+            for (Element docSum : docSumElements) {
+                String title = getElementText(docSum, "Item[Name=Title]");
+                String source = getElementText(docSum, "Item[Name=Source]");
+                String pubDate = getElementText(docSum, "Item[Name=PubDate]");
+                String volume = getElementText(docSum, "Item[Name=Volume]");
+                String pages = getElementText(docSum, "Item[Name=Pages]");
+
+                // Authors 추출
+                List<String> authors = new ArrayList<>();
+                Elements authorListElements = docSum.select("Item[Name=AuthorList]");
+                log.info("authorsList {}", authorListElements.text());
+
+                for (Element author : authorListElements) {
+
+                    Elements authorElements = author.select("Item[Name=Author]");
+                    log.info("authors {}", authorElements.text());
+
+                    for (Element authorElement : authorElements) {
+                        
+                        log.info("authorElement {}", authorElement.text());
+                        authors.add(authorElement.text()); // 이름 + 이니셜로 추가
+                    }
+
+                }
+
+                String doi = docSum.selectFirst("Item[Name=DOI]").text();
+
+                // DTO 생성 및 리스트에 추가
+                ResponsePubmedDTO article = new ResponsePubmedDTO(title, source, pubDate, volume, pages, authors, doi);
+                articles.add(article);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // 예외 처리 (필요에 따라 로깅이나 사용자 알림 추가)
+        }
+
+        return articles;
+    }
+
+    // NULL 반환 대비 메서드
+    private String getElementText(Element element, String selector) {
+        Element selectedElement = element.selectFirst(selector);
+        return selectedElement != null ? selectedElement.text() : ""; // 태그가 없으면 빈 문자열 반환
     }
 
 
