@@ -1,38 +1,37 @@
 package mediHub_be.openai.controller;
 
 import lombok.RequiredArgsConstructor;
-import mediHub_be.openai.dto.ChatGPTRequest;
-import mediHub_be.openai.dto.ChatGPTResponse;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
+import mediHub_be.common.response.ApiResponse;
+import mediHub_be.openai.service.OpenAiService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/bot")
 public class TestOpenAiController {
 
-    @Value("${openai.model}")
-    private String model;
+    private final OpenAiService openAiService;
 
-    @Value("${openai.api.url}")
-    private String apiURL;
+//    private final WebClient webClient;
 
-    private final WebClient webClient;
+//    private final RestTemplate template;
+//
+//    public TestOpenAiController(@Qualifier("openAiRestTemplate") RestTemplate template) {
+//        this.template = template;
+//    }
 
-    public String callOpenAiApi(String prompt) {
-        return webClient.post()
-                .uri(apiURL)
-                .bodyValue(new ChatGPTRequest(model, prompt))
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();  // 동기 호출
-    }
+//    public String callOpenAiApi(String prompt) {
+//        return webClient.post()
+//                .uri(apiURL)
+//                .bodyValue(new ChatGPTRequest(model, prompt))
+//                .retrieve()
+//                .bodyToMono(String.class)
+//                .block();  // 동기 호출
+//    }
 
 //    @GetMapping("/chat")
 //    public String chat(@RequestParam(name = "prompt")String prompt){
@@ -41,4 +40,11 @@ public class TestOpenAiController {
 //        return chatGPTResponse.getChoices().get(0).getMessage().getContent();
 //    }
 
+    @GetMapping("/chat")
+    public ResponseEntity<ApiResponse<String>> chat(@RequestParam(name = "prompt") String prompt){
+
+        return ResponseEntity.ok(
+                ApiResponse.ok(openAiService.changePubmedKeywords(prompt))
+        );
+    }
 }

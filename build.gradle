@@ -67,6 +67,9 @@ dependencies {
     // WebClient를 위한 의존성 (webFlux)
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+    // XML 파싱 Jsoup
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.18.3'
+
 }
 
 //// .env 파일 로드
