@@ -213,19 +213,17 @@ public class CpController {
 
     // CP 의견 삭제
     // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
-    @DeleteMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
+    @DeleteMapping(value = "/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}/cpOpinion/{cpOpinionSeq}")
     @Operation(summary = "CP 의견 삭제",
             description = "주어진 CP 버전 시퀀스와 CP 의견 위치, CP 의견 번호를 사용하여 CP 의견을 삭제합니다.")
-    public ResponseEntity<ApiResponse<Void>> deleteCpOpinionByCpOpinionSeq(
+    public ResponseEntity<ApiResponse<String>> deleteCpOpinionByCpOpinionSeq(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
             @PathVariable long cpOpinionSeq) {
 
         try {
             cpOpinionService.deleteCpOpinionByCpOpinionSeq(cpOpinionSeq);
-
             logger.info("CP 의견이 성공적으로 삭제되었습니다. cpOpinionSeq: {}", cpOpinionSeq);
-            return ResponseEntity.noContent().build(); // 204 No Content
         } catch (CustomException e) {
             logger.error("CP 의견 삭제 중 오류 발생: {}", e.getMessage());
             return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
@@ -233,6 +231,8 @@ public class CpController {
             logger.error("CP 의견 삭제 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
+
+        return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
     // CP 의견 수정
@@ -309,5 +309,27 @@ public class CpController {
             logger.error("CP 의견 위치 생성 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
+    }
+
+    // CP 의견 위치 삭제
+    @DeleteMapping(value = "/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}")
+    @Operation(summary = "CP 의견 위치 삭제",
+            description = "지정된 CP 버전과 CP 의견 위치 번호에 해당하는 CP 의견 위치를 삭제합니다. " +
+                    "삭제 요청이 성공하면 HTTP 200 OK와 함께 응답합니다. " +
+                    "작성자가 아닌 경우에는 UNAUTHORIZED_USER 오류가 발생하며, " +
+                    "존재하지 않는 CP 의견 위치 번호를 요청할 경우 NOT_FOUND_CP_OPINION_LOCATION 오류가 발생합니다.")
+    public ResponseEntity<ApiResponse<Void>> deleteCpOpinionLocation(
+            @PathVariable long cpVersionSeq,
+            @PathVariable long cpOpinionLocationSeq) {
+
+        try {
+            cpOpinionLocationService.deleteCpOpinionLocation(cpVersionSeq, cpOpinionLocationSeq);
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+
+        return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }
