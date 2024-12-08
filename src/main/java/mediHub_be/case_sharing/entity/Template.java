@@ -1,13 +1,12 @@
 package mediHub_be.case_sharing.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.part.entity.Part;
 import mediHub_be.user.entity.User;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -34,6 +33,23 @@ public class Template extends BaseFullEntity {
     @Enumerated(EnumType.STRING)
     private OpenScope openScope;
 
+    @Builder
+    public Template(User user, Part part, String templateTitle, String templateContent, OpenScope openScope) {
+        this.user = user;
+        this.part = part;
+        this.templateTitle = templateTitle;
+        this.templateContent = templateContent;
+        this.openScope = openScope;
+    }
+    public void updateTemplate(String title, String content, OpenScope openScope) {
+        this.templateTitle = title;
+        this.templateContent = content;
+        this.openScope = openScope;
+    }
+
+    public void markAsDeleted() {
+        this.deletedAt = LocalDateTime.now();
+    }
 
 
 }
