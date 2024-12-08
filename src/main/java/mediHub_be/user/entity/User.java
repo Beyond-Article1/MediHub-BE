@@ -68,6 +68,14 @@ public class User {
         this.ranking = ranking;
     }
 
+    public void updateUser(String userPassword, String userName, String userEmail, String userPhone, Part part, Ranking ranking) {
+        this.userPassword = userPassword;
+        this.userName = userName;
+        this.userEmail = userEmail;
+        this.userPhone = userPhone;
+        this.part = part;
+        this.ranking = ranking;
+    }
 }
 
 
