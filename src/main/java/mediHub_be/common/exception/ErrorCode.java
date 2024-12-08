@@ -44,8 +44,9 @@ public enum ErrorCode {
     NOT_FOUND_USER(40400, HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     NOT_FOUND_END_POINT(40401, HttpStatus.NOT_FOUND, "존재하지 않는 API입니다."),
 
-    NOT_FOUDN_CP_VERSION(40402, HttpStatus.NOT_FOUND, "CP 버전을 찾을 수 없습니다."),
+    NOT_FOUND_CP_VERSION(40402, HttpStatus.NOT_FOUND, "CP 버전을 찾을 수 없습니다."),
     NOT_FOUND_CP_OPINION(40403, HttpStatus.NOT_FOUND, "CP 의견을 찾을 수 없습니다."),
+    NOT_FOUND_CP_OPINION_LOCATION(40404, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
 
     // 알림 (notify)
     NOT_FOUND_NOTIFY(40404, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),

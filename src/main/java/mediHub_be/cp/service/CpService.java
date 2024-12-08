@@ -49,7 +49,7 @@ public class CpService {
 
         if (findCpList.isEmpty()) {
             logger.info("조회 결과 없음: 카테고리 시퀀스와 데이터로 찾은 CP가 없습니다.");
-            throw new CustomException(ErrorCode.NOT_FOUDN_CP_VERSION);
+            throw new CustomException(ErrorCode.NOT_FOUND_CP_VERSION);
         } else {
             logger.info("조회된 CP 리스트 크기: {}", findCpList.size());
             // Map을 ResponseCpDTO로 변환
@@ -76,7 +76,7 @@ public class CpService {
 
         if (findCpList.isEmpty()) {
             logger.info("조회 결과 없음: CP 이름 '{}'에 대한 결과가 없습니다.", cpName);
-            throw new CustomException(ErrorCode.NOT_FOUDN_CP_VERSION);
+            throw new CustomException(ErrorCode.NOT_FOUND_CP_VERSION);
         } else {
             logger.info("조회된 CP 리스트 크기: {}", findCpList.size());
             // Map을 ResponseCpDTO로 변환
@@ -104,7 +104,7 @@ public class CpService {
         if (findCp == null) {
             // 조회 결과 없음
             logger.info("조회 결과 없음: CP 버전 시퀀스 '{}'에 대한 결과가 없습니다.", cpVersionSeq);
-            throw new CustomException(ErrorCode.NOT_FOUDN_CP_VERSION);
+            throw new CustomException(ErrorCode.NOT_FOUND_CP_VERSION);
 
         } else {
             logger.info("조회된 CP: {}", findCp);
@@ -129,7 +129,7 @@ public class CpService {
 
         if (dtoList == null || dtoList.isEmpty()) {
             logger.warn("조회 결과 없음: CP 리스트가 비어있습니다.");
-            throw new CustomException(ErrorCode.NOT_FOUDN_CP_VERSION);
+            throw new CustomException(ErrorCode.NOT_FOUND_CP_VERSION);
         }
 
         logger.info("조회된 CP 리스트 크기: {}", dtoList.size());
