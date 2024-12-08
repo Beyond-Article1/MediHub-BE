@@ -213,7 +213,7 @@ public class CpController {
 
     // CP 의견 삭제
     // https://medihub.info/cp/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}
-    @DeleteMapping(value = "/{cpVersionSeq}/opinion/{cpOpinionLocationSeq}/{cpOpinionSeq}")
+    @DeleteMapping(value = "/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}/cpOpinion/{cpOpinionSeq}")
     @Operation(summary = "CP 의견 삭제",
             description = "주어진 CP 버전 시퀀스와 CP 의견 위치, CP 의견 번호를 사용하여 CP 의견을 삭제합니다.")
     public ResponseEntity<ApiResponse<String>> deleteCpOpinionByCpOpinionSeq(
@@ -313,7 +313,11 @@ public class CpController {
 
     // CP 의견 위치 삭제
     @DeleteMapping(value = "/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}")
-    @Operation()
+    @Operation(summary = "CP 의견 위치 삭제",
+            description = "지정된 CP 버전과 CP 의견 위치 번호에 해당하는 CP 의견 위치를 삭제합니다. " +
+                    "삭제 요청이 성공하면 HTTP 200 OK와 함께 응답합니다. " +
+                    "작성자가 아닌 경우에는 UNAUTHORIZED_USER 오류가 발생하며, " +
+                    "존재하지 않는 CP 의견 위치 번호를 요청할 경우 NOT_FOUND_CP_OPINION_LOCATION 오류가 발생합니다.")
     public ResponseEntity<ApiResponse<Void>> deleteCpOpinionLocation(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq) {
