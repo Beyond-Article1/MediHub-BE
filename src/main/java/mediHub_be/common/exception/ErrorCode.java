@@ -35,8 +35,7 @@ public enum ErrorCode {
      * == 403 FORBIDDEN ==
      */
     // 사용자 (user)
-    UNAUTHORIZED_USER(40300, HttpStatus.FORBIDDEN, "자신의 게시물이 아닙니다."),
-
+    UNAUTHORIZED_USER(40300, HttpStatus.FORBIDDEN, "해당하는 권한이 없습니다."),
 
     /**
      * == 404 NOT_FOUND ==
@@ -48,6 +47,9 @@ public enum ErrorCode {
     NOT_FOUND_CP_VERSION(40402, HttpStatus.NOT_FOUND, "CP 버전을 찾을 수 없습니다."),
     NOT_FOUND_CP_OPINION(40403, HttpStatus.NOT_FOUND, "CP 의견을 찾을 수 없습니다."),
     NOT_FOUND_CP_OPINION_LOCATION(40404, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
+
+    // 알림 (notify)
+    NOT_FOUND_NOTIFY(40404, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
 
     /**
      * == 409 CONFLICT ==
