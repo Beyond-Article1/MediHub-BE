@@ -10,6 +10,7 @@ import mediHub_be.common.response.ApiResponse;
 import mediHub_be.cp.dto.*;
 import mediHub_be.cp.service.CpOpinionLocationService;
 import mediHub_be.cp.service.CpOpinionService;
+import mediHub_be.cp.service.CpSearchCategoryService;
 import mediHub_be.cp.service.CpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public class CpController {
     private final CpService cpService;
     private final CpOpinionLocationService cpOpinionLocationService;
     private final CpOpinionService cpOpinionService;
+    private final CpSearchCategoryService cpSearchCategoryService;
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpController"); // Logger
 
@@ -314,22 +316,43 @@ public class CpController {
     // CP 의견 위치 삭제
     @DeleteMapping(value = "/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}")
     @Operation(summary = "CP 의견 위치 삭제",
-            description = "지정된 CP 버전과 CP 의견 위치 번호에 해당하는 CP 의견 위치를 삭제합니다. " +
-                    "삭제 요청이 성공하면 HTTP 200 OK와 함께 응답합니다. " +
-                    "작성자가 아닌 경우에는 UNAUTHORIZED_USER 오류가 발생하며, " +
-                    "존재하지 않는 CP 의견 위치 번호를 요청할 경우 NOT_FOUND_CP_OPINION_LOCATION 오류가 발생합니다.")
+            description = "지정된 CP 버전과 CP 의견 위치 번호에 해당하는 CP 의견 위치를 삭제합니다. ")
     public ResponseEntity<ApiResponse<Void>> deleteCpOpinionLocation(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq) {
 
+        logger.info("CP 의견 위치 삭제 요청: cpVersionSeq={}, cpOpinionLocationSeq={}", cpVersionSeq, cpOpinionLocationSeq);
+
         try {
             cpOpinionLocationService.deleteCpOpinionLocation(cpVersionSeq, cpOpinionLocationSeq);
+            logger.info("CP 의견 위치 삭제 성공: cpVersionSeq={}, cpOpinionLocationSeq={}", cpVersionSeq, cpOpinionLocationSeq);
         } catch (CustomException e) {
+            logger.error("CP 의견 위치 삭제 실패: {}", e.getMessage(), e);
             return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
         } catch (Exception e) {
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
 
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
+
+    // CP 검색 카테고리 조회
+    @GetMapping(value = "/cpSearchCategory")
+    @Operation()
+    public ResponseEntity<ApiResponse<ResponseCpSearchCategoryDTO>> getCpSearchCategoryList() {
+
+        try {
+            List<ResponseCpSearchCategoryDTO> dtoList = cpSearchCategoryService.getCpSearchCategoryList();
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+        return null;
+    }
+
+    // CP 검색 카테고리 등록
+    // CP 검색 카테고리 수정
+    // CP 검색 카테고리 삭제
 }
