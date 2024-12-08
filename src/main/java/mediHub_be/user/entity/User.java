@@ -58,16 +58,14 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserAuth userAuth = UserAuth.USER;
 
-    public User(String userId, String userPassword, String userName, String userEmail, String userPhone) {
+    public User(String userId, String userPassword, String userName, String userEmail, String userPhone, Part part, Ranking ranking) {
         this.userId = userId;
         this.userPassword = userPassword;
         this.userName = userName;
         this.userEmail = userEmail;
         this.userPhone = userPhone;
-    }
-
-    public void encryptPassword(String encodedPwd) {
-        this.userPassword= encodedPwd;
+        this.part = part;
+        this.ranking = ranking;
     }
 
 }

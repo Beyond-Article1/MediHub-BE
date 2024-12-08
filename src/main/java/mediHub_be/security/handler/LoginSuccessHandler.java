@@ -23,6 +23,7 @@ import java.util.List;
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final Environment env;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.info("로그인 성공 후 security가 관리하는 principal 객체 : {}", authentication);
@@ -37,13 +38,15 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         Long userSeq = customUserDetails.getUserSeq();
         String username = customUserDetails.getUserId();
 
+        log.info("userSeq : {}", userSeq);
+        log.info("userName : {}", username);
+
         /* Token에 들어갈 claim 생성 */
         Claims claims = Jwts.claims().setSubject(authentication.getName());
-        claims.put("userseq", userSeq);
-        claims.put("username", username);
+        claims.put("userSeq", userSeq);
+        claims.put("userName", username);
         claims.put("auth", authorities);
 
-        log.info("userseq는 뭐시냐 도대체" + userSeq);
 
         String token = Jwts.builder()
                 .setClaims(claims) // userSeq 포함

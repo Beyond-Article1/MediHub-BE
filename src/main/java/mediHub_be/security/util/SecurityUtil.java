@@ -38,6 +38,7 @@ public class SecurityUtil {
     // 현재 인증된 사용자의 userSeq 반환
     public static Long getCurrentUserSeq() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("getCurrentUserSeq method 확인 Authentication: {}", authentication);
 
         if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
             return customUserDetails.getUserSeq();

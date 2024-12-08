@@ -5,7 +5,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.security.securitycustom.CustomUserDetails;
-import mediHub_be.user.service.UserService;
+import mediHub_be.security.securitycustom.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -13,42 +13,24 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Date;
 
 @Slf4j
 @Component
 public class JwtUtil {
 
     private final Key key;
-    private final UserService userService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     public JwtUtil(
             @Value("${token.secret}") String secretKey,
-            UserService userService
-    ) {
+            CustomUserDetailsService customUserDetailsService) {
         try {
             byte[] keyBytes = Decoders.BASE64.decode(secretKey);
             this.key = Keys.hmacShaKeyFor(keyBytes);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("토큰 에러.");
         }
-        this.userService = userService;
-    }
-
-    public Key getKey() {
-        return this.key;
-    }
-
-    public String createToken(String userId, String role) {
-        String token = Jwts.builder()
-                .setSubject(userId)
-                .claim("role", role)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 3600000))
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
-        log.info("Generated JWT Token: {}", token);
-        return token;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     /* Token 검증(Bearer 토큰이 넘어왔고, 우리 사이트의 secret key로 만들어 졌는가, 만료되었는지와 내용이 비어있진 않은지) */
@@ -75,9 +57,9 @@ public class JwtUtil {
     public Authentication getAuthentication(String token) {
         Claims claims = parseClaims(token);
         String userId = claims.getSubject();
-        Long userSeq = claims.get("userseq", Long.class);
+        Long userSeq = claims.get("userSeq", Long.class);
 
-        UserDetails userDetails = userService.loadUserByUsername(userId);
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(userId);
         if (userDetails instanceof CustomUserDetails customUserDetails) {
             // CustomUserDetails에 userSeq 설정 확인
             log.info("Loaded userSeq from token: {}", customUserDetails.getUserSeq());

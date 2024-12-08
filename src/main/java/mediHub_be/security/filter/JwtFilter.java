@@ -38,6 +38,8 @@ public class JwtFilter extends OncePerRequestFilter {
                     Authentication authentication = jwtUtil.getAuthentication(token);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     log.info("JWT validation successful for token: {}", token);
+                    log.info("Authentication 확인: {}", authentication);
+
                 } else {
                     log.warn("Invalid JWT token: {}", token);
                 }
