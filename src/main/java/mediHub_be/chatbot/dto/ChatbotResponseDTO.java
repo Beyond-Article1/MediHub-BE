@@ -10,9 +10,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatbotResponseDTO {
-    private String id;
-    private String object;
-    private Long created;
-    private List<ChoiceDTO> choices;
-
+    private String id;                  // 응답 ID
+    private String object;              // 응답 객체 타입
+    private Long created;               // 응답 생성 시간
+    private List<ChoiceDTO> choices;    // 응답 선택지 리스트
 }
