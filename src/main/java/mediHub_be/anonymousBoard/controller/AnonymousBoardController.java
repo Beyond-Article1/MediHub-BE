@@ -45,6 +45,22 @@ public class AnonymousBoardController {
         return ResponseEntity.ok(ApiResponse.ok(anonymousBoardList));
     }
 
+    // 익명 게시글 댓글 목록 조회
+    @Operation(
+            summary = "익명 게시글 댓글 목록 조회", description = "익명 게시글 댓글 목록 반환"
+    )
+    @GetMapping(value = "/{anonymousBoardSeq}/comment")
+    public ResponseEntity<ApiResponse<List<AnonymousBoardCommentListDTO>>> getAllAnonymousBoardComments(
+            @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq
+    ) {
+
+        String userId = SecurityUtil.getCurrentUserId();
+        List<AnonymousBoardCommentListDTO> anonymousBoardCommentList = anonymousBoardService
+                .getAnonymousBoardCommentList(anonymousBoardSeq, userId);
+
+        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardCommentList));
+    }
+
     // 익명 게시글 조회
     @Operation(
             summary = "특정 익명 게시글 상세 조회",
@@ -94,6 +110,23 @@ public class AnonymousBoardController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(anonymousBoardSeq));
     }
 
+    // 익명 게시글 댓글 등록
+    @Operation(
+            summary = "익명 게시글 댓글 등록",
+            description = "새로운 익명 게시글 댓글의 내용을 입력 받아 새로운 익명 게시글 댓글 등록"
+    )
+    @PostMapping(value = "/{anonymousBoardSeq}/comment")
+    public ResponseEntity<ApiResponse<Long>> createAnonymousBoardComment(
+            @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq,
+            @RequestParam("commentContent") String commentContent
+    ) {
+
+        String userId = SecurityUtil.getCurrentUserId();
+        Long commentSeq = anonymousBoardService.createAnonymousBoardComment(anonymousBoardSeq, commentContent, userId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(commentSeq));
+    }
+
     // 익명 게시글 수정
     @Operation(
             summary = "익명 게시글 수정", description = "등록된 익명 게시글의 제목, 내용, 첨부 사진을 수정 (작성자만 가능)"
@@ -125,6 +158,29 @@ public class AnonymousBoardController {
         return ResponseEntity.created(location).body(ApiResponse.ok("익명 게시글이 성공적으로 수정되었습니다."));
     }
 
+    // 익명 게시글 댓글 수정
+    @Operation(
+            summary = "익명 게시글 댓글 수정", description = "등록된 익명 게시글 댓글의 내용을 수정 (작성자만 가능)"
+    )
+    @PutMapping(value = "/{anonymousBoardSeq}/comment/{commentSeq}")
+    public ResponseEntity<ApiResponse<String>> updateAnonymousBoardComment(
+            @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq,
+            @PathVariable("commentSeq") Long commentSeq,
+            @RequestParam("commentContent") String commentContent
+    ) {
+
+        String userId = SecurityUtil.getCurrentUserId();
+
+        anonymousBoardService.updateAnonymousBoardComment(anonymousBoardSeq, commentSeq, commentContent, userId);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/anonymousBoard/{anonymousBoardSeq}/comment/{commentSeq}")
+                .buildAndExpand(anonymousBoardSeq, commentSeq)
+                .toUri();
+
+        return ResponseEntity.created(location).body(ApiResponse.ok("익명 게시글 댓글이 성공적으로 수정되었습니다."));
+    }
+
     // 익명 게시글 삭제
     @Operation(
             summary = "익명 게시글 삭제", description = "익명 게시글 삭제 (작성자 또는 관리자만 가능)"
@@ -141,6 +197,28 @@ public class AnonymousBoardController {
           // 익명 게시글이 존재하지 않거나 삭제 실패 시 404 Not Found, 메시지 본문에 추가
         } else return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.ok(
                 "익명 게시글을 찾을 수 없습니다."
+        ));
+    }
+
+    // 익명 게시글 댓글 삭제
+    @Operation(
+            summary = "익명 게시글 댓글 삭제", description = "익명 게시글 댓글 삭제 (작성자 또는 관리자만 가능)"
+    )
+    @DeleteMapping(value = "/{anonymousBoardSeq}/comment/{commentSeq}")
+    public ResponseEntity<ApiResponse<String>> deleteAnonymousBoardComment(
+            @PathVariable Long anonymousBoardSeq,
+            @PathVariable Long commentSeq
+    ) {
+
+        String userId = SecurityUtil.getCurrentUserId();
+        boolean isDeleted = anonymousBoardService.deleteAnonymousBoardComment(anonymousBoardSeq, commentSeq, userId);
+
+        // 삭제 성공 시 204 No Content 반환
+        if (isDeleted) {
+            return ResponseEntity.noContent().build();
+            // 익명 게시글 댓글이 존재하지 않거나 삭제 실패 시 404 Not Found, 메시지 본문에 추가
+        } else return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.ok(
+                "익명 게시글 댓글을 찾을 수 없습니다."
         ));
     }
 }
