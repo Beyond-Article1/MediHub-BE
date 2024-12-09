@@ -20,10 +20,4 @@ public class Keyword {
 
     private Long flagSeq; // 게시판 식별 플래그
     private String keywordName; // 키워드 명
-
-    @Builder
-    public Keyword(Long flagSeq, String keywordName) {
-        this.flagSeq = flagSeq;
-        this.keywordName = keywordName;
-    }
 }
