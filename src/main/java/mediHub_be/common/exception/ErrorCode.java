@@ -54,6 +54,9 @@ public enum ErrorCode {
     // 채팅 (chat)
     NOT_FOUND_CHATROOM(40405, HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
 
+    // 익명 게시판 (anonymous_board)
+    NOT_FOUND_ANONYMOUS_BOARD(40406, HttpStatus.NOT_FOUND, "익명 게시글을 찾을 수 없습니다."),
+
     /**
      * == 409 CONFLICT ==
      */
@@ -68,8 +71,10 @@ public enum ErrorCode {
      */
     // 서버오류
     INTERNAL_SERVER_ERROR(50000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류입니다."),
-    INTERNAL_SERVER_IO_ERROR(50001, HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
-    INTERNAL_DATABASE_ERROR(50002, HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 업로드 오류입니다.");
+    INTERNAL_SERVER_IO_UPLOAD_ERROR(50001, HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
+    INTERNAL_DATABASE_ERROR(50002, HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 업로드 오류입니다."),
+    INTERNAL_SERVER_IO_DELETE_ERROR(50003, HttpStatus.INTERNAL_SERVER_ERROR, "파일 삭제에 실패했습니다.");
+
 
 
 

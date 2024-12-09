@@ -19,6 +19,8 @@ import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.KeywordService;
 import mediHub_be.board.service.PreferService;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.security.util.SecurityUtil;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
@@ -151,7 +153,7 @@ public class AnonymousBoardService {
         userRepository.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
         AnonymousBoard anonymousBoard = anonymousBoardRepository.findById(anonymousBoardSeq)
-                .orElseThrow(() -> new IllegalArgumentException("익명 게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ANONYMOUS_BOARD));
 
         // 삭제된 익명 게시글인지 확인
         if(anonymousBoard.getDeletedAt() != null) throw new IllegalArgumentException(
@@ -330,7 +332,7 @@ public class AnonymousBoardService {
     ) throws IOException {
 
         AnonymousBoard existingAnonymousBoard = anonymousBoardRepository.findById(anonymousBoardSeq)
-                .orElseThrow(() -> new IllegalArgumentException("익명 게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ANONYMOUS_BOARD));
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
@@ -340,15 +342,45 @@ public class AnonymousBoardService {
 
         existingAnonymousBoard.update(user, requestDTO.getAnonymousBoardTitle(), requestDTO.getAnonymousBoardContent());
 
-        if(imageList != null && !imageList.isEmpty()) requestDTO.setImageList(imageList);
-
-        AnonymousBoard result = anonymousBoardRepository.save(existingAnonymousBoard);
         List<Flag> optionalFlag = flagRepository.findAllByFlagPostSeq(anonymousBoardSeq);
 
         Flag flag = optionalFlag.stream()
                 .filter(f -> f.getFlagBoardFlag().equals("ANONYMOUS_BOARD"))
                 .findFirst()
                 .orElse(null);
+
+        List<PictureDTO> pictureDTOList = pictureRepository.findAllByFlag_FlagSeq(flag.getFlagSeq()).stream()
+                .map(picture -> PictureDTO.builder()
+                        .pictureSeq(picture.getPictureSeq())
+                        .flagSeq(picture.getFlag().getFlagSeq())
+                        .pictureName(picture.getPictureName())
+                        .pictureChangedName(picture.getPictureChangedName())
+                        .pictureUrl(picture.getPictureUrl())
+                        .pictureType(picture.getPictureType())
+                        .pictureIsDeleted(picture.getPictureIsDeleted())
+                        .createdAt(picture.getCreatedAt())
+                        .deletedAt(picture.getDeletedAt())
+                        .build())
+                .collect(Collectors.toList());
+
+        if(imageList != null && !imageList.isEmpty()) {
+            for (PictureDTO pictureDTO : pictureDTOList) {
+                String pictureUrl = pictureDTO.getPictureUrl();
+
+                amazonS3Service.deleteImageFromS3(pictureUrl);
+
+                Picture picture = pictureRepository.findById(pictureDTO.getPictureSeq())
+                        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ANONYMOUS_BOARD));
+
+                picture.setDeleted();
+
+                pictureRepository.save(picture);
+            }
+
+            requestDTO.setImageList(imageList);
+        }
+
+        AnonymousBoard result = anonymousBoardRepository.save(existingAnonymousBoard);
 
         if(requestDTO.getImageList() != null && !requestDTO.getImageList().isEmpty()) {
             for(MultipartFile image : requestDTO.getImageList()) {
@@ -418,7 +450,7 @@ public class AnonymousBoardService {
     public boolean deleteAnonymousBoard(Long anonymousBoardSeq, String userId) {
 
         AnonymousBoard anonymousBoard = anonymousBoardRepository.findById(anonymousBoardSeq)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 익명 게시글 입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ANONYMOUS_BOARD));
         // 1. 작성자 여부 확인
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
