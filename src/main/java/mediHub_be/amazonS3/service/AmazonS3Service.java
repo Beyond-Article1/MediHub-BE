@@ -1,10 +1,13 @@
 package mediHub_be.amazonS3.service;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.UUID;
 
 @Service
@@ -58,6 +65,37 @@ public class AmazonS3Service {
 
         // 업로드 한 파일의 S3 URL 주소 반환
         return metaData;
+    }
+
+    // 사진 url을 이용하여 S3에서 해당 사진을 제거
+    // getKeyFromImageAddress()를 호출하여 삭제에 필요한 key 추출
+    public void deleteImageFromS3(String imageAddress) {
+
+        String key = getKeyFromImageAddress(imageAddress);
+
+        try {
+
+            amazonS3Client.deleteObject(new DeleteObjectRequest(amazonS3Bucket, key));
+        } catch(Exception e) {
+
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_IO_DELETE_ERROR);
+        }
+    }
+
+    private String getKeyFromImageAddress(String imageAddress){
+
+        try {
+
+            URL url = new URL(imageAddress);
+
+            String decodingKey = URLDecoder.decode(url.getPath(), "UTF-8");
+
+            // 맨 앞 '/' 제거
+            return decodingKey.substring(1);
+        } catch(MalformedURLException | UnsupportedEncodingException e) {
+
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_IO_DELETE_ERROR);
+        }
     }
 
     private String changeFileName(String originalFileName) {
