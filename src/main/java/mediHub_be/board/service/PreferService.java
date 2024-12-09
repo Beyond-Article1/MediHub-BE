@@ -21,11 +21,11 @@ public class PreferService {
     private final UserRepository userRepository;
 
     @Transactional
-    public boolean togglePrefer(String boardFlag, Long postSeq, String userId) {
+    public boolean togglePrefer(String flagType, Long entitySeq, String userId) {
 
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
-        Flag flag = flagRepository.findByFlagBoardFlagAndFlagPostSeq(boardFlag, postSeq)
+        Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq)
                 .orElseThrow(() -> new IllegalArgumentException("게시글 정보를 찾을 수 없습니다."));
         // 기존 좋아요 존재 여부 확인
         Optional<Prefer> existingPrefer = preferRepository.findByUserAndFlag(user, flag);
@@ -48,11 +48,11 @@ public class PreferService {
         }
     }
 
-    public boolean isPreferred(String boardFlag, Long postSeq, String userId) {
+    public boolean isPreferred(String flagType, Long entitySeq, String userId) {
 
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
-        Flag flag = flagRepository.findByFlagBoardFlagAndFlagPostSeq(boardFlag, postSeq)
+        Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq)
                 .orElseThrow(() -> new IllegalArgumentException("게시글 정보를 찾을 수 없습니다."));
 
         // 좋아요 존재 여부 반환

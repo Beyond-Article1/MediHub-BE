@@ -70,7 +70,7 @@ INSERT INTO part (dept_seq, part_name) VALUES
                                            (9, '부서 9'),
                                            (10, '부서 10');
 
-INSERT INTO flag (flag_board_flag, flag_post_seq) VALUES
+INSERT INTO flag (flag_type, flag_entity_seq) VALUES
                                                       ('CASE_SHARING', 1),
                                                       ('CASE_SHARING', 2),
                                                       ('CASE_SHARING', 3),
@@ -97,29 +97,29 @@ INSERT INTO picture (flag_seq, picture_name, picture_changed_name, picture_url, 
                                                  (10, '사진 10', '변경된 사진 10', 'http://example.com/pic10.jpg', 'image/jpeg', false, NOW(), NULL),
                                                  (11, '사진 11', '변경된 사진 11', 'http://example.com/pic11.jpg', 'image/jpeg', false, NOW(), NULL);
 
-INSERT INTO user (part_seq, ranking_seq, picture_seq, user_name, user_id, user_password, user_email, user_phone,
+INSERT INTO user (part_seq, ranking_seq, user_name, user_id, user_password, user_email, user_phone,
                   user_auth, user_status, created_at, updated_at, deleted_at) VALUES
-                                                                                  (1, 1, 1, 'john_doe', 'encrypted_password1', 'John Doe', 'john.doe@example.com', '010-1234-5678', 'USER',
+                                                                                  (1, 1,  'john_doe', 'encrypted_password1', 'John Doe', 'john.doe@example.com', '010-1234-5678', 'USER',
                                                                                    'ACTIVE', NOW(), NULL, NULL),
-                                                                                  (2, 2, 2, 'jane_smith', 'encrypted_password2', 'Jane Smith', 'jane.smith@example.com', '010-9876-5432', 'ADMIN',
+                                                                                  (2, 2,  'jane_smith', 'encrypted_password2', 'Jane Smith', 'jane.smith@example.com', '010-9876-5432', 'ADMIN',
                                                                                    'ACTIVE', NOW(), NULL, NULL),
-                                                                                  (3, 3, 3, 'alice_jones', 'encrypted_password3', 'Alice Jones', 'alice.jones@example.com', '010-5678-1234',
+                                                                                  (3, 3,  'alice_jones', 'encrypted_password3', 'Alice Jones', 'alice.jones@example.com', '010-5678-1234',
                                                                                    'USER', 'ACTIVE', NOW(), NULL, NULL),
-                                                                                  (3, 3, 4, '1234', '12345', 'Alice Jones', 'alice.jones@example.com', '010-5678-1234', 'USER', 'ACTIVE', NOW(),
+                                                                                  (3, 3,  '1234', '12345', '$2a$10$SewX3/pNujIKpRYr.ie6TO5tu9jEo4alIivKrZ1zlK6IO1fcbb8Jq', 'alice.jones@example.com', '010-5678-1234', 'USER', 'ACTIVE', NOW(),
                                                                                    NULL, NULL),
-                                                                                  (5, 5, 5, '사용자 5', 'user5', 'password5', 'user5@example.com', '010-0000-0005', 'USER', 'ACTIVE', NOW(), NULL,
+                                                                                  (5, 5,  '사용자 5', 'user5', 'password5', 'user5@example.com', '010-0000-0005', 'USER', 'ACTIVE', NOW(), NULL,
                                                                                    NULL),
-                                                                                  (6, 6, 6, '사용자 6', 'user6', 'password6', 'user6@example.com', '010-0000-0006', 'USER', 'ACTIVE', NOW(), NULL,
+                                                                                  (6, 6,  '사용자 6', 'user6', 'password6', 'user6@example.com', '010-0000-0006', 'USER', 'ACTIVE', NOW(), NULL,
                                                                                    NULL),
-                                                                                  (7, 7, 7, '사용자 7', 'user7', 'password7', 'user7@example.com', '010-0000-0007', 'USER', 'ACTIVE', NOW(), NULL,
+                                                                                  (7, 7,  '사용자 7', 'user7', 'password7', 'user7@example.com', '010-0000-0007', 'USER', 'ACTIVE', NOW(), NULL,
                                                                                    NULL),
-                                                                                  (8, 8, 8, '사용자 8', 'user8', 'password8', 'user8@example.com', '010-0000-0008', 'USER', 'ACTIVE', NOW(), NULL,
+                                                                                  (8, 8, '사용자 8', 'user8', 'password8', 'user8@example.com', '010-0000-0008', 'USER', 'ACTIVE', NOW(), NULL,
                                                                                    NULL),
-                                                                                  (9, 9, 9, '사용자 9', 'user9', 'password9', 'user9@example.com', '010-0000-0009', 'USER', 'ACTIVE', NOW(), NULL,
+                                                                                  (9, 9,  '사용자 9', 'user9', 'password9', 'user9@example.com', '010-0000-0009', 'USER', 'ACTIVE', NOW(), NULL,
                                                                                    NULL),
-                                                                                  (10, 10, 10, '사용자 10', 'user10', 'password10', 'user10@example.com', '010-0000-0010', 'USER', 'ACTIVE', NOW(),
+                                                                                  (10, 10, '사용자 10', 'user10', 'password10', 'user10@example.com', '010-0000-0010', 'USER', 'ACTIVE', NOW(),
                                                                                    NULL, NULL),
-                                                                                  (1, 1, 11, '박상현', 'psh950519', '12345', 'tkdgus0519@naver.com', '010-7474-5101', 'USER', 'ACTIVE', NOW(),
+                                                                                  (1, 1,  '박상현', 'psh950519', '12345', 'tkdgus0519@naver.com', '010-7474-5101', 'USER', 'ACTIVE', NOW(),
                                                                                    NULL, NULL);
 
 INSERT INTO medical_life (user_seq, dept_seq, part_seq, medical_life_title, medical_life_content,
@@ -237,31 +237,6 @@ INSERT INTO cp (user_seq, cp_name, cp_description, cp_view_count) VALUES
                                                                       (8, 'CP 이름 8', 'CP 설명 8', 0),
                                                                       (9, 'CP 이름 9', 'CP 설명 9', 0),
                                                                       (10, 'CP 이름 10', 'CP 설명 10', 0);
-
-INSERT INTO chatbot_history (user_seq, chatbot_history_name, created_at, updated_at, deleted_at) VALUES
-                                                                                                     (1, '챗봇 대화 1', NOW(), NULL, NULL),
-                                                                                                     (2, '챗봇 대화 2', NOW(), NULL, NULL),
-                                                                                                     (3, '챗봇 대화 3', NOW(), NULL, NULL),
-                                                                                                     (4, '챗봇 대화 4', NOW(), NULL, NULL),
-                                                                                                     (5, '챗봇 대화 5', NOW(), NULL, NULL),
-                                                                                                     (6, '챗봇 대화 6', NOW(), NULL, NULL),
-                                                                                                     (7, '챗봇 대화 7', NOW(), NULL, NULL),
-                                                                                                     (8, '챗봇 대화 8', NOW(), NULL, NULL),
-                                                                                                     (9, '챗봇 대화 9', NOW(), NULL, NULL),
-                                                                                                     (10, '챗봇 대화 10', NOW(), NULL, NULL);
-
-INSERT INTO chatbot_message (chatbot_history_seq, chatbot_message_sender_type, chatbot_message_content,
-                             chatbot_message_sent_at) VALUES
-                                                          (1, 'USER', '안녕하세요!', NOW()),
-                                                          (1, 'CHATBOT', '안녕하세요! 무엇을 도와드릴까요?', NOW()),
-                                                          (2, 'USER', '질문이 있어요.', NOW()),
-                                                          (2, 'CHATBOT', '물어보세요!', NOW()),
-                                                          (3, 'USER', '감사합니다!', NOW()),
-                                                          (3, 'CHATBOT', '천만에요!', NOW()),
-                                                          (4, 'USER', '이 기능은 어떻게 사용하나요?', NOW()),
-                                                          (4, 'CHATBOT', '사용법을 설명해 드리겠습니다.', NOW()),
-                                                          (5, 'USER', '좋아요!', NOW()),
-                                                          (5, 'CHATBOT', '기대할게요!', NOW());
 
 INSERT INTO cp_version (cp_seq, user_seq, cp_version, cp_version_description, cp_url, created_at) VALUES
                                                                                                       (1, 1, '버전 1.0', '초기 버전', 'http://example.com/version1', NOW()),

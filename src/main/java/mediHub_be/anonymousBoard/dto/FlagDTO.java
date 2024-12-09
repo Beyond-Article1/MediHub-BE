@@ -8,6 +8,6 @@ import lombok.Data;
 public class FlagDTO {
 
     private Long flagSeq;
-    private String flagBoardFlag;
-    private Long flagPostSeq;
+    private String flagType;
+    private Long flagentitySeq;
 }

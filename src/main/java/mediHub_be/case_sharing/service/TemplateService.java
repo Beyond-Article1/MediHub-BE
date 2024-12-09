@@ -57,7 +57,7 @@ public class TemplateService {
                 })
                 .map(template -> {
                     // Flag 조회
-                    Optional<Flag> flagOptional = flagRepository.findByFlagBoardFlagAndFlagPostSeq("template_preview", template.getTemplateSeq());
+                    Optional<Flag> flagOptional = flagRepository.findByFlagTypeAndFlagEntitySeq("template_preview", template.getTemplateSeq());
                     String previewImageUrl = null;
 
                     if (flagOptional.isPresent()) {
@@ -116,7 +116,7 @@ public class TemplateService {
         return filteredTemplates.stream()
                 .map(template -> {
                     // Flag 조회
-                    Optional<Flag> flagOptional = flagRepository.findByFlagBoardFlagAndFlagPostSeq("template_preview", template.getTemplateSeq());
+                    Optional<Flag> flagOptional = flagRepository.findByFlagTypeAndFlagEntitySeq("template_preview", template.getTemplateSeq());
                     String previewImageUrl = null;
 
                     if (flagOptional.isPresent()) {
@@ -159,8 +159,8 @@ public class TemplateService {
         // Flag와 Picture 저장 (미리보기 이미지)
         if (requestDTO.getPreviewImageUrl() != null) {
             Flag flag = Flag.builder()
-                    .flagBoardFlag("template_preview")
-                    .flagPostSeq(template.getTemplateSeq())
+                    .flagType("template_preview")
+                    .flagEntitySeq(template.getTemplateSeq())
                     .build();
 
             flagRepository.save(flag);
@@ -194,7 +194,7 @@ public class TemplateService {
                 OpenScope.valueOf(requestDTO.getOpenScope().toUpperCase()));
         if (requestDTO.getPreviewImageUrl() != null) {
             // 5.1 기존 Flag 조회
-            Flag flag = flagRepository.findByFlagBoardFlagAndFlagPostSeq("template_preview", templateSeq)
+            Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq("template_preview", templateSeq)
                     .orElseThrow(() -> new IllegalArgumentException("해당 템플릿에 연결된 Flag가 없습니다."));
 
             // 5.2 기존 Picture 삭제
@@ -226,7 +226,7 @@ public class TemplateService {
         templateRepository.save(template);
 
         // Flag 조회
-        Optional<Flag> flagOptional = flagRepository.findByFlagBoardFlagAndFlagPostSeq("template_preview", template.getTemplateSeq());
+        Optional<Flag> flagOptional = flagRepository.findByFlagTypeAndFlagEntitySeq("template_preview", template.getTemplateSeq());
 
         // Flag가 존재하면 연결된 Picture 조회 및 삭제 처리
         flagOptional.ifPresent(flag -> {

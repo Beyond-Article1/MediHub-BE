@@ -365,11 +365,11 @@ public class CaseSharingService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 템플릿을 찾을 수 없습니다."));
     }
 
-    private void saveKeywordsAndFlag(List<String> keywords, Long postSeq) {
+    private void saveKeywordsAndFlag(List<String> keywords, Long entitySeq) {
         if (keywords != null && !keywords.isEmpty()) {
             Flag flag = Flag.builder()
-                    .flagBoardFlag(CASE_SHARING_FLAG)
-                    .flagPostSeq(postSeq)
+                    .flagType(CASE_SHARING_FLAG)
+                    .flagEntitySeq(entitySeq)
                     .build();
             flagRepository.save(flag);
             keywordService.saveKeywords(keywords, flag.getFlagSeq());

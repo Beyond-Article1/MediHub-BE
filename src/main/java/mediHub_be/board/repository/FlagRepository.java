@@ -10,6 +10,6 @@ import java.util.Optional;
 @Repository
 public interface FlagRepository extends JpaRepository<Flag, Long> {
 
-    Optional<Flag> findByFlagBoardFlagAndFlagPostSeq(String boardFlag, Long postSeq);
-    List<Flag> findAllByFlagPostSeq(Long flagPostSeq);
+    Optional<Flag> findByFlagTypeAndFlagEntitySeq(String flagType, Long entitySeq);
+    List<Flag> findAllByFlagEntitySeq(Long flagEntitySeq);
 }
