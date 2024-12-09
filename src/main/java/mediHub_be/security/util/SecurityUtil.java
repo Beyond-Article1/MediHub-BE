@@ -1,6 +1,7 @@
 package mediHub_be.security.util;
 
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.security.securitycustom.CustomUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,25 +30,21 @@ public class SecurityUtil {
         return getCurrentUserDetails()
                 .map(userDetails -> userDetails.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority) // 권한을 String으로 변환
-                        .collect(Collectors.joining(",")))  // 권한들을 ','로 구분하여 반환
-                .orElse("");  // 권한이 없을 경우, 빈 문자열 반환
+                        .collect(Collectors.joining(",")))
+                .orElse("");
     }
 
 
     // 현재 인증된 사용자의 userSeq 반환
     public static Long getCurrentUserSeq() {
-        return getCurrentUserDetails()
-                .map(userDetails -> {
-                    try {
-                        // userSeq를 Long으로 반환
-                        return Long.parseLong(userDetails.getUsername());
-                    } catch (NumberFormatException e) {
-                        log.error("Invalid userSeq format: {}", userDetails.getUsername(), e);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("getCurrentUserSeq method 확인 Authentication: {}", authentication);
 
-                        return null; // 숫자 형식이 아닌 경우, null 반환
-                    }
-                })
-                .orElse(null); // 인증된 사용자가 없을 경우, null 반환
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails customUserDetails) {
+            return customUserDetails.getUserSeq();
+        }
+
+        return null; // 인증되지 않은 경우 null 반환
     }
 
     // 현재 인증된 사용자의 userId 반환

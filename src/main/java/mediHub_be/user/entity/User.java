@@ -5,10 +5,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mediHub_be.board.entity.Picture;
+import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.part.entity.Part;
 import mediHub_be.ranking.entity.Ranking;
-import mediHub_be.user.entity.UserAuth;
-import mediHub_be.user.entity.UserStatus;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -18,7 +17,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE user SET user_state = 'DELETE', del_date = LOCALTIME WHERE user_seq = ?")
-public class User {
+public class User extends BaseFullEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,18 +57,27 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserAuth userAuth = UserAuth.USER;
 
-    public User(String userId, String userPassword, String userName, String userEmail, String userPhone) {
+    public User(String userId, String userPassword, String userName, String userEmail, String userPhone, Part part, Ranking ranking, Picture picture, UserAuth userAuth, UserStatus userStatus) {
         this.userId = userId;
         this.userPassword = userPassword;
         this.userName = userName;
         this.userEmail = userEmail;
         this.userPhone = userPhone;
+        this.part = part;
+        this.ranking = ranking;
+        this.picture = picture;
+        this.userAuth = userAuth != null ? userAuth : UserAuth.USER;
+        this.userStatus = userStatus != null ? userStatus : UserStatus.ACTIVE;
     }
 
-    public void encryptPassword(String encodedPwd) {
-        this.userPassword= encodedPwd;
+    public void updateUser(String userPassword, String userName, String userEmail, String userPhone, Part part, Ranking ranking) {
+        this.userPassword = userPassword;
+        this.userName = userName;
+        this.userEmail = userEmail;
+        this.userPhone = userPhone;
+        this.part = part;
+        this.ranking = ranking;
     }
-
 }
 
 
