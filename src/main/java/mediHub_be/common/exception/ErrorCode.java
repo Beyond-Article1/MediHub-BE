@@ -66,6 +66,9 @@ public enum ErrorCode {
     // 닉네임 중복
     DUPLICATE_NICKNAME(40901, HttpStatus.CONFLICT, "이미 존재하는 닉네임입니다."),
 
+    // CP 검색 카테고리 중복
+    DUPLICATE_CP_SEARCH_CATEGORY_NAME(40901, HttpStatus.CONFLICT, "이미 존재하는 CP 검색 카테고리 입니다."),
+
     /**
      * == 500 INTERNAL_SERVER_ERROR ==
      */
@@ -73,10 +76,8 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(50000, HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류입니다."),
     INTERNAL_SERVER_IO_UPLOAD_ERROR(50001, HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
     INTERNAL_DATABASE_ERROR(50002, HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 업로드 오류입니다."),
-    INTERNAL_SERVER_IO_DELETE_ERROR(50003, HttpStatus.INTERNAL_SERVER_ERROR, "파일 삭제에 실패했습니다.");
-
-
-
+    INTERNAL_SERVER_IO_DELETE_ERROR(50003, HttpStatus.INTERNAL_SERVER_ERROR, "파일 삭제에 실패했습니다."),
+    INTERNAL_DATA_ACCESS_ERROR(50003, HttpStatus.INTERNAL_SERVER_ERROR, "데이터 접근 오류입니다.");
 
     private final Integer code;
     private final HttpStatus httpStatus;
