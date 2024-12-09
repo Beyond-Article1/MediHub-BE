@@ -105,6 +105,36 @@ public class AnonymousBoardService {
         return anonymousBoardListDTO;
     }
 
+    // 익명 게시글 댓글 목록 조회
+    @Transactional(readOnly = true)
+    public List<AnonymousBoardCommentListDTO> getAnonymousBoardCommentList(Long anonymousBoardSeq, String userId) {
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+
+        List<FlagDTO> flagDTOList = flagRepository.findAllByFlagPostSeq(anonymousBoardSeq).stream()
+                .map(flag -> FlagDTO.builder()
+                        .flagSeq(flag.getFlagSeq())
+                        .flagBoardFlag(flag.getFlagBoardFlag())
+                        .flagPostSeq(flag.getFlagPostSeq())
+                        .build())
+                .collect(Collectors.toList());
+        FlagDTO flagDTO = flagDTOList.stream()
+                .filter(flag -> flag.getFlagBoardFlag().equals("ANONYMOUS_BOARD"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("익명 게시글에 대한 플래그가 존재하지 않습니다."));
+        List<AnonymousBoardCommentListDTO> anonymousBoardCommentListDTO = commentRepository
+                .findByFlag_FlagSeqAndCommentIsDeletedFalse(flagDTO.getFlagSeq()).stream()
+                .map(comment -> AnonymousBoardCommentListDTO.builder()
+                        .userId(user.getUserId())
+                        .commentContent(comment.getCommentContent())
+                        .createdAt(comment.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+
+        return anonymousBoardCommentListDTO;
+    }
+
     // 익명 게시글 조회
     @Transactional
     public AnonymousBoardDetailDTO getAnonymousBoardDetail(
@@ -249,6 +279,43 @@ public class AnonymousBoardService {
         return anonymousBoard.getAnonymousBoardSeq();
     }
 
+    // 익명 게시글 댓글 생성
+    @Transactional
+    public Long createAnonymousBoardComment(
+            Long anonymousBoardSeq,
+            String commentContent,
+            String userId
+    ) {
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+
+        List<FlagDTO> flagDTOList = flagRepository.findAllByFlagPostSeq(anonymousBoardSeq).stream()
+                .map(flag -> FlagDTO.builder()
+                        .flagSeq(flag.getFlagSeq())
+                        .flagBoardFlag(flag.getFlagBoardFlag())
+                        .flagPostSeq(flag.getFlagPostSeq())
+                        .build())
+                .collect(Collectors.toList());
+        FlagDTO flagDTO = flagDTOList.stream()
+                .filter(flag -> flag.getFlagBoardFlag().equals("ANONYMOUS_BOARD"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("익명 게시글에 대한 플래그가 존재하지 않습니다."));
+
+        Flag flag = flagRepository.findById(flagDTO.getFlagSeq())
+                .orElseThrow(() -> new IllegalArgumentException("게시판 식별을 찾을 수 없습니다."));
+
+        Comment comment = Comment.createNewComment(
+                user,
+                flag,
+                commentContent
+        );
+
+        commentRepository.save(comment);
+
+        return comment.getCommentSeq();
+    }
+
     // 익명 게시글 수정
     @Transactional
     public AnonymousBoard updateAnonymousBoard(
@@ -310,6 +377,38 @@ public class AnonymousBoardService {
         return result;
     }
 
+    // 익명 게시글 댓글 수정
+    @Transactional
+    public Comment updateAnonymousBoardComment(
+            Long anonymousBoardSeq,
+            Long commentSeq,
+            String commentContent,
+            String userId
+    ) {
+
+        Comment existingComment = commentRepository.findById(commentSeq)
+                .orElseThrow(() -> new IllegalArgumentException("익명 게시글 댓글을 찾을 수 없습니다."));
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+
+        if(!existingComment.getUser().equals(user)) throw new IllegalArgumentException(
+                "작성자만 익명 게시글 댓글을 수정할 수 있습니다."
+        );
+
+        List<Flag> optionalFlag = flagRepository.findAllByFlagPostSeq(anonymousBoardSeq);
+
+        Flag flag = optionalFlag.stream()
+                .filter(f -> f.getFlagBoardFlag().equals("ANONYMOUS_BOARD"))
+                .findFirst()
+                .orElse(null);
+
+        existingComment.update(user, flag, commentContent);
+
+        Comment result = commentRepository.save(existingComment);
+
+        return result;
+    }
+
     // 익명 게시글 삭제
     @Transactional
     public boolean deleteAnonymousBoard(Long anonymousBoardSeq, String userId) {
@@ -358,6 +457,32 @@ public class AnonymousBoardService {
 
             commentRepository.save(comment);
         }
+
+        return true;
+    }
+
+    // 익명 게시글 댓글 삭제
+    @Transactional
+    public boolean deleteAnonymousBoardComment(Long anonymousBoardSeq, Long commentSeq, String userId) {
+
+        Comment comment = commentRepository.findById(commentSeq)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 익명 게시글 댓글입니다."));
+        // 1. 작성자 여부 확인
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+
+        // 작성자가 아닌 경우
+        if(!Objects.equals(user.getUserId(), SecurityUtil.getCurrentUserId())) {
+            return false;
+        }
+        // 관리자가 아닌 경우
+        else if(SecurityUtil.getCurrentUserAuthorities().equals("USER")) return false;
+
+        if(comment.getDeletedAt() != null) throw new IllegalArgumentException("이미 삭제된 익명 게시글 댓글입니다.");
+
+        // 2. DB (COMMENT)에 해당 익명 게시글 댓글 삭제 상태 등록
+        comment.setDeleted();
+        commentRepository.save(comment);
 
         return true;
     }
