@@ -1,6 +1,8 @@
 package mediHub_be.admin.dto;
 
 import lombok.Data;
+import mediHub_be.part.entity.Part;
+import mediHub_be.ranking.entity.Ranking;
 
 @Data
 public class AdminDTO {
@@ -9,7 +11,7 @@ public class AdminDTO {
     private String userName;
     private String userEmail;
     private String userPhone;
-    private long partSeq;
-    private long rankingSeq;
+    private Part partSeq;
+    private Ranking rankingSeq;
 }
 

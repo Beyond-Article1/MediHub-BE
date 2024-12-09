@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import mediHub_be.admin.dto.AdminDTO;
+import mediHub_be.admin.dto.CreateUserDTO;
 import mediHub_be.admin.service.AdminService;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.security.util.SecurityUtil;
@@ -20,19 +21,20 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final SecurityUtil securityUtil;
 
     @Operation(summary = "회원 등록", description = "관리자가 새로운 회원을 등록합니다.")
     @PostMapping("/register-user")
-    public ResponseEntity<ApiResponse<Long>> registerUser(@RequestBody AdminDTO adminDTO) {
+    public ResponseEntity<ApiResponse<Long>> registerUser(@RequestBody CreateUserDTO createUserDTO) {
         String userId = SecurityUtil.getCurrentUserId();
-        Long newUserSeq = adminService.registerUser(adminDTO, userId);
+        Long newUserSeq = adminService.registerUser(createUserDTO, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(newUserSeq));
     }
 
     @Operation(summary = "회원 수정", description = "관리자가 기존 회원의 정보를 수정합니다.")
-    @PostMapping("/update/{userSeq}")
+    @PutMapping("/update/{userSeq}")
     public ResponseEntity<ApiResponse<Long>> updateUser(@PathVariable Long userSeq, @RequestBody AdminDTO adminDTO) {
-        Long updatedUserSeq = adminService.updateUser(userSeq, adminDTO);
+        Long updatedUserSeq = adminService.updateUser(userSeq, new CreateUserDTO());
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.ok(updatedUserSeq));
     }
 
