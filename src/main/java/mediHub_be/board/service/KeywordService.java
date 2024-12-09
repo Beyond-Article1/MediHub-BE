@@ -3,7 +3,6 @@ package mediHub_be.board.service;
 import lombok.RequiredArgsConstructor;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Keyword;
-import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.KeywordRepository;
 import mediHub_be.case_sharing.dto.CaseSharingKeywordDTO;
 import org.springframework.stereotype.Service;
@@ -35,9 +34,9 @@ public class KeywordService {
 
     // 키워드 수정
     @Transactional
-    public void updateKeywords(List<String> newKeywords, String boardFlag, Long postSeq) {
+    public void updateKeywords(List<String> newKeywords, String flagType, Long entitySeq) {
         // Flag 가져오기
-        Flag flag = flagService.findFlag(boardFlag, postSeq)
+        Flag flag = flagService.findFlag(flagType, entitySeq)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Flag가 존재하지 않습니다."));
 
         // 기존 키워드 삭제
@@ -55,9 +54,9 @@ public class KeywordService {
 
     // 키워드 삭제
     @Transactional
-    public void deleteKeywords(String boardFlag, Long postSeq) {
+    public void deleteKeywords(String flagType, Long entitySeq) {
         // Flag 가져오기
-        Flag flag = flagService.findFlag(boardFlag, postSeq)
+        Flag flag = flagService.findFlag(flagType, entitySeq)
                 .orElseThrow(() -> new IllegalArgumentException("해당 Flag가 존재하지 않습니다."));
 
         // 키워드 삭제
@@ -67,8 +66,8 @@ public class KeywordService {
 
     // 특정 게시물의 키워드 조회
     @Transactional
-    public List<CaseSharingKeywordDTO> getKeywords(String boardFlag, Long postSeq) {
-        List<Keyword> keywords = keywordRepository.findByBoardFlagAndPostSeq(boardFlag, postSeq);
+    public List<CaseSharingKeywordDTO> getKeywords(String flagType, Long entitySeq) {
+        List<Keyword> keywords = keywordRepository.findByFlagTypeAndEntitySeq(flagType, entitySeq);
 
         return keywords.stream()
                 .map(keyword -> new CaseSharingKeywordDTO(

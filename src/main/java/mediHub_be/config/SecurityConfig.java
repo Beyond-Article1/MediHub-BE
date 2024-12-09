@@ -93,6 +93,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.addAllowedOrigin("http://localhost:5173"); // 허용할 도메인
+        config.addAllowedOrigin("https://jiangxy.github.io");
         config.addAllowedHeader("*"); // 모든 헤더 허용
         config.addAllowedMethod("*"); // 모든 HTTP 메소드 허용
         config.addExposedHeader("token"); // 서버에서 클라이언트로 반환하는 헤더 허용

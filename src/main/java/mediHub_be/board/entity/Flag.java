@@ -17,6 +17,8 @@ public class Flag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long flagSeq;
-    private String flagBoardFlag; // 게시판 구별용
-    private Long flagPostSeq; // 해당 게시판의 게시물 seq
+
+    private String flagType; // flag 구별용
+
+    private Long flagEntitySeq; // 해당 entity 식별자 seq
 }

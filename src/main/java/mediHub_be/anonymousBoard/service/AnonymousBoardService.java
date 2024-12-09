@@ -63,8 +63,8 @@ public class AnonymousBoardService {
         List<FlagDTO> flagList = flagRepository.findAll().stream()
                 .map(flag -> FlagDTO.builder()
                         .flagSeq(flag.getFlagSeq())
-                        .flagBoardFlag(flag.getFlagBoardFlag())
-                        .flagPostSeq(flag.getFlagPostSeq())
+                        .flagType(flag.getFlagType())
+                        .flagentitySeq(flag.getFlagEntitySeq())
                         .build())
                 .collect(Collectors.toList());
         // 모든 사진 목록 가져오기
@@ -87,8 +87,8 @@ public class AnonymousBoardService {
                 .map(anonymousBoard -> {
                     // 현재 익명 게시글의 SEQ와 일치하는 게시판 식별 번호 목록 필터링
                     List<FlagDTO> flagsForAnonymousBoard = flagList.stream()
-                            .filter(flag -> flag.getFlagBoardFlag().equals("ANONYMOUS_BOARD"))
-                            .filter(flag -> flag.getFlagPostSeq() == anonymousBoard.getAnonymousBoardSeq())
+                            .filter(flag -> flag.getFlagType().equals("ANONYMOUS_BOARD"))
+                            .filter(flag -> flag.getFlagentitySeq() == anonymousBoard.getAnonymousBoardSeq())
                             .collect(Collectors.toList());
                     // 현재 익명 게시글의 SEQ와 일치하는 사진 목록 필터링
                     List<PictureDTO> imagesForFlag = pictureList.stream()
@@ -118,15 +118,15 @@ public class AnonymousBoardService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
-        List<FlagDTO> flagDTOList = flagRepository.findAllByFlagPostSeq(anonymousBoardSeq).stream()
+        List<FlagDTO> flagDTOList = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq).stream()
                 .map(flag -> FlagDTO.builder()
                         .flagSeq(flag.getFlagSeq())
-                        .flagBoardFlag(flag.getFlagBoardFlag())
-                        .flagPostSeq(flag.getFlagPostSeq())
+                        .flagType(flag.getFlagType())
+                        .flagentitySeq(flag.getFlagEntitySeq())
                         .build())
                 .collect(Collectors.toList());
         FlagDTO flagDTO = flagDTOList.stream()
-                .filter(flag -> flag.getFlagBoardFlag().equals("ANONYMOUS_BOARD"))
+                .filter(flag -> flag.getFlagType().equals("ANONYMOUS_BOARD"))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("익명 게시글에 대한 플래그가 존재하지 않습니다."));
         List<AnonymousBoardCommentListDTO> anonymousBoardCommentListDTO = commentRepository
@@ -172,15 +172,15 @@ public class AnonymousBoardService {
             anonymousBoardRepository.save(anonymousBoard);
         } else log.info("이미 조회한 적 있는 익명 게시글");
 
-        List<FlagDTO> flagDTOList = flagRepository.findAllByFlagPostSeq(anonymousBoardSeq).stream()
+        List<FlagDTO> flagDTOList = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq).stream()
                 .map(flag -> FlagDTO.builder()
                         .flagSeq(flag.getFlagSeq())
-                        .flagBoardFlag(flag.getFlagBoardFlag())
-                        .flagPostSeq(flag.getFlagPostSeq())
+                        .flagType(flag.getFlagType())
+                        .flagentitySeq(flag.getFlagEntitySeq())
                         .build())
                 .collect(Collectors.toList());
         FlagDTO flagDTO = flagDTOList.stream()
-                .filter(flag -> flag.getFlagBoardFlag().equals("ANONYMOUS_BOARD"))
+                .filter(flag -> flag.getFlagType().equals("ANONYMOUS_BOARD"))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("익명 게시글에 대한 플래그가 존재하지 않습니다."));
 
@@ -199,7 +199,7 @@ public class AnonymousBoardService {
                 .collect(Collectors.toList());
 
         // 키워드 내역 반환
-        List<Keyword> keywords = keywordRepository.findByBoardFlagAndPostSeq(
+        List<Keyword> keywords = keywordRepository.findByFlagTypeAndEntitySeq(
                 "ANONYMOUS_BOARD",
                 anonymousBoardSeq);
 
@@ -246,8 +246,8 @@ public class AnonymousBoardService {
         anonymousBoardRepository.save(anonymousBoard);
 
         Flag flag = Flag.builder()
-                .flagBoardFlag("ANONYMOUS_BOARD")
-                .flagPostSeq(anonymousBoard.getAnonymousBoardSeq())
+                .flagType("ANONYMOUS_BOARD")
+                .flagEntitySeq(anonymousBoard.getAnonymousBoardSeq())
                 .build();
 
         flagRepository.save(flag);
@@ -296,15 +296,15 @@ public class AnonymousBoardService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
-        List<FlagDTO> flagDTOList = flagRepository.findAllByFlagPostSeq(anonymousBoardSeq).stream()
+        List<FlagDTO> flagDTOList = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq).stream()
                 .map(flag -> FlagDTO.builder()
                         .flagSeq(flag.getFlagSeq())
-                        .flagBoardFlag(flag.getFlagBoardFlag())
-                        .flagPostSeq(flag.getFlagPostSeq())
+                        .flagType(flag.getFlagType())
+                        .flagentitySeq(flag.getFlagEntitySeq())
                         .build())
                 .collect(Collectors.toList());
         FlagDTO flagDTO = flagDTOList.stream()
-                .filter(flag -> flag.getFlagBoardFlag().equals("ANONYMOUS_BOARD"))
+                .filter(flag -> flag.getFlagType().equals("ANONYMOUS_BOARD"))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("익명 게시글에 대한 플래그가 존재하지 않습니다."));
 
@@ -342,10 +342,10 @@ public class AnonymousBoardService {
 
         existingAnonymousBoard.update(user, requestDTO.getAnonymousBoardTitle(), requestDTO.getAnonymousBoardContent());
 
-        List<Flag> optionalFlag = flagRepository.findAllByFlagPostSeq(anonymousBoardSeq);
+        List<Flag> optionalFlag = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq);
 
         Flag flag = optionalFlag.stream()
-                .filter(f -> f.getFlagBoardFlag().equals("ANONYMOUS_BOARD"))
+                .filter(f -> f.getFlagType().equals("ANONYMOUS_BOARD"))
                 .findFirst()
                 .orElse(null);
 
@@ -431,10 +431,10 @@ public class AnonymousBoardService {
                 "작성자만 익명 게시글 댓글을 수정할 수 있습니다."
         );
 
-        List<Flag> optionalFlag = flagRepository.findAllByFlagPostSeq(anonymousBoardSeq);
+        List<Flag> optionalFlag = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq);
 
         Flag flag = optionalFlag.stream()
-                .filter(f -> f.getFlagBoardFlag().equals("ANONYMOUS_BOARD"))
+                .filter(f -> f.getFlagType().equals("ANONYMOUS_BOARD"))
                 .findFirst()
                 .orElse(null);
 
@@ -469,10 +469,10 @@ public class AnonymousBoardService {
         anonymousBoardRepository.save(anonymousBoard);
 
         // 3. DB (PICTURE)에 해당 익명 게시글 번호로 된 모든 데이터 삭제 상태 등록
-        List<Flag> flagList = flagRepository.findAllByFlagPostSeq(anonymousBoardSeq);
+        List<Flag> flagList = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq);
 
         Flag flag = flagList.stream()
-                .filter(f -> f.getFlagBoardFlag().equals("ANONYMOUS_BOARD"))
+                .filter(f -> f.getFlagType().equals("ANONYMOUS_BOARD"))
                 .findFirst()
                 .orElse(null);
 
