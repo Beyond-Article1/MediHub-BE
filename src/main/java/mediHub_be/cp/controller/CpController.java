@@ -447,4 +447,25 @@ public class CpController {
     }
 
     // CP 검색 카테고리 삭제
+    @DeleteMapping(value = "/cpSearchCategory/{cpSearchCategorySeq}")
+    @Operation(summary = "CP 검색 카테고리 삭제", description = "주어진 ID로 CP 검색 카테고리를 삭제합니다.")
+    public ResponseEntity<ApiResponse<ResponseCpSearchCategoryDTO>> deleteCpSearchCategory(@PathVariable long cpSearchCategorySeq) {
+        try {
+            cpSearchCategoryService.deleteCpSearchCategory(cpSearchCategorySeq);
+            // 삭제 성공 시 응답
+            return ResponseEntity.ok(ApiResponse.success("CP 검색 카테고리가 성공적으로 삭제되었습니다."));
+        } catch (CustomException e) {
+            // 사용자 정의 예외 처리: 클라이언트 오류에 대한 응답
+            logger.warn("CP 검색 카테고리 삭제 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (DataAccessException e) {
+            // 데이터베이스 관련 예외 처리: 서버 오류에 대한 응답
+            logger.error("데이터베이스 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR)));
+        } catch (Exception e) {
+            // 기타 예외 처리: 서버 오류에 대한 응답
+            logger.error("알 수 없는 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+    }
 }
