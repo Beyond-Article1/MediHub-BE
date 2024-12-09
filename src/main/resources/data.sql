@@ -73,13 +73,13 @@ INSERT INTO part (part_seq, dept_seq, part_name) VALUES
 
 INSERT INTO user (user_seq, part_seq, ranking_seq, picture_seq, user_name, user_id, user_password, user_email,
                   user_phone, user_auth, user_status, created_at, updated_at, deleted_at) VALUES
-(1, 1, 1, NULL, 'john_doe', 'encrypted_password1', 'John Doe', 'john.doe@example.com', '010-1234-5678', 'ACTIVE',
- 'USER', NOW(), NULL, NULL),
-(2, 2, 2, NULL, 'jane_smith', 'encrypted_password2', 'Jane Smith', 'jane.smith@example.com', '010-9876-5432', 'ACTIVE',
- 'ADMIN', NOW(), NULL, NULL),
+(1, 1, 1, NULL, 'john_doe', 'encrypted_password1', 'John Doe', 'john.doe@example.com', '010-1234-5678', 'USER',
+ 'ACTIVE', NOW(), NULL, NULL),
+(2, 2, 2, NULL, 'jane_smith', 'encrypted_password2', 'Jane Smith', 'jane.smith@example.com', '010-9876-5432', 'ADMIN',
+ 'ACTIVE', NOW(), NULL, NULL),
 (3, 3, 3, NULL, 'alice_jones', 'encrypted_password3', 'Alice Jones', 'alice.jones@example.com', '010-5678-1234',
- 'ACTIVE', 'USER', NOW(), NULL, NULL),
-(4, 3, 3, NULL, '1234', '12345', 'Alice Jones', 'alice.jones@example.com', '010-5678-1234', 'ACTIVE', 'USER', NOW(),
+ 'USER', 'ACTIVE', NOW(), NULL, NULL),
+(4, 3, 3, NULL, '1234', '12345', 'Alice Jones', 'alice.jones@example.com', '010-5678-1234', 'USER', 'ACTIVE', NOW(),
  NULL, NULL),
 (5, 1, 1, NULL, '사용자 5', 'user5', 'password5', 'user5@example.com', '010-0000-0005', 'USER', 'ACTIVE', NOW(), NULL,
  NULL),
@@ -358,7 +358,7 @@ INSERT INTO bookmark (bookmark_seq, user_seq, flag_seq, created_at) VALUES
 (7, 7, 4, NOW()),
 (8, 8, 4, NOW()),
 (9, 9, 5, NOW()),
-(10, 10, 5, NOW());
+(10, 10, 5, NOW());``
 
 INSERT INTO notify (noti_seq, user_seq, flag_seq, noti_sender_user_name, noti_sender_user_part, noti_content,
                     noti_type, noti_url, readed_at, created_at) VALUES
