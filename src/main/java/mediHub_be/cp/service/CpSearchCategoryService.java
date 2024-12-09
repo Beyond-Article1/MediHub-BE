@@ -210,6 +210,7 @@ public class CpSearchCategoryService {
      *
      * @param cpSearchCategorySeq 삭제할 CP 검색 카테고리의 ID
      * @throws CustomException 카테고리를 찾지 못한 경우 발생
+     * @throws CustomException 해당 카테고리에 관련된 데이터가 존재하는 경우 발생
      */
     public void deleteCpSearchCategory(long cpSearchCategorySeq) {
         // 1. 조회
@@ -220,7 +221,12 @@ public class CpSearchCategoryService {
                 });
 
         // 2. CP 검색 카테고리 데이터 테이블에서 로우 값에서 사용하는지 확인
-        // 해당 API 를 만들 때, 이 코드 구현 예정
+        boolean hasRelatedData = cpSearchCategoryDataRepository.existsByCpSearchCategorySeq(cpSearchCategorySeq);
+        if (hasRelatedData) {
+            logger.warn("CP 검색 카테고리를 삭제할 수 없습니다. 관련 데이터가 존재합니다: ID={}", cpSearchCategorySeq);
+            throw new CustomException(ErrorCode.CANNOT_DELETE_DATA); // 관련 데이터가 있을 경우 예외 발생
+        }
+
         logger.info("CP 검색 카테고리 삭제 요청: ID={}", cpSearchCategorySeq);
 
         // 3. 삭제(삭제일 추가)
@@ -236,6 +242,7 @@ public class CpSearchCategoryService {
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
         }
     }
+
 
     /**
      * 주어진 CP 검색 카테고리 ID에 대한 모든 데이터를 조회하여 리스트로 반환합니다.
@@ -405,4 +412,34 @@ public class CpSearchCategoryService {
         logger.info("CP 검색 카테고리 데이터 업데이트: ID={} 이름={}", entity.getCpSearchCategoryDataSeq(), cpSearchCategoryDataName);
     }
 
+    /**
+     * CP 검색 카테고리 데이터를 삭제합니다.
+     *
+     * @param cpSearchCategoryDataSeq 삭제할 CP 검색 카테고리 데이터의 ID
+     * @throws CustomException 데이터를 찾지 못한 경우 발생
+     */
+    public void deleteCpSearchCategoryData(long cpSearchCategoryDataSeq) {
+        // 1. 조회
+        CpSearchCategoryData entity = cpSearchCategoryDataRepository.findById(cpSearchCategoryDataSeq)
+                .orElseThrow(() -> {
+                    logger.warn("CP 검색 카테고리 데이터 찾기 실패: ID={}", cpSearchCategoryDataSeq);
+                    return new CustomException(ErrorCode.NOT_FOUND_CP_SEARCH_CATEGORY_DATA);
+                });
+
+        // 2. CP 검색 카테고리 데이터 삭제 요청
+        logger.info("CP 검색 카테고리 데이터 삭제 요청: ID={}", cpSearchCategoryDataSeq);
+
+        // 3. 삭제(삭제일 추가)
+        entity.updateUserSeq(SecurityUtil.getCurrentUserSeq()); // 현재 사용자 ID 업데이트
+        entity.delete(); // 삭제 처리
+
+        // 4. 저장
+        try {
+            cpSearchCategoryDataRepository.save(entity); // 수정된 엔티티를 데이터베이스에 저장
+            logger.info("CP 검색 카테고리 데이터 삭제 성공: ID={}", cpSearchCategoryDataSeq);
+        } catch (DataAccessException e) {
+            logger.error("CP 검색 카테고리 데이터 삭제 중 오류 발생: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        }
+    }
 }

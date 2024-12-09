@@ -22,6 +22,8 @@ public enum ErrorCode {
     // 필력 필드 관련
     REQUIRED_FIELD_MISSING(40003, HttpStatus.BAD_REQUEST, "필수 입력값이 누락되었습니다. 모든 필드를 확인해 주세요."),
 
+    // 삭제 불가 데이터 요청
+    CANNOT_DELETE_DATA(40903,HttpStatus.CONFLICT, "데이터 제약 조건으로 인해 삭제가 불가능합니다."),
     /**
      * == 401 UNAUTHORIZED ==
      */

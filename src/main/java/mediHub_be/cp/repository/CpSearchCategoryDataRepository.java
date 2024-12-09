@@ -47,4 +47,6 @@ public interface CpSearchCategoryDataRepository extends JpaRepository<CpSearchCa
     ResponseCpSearchCategoryDataDTO findByCpSearchCategoryDataSeq(@Param("cpSearchCategoryDataSeq") long cpSearchCategoryDataSeq);
 
     boolean existsByCpSearchCategoryDataName(String cpSearchCategoryDataName);
+
+    boolean existsByCpSearchCategorySeq(long cpSearchCategorySeq);
 }
