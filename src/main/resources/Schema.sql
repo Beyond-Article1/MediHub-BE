@@ -18,8 +18,6 @@ DROP TABLE IF EXISTS cp_search_category;
 DROP TABLE IF EXISTS case_sharing_comment;
 DROP TABLE IF EXISTS case_sharing;
 DROP TABLE IF EXISTS template;
-DROP TABLE IF EXISTS chatbot_message;
-DROP TABLE IF EXISTS chatbot_history;
 DROP TABLE IF EXISTS comment;
 DROP TABLE IF EXISTS case_sharing_group;
 DROP TABLE IF EXISTS bookmark;
@@ -194,24 +192,6 @@ CREATE TABLE template (
                           PRIMARY KEY (template_seq)
 );
 
-CREATE TABLE chatbot_message (
-                                 chatbot_message_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
-                                 chatbot_history_seq	bigint	NOT NULL,
-                                 chatbot_message_sender_type	varchar(50)	NOT NULL	COMMENT 'USER, CHATBOT',
-                                 chatbot_message_content	text	NOT NULL,
-                                 chatbot_message_sent_at	datetime	NOT NULL	DEFAULT NOW(),
-                                 PRIMARY KEY (chatbot_message_seq)
-);
-
-CREATE TABLE chatbot_history (
-                                 chatbot_history_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
-                                 user_seq	bigint	NOT NULL,
-                                 chatbot_history_name	varchar(255)	NOT NULL,
-                                 created_at	datetime	NOT NULL	DEFAULT NOW(),
-                                 updated_at	datetime	NULL,
-                                 deleted_at	datetime	NULL,
-                                 PRIMARY KEY (chatbot_history_seq)
-);
 
 CREATE TABLE comment (
                          comment_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
@@ -347,8 +327,8 @@ CREATE TABLE picture (
 
 CREATE TABLE flag (
                       flag_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
-                      flag_board_flag	varchar(50)	NOT NULL,
-                      flag_post_seq	bigint	NOT NULL,
+                      flag_type	varchar(50)	NOT NULL,
+                      flag_entity_seq	bigint	NOT NULL,
                       PRIMARY KEY (flag_seq)
 );
 
@@ -431,13 +411,6 @@ ALTER TABLE case_sharing
 ALTER TABLE template
     ADD CONSTRAINT FK_template_user FOREIGN KEY (user_seq) REFERENCES user (user_seq) ON DELETE CASCADE,
     ADD CONSTRAINT FK_template_part FOREIGN KEY (part_seq) REFERENCES part (part_seq) ON DELETE CASCADE;
-
-ALTER TABLE chatbot_message
-    ADD CONSTRAINT FK_chatbot_message_chatbot_history FOREIGN KEY (chatbot_history_seq)
-        REFERENCES chatbot_history (chatbot_history_seq) ON DELETE CASCADE;
-
-ALTER TABLE chatbot_history
-    ADD CONSTRAINT FK_chatbot_history_user FOREIGN KEY (user_seq) REFERENCES user (user_seq) ON DELETE CASCADE;
 
 ALTER TABLE comment
     ADD CONSTRAINT FK_comment_user FOREIGN KEY (user_seq) REFERENCES user (user_seq) ON DELETE CASCADE,

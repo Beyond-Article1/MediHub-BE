@@ -70,7 +70,7 @@ INSERT INTO part (dept_seq, part_name) VALUES
                                            (9, '부서 9'),
                                            (10, '부서 10');
 
-INSERT INTO flag (flag_board_flag, flag_post_seq) VALUES
+INSERT INTO flag (flag_type, flag_entity_seq) VALUES
                                                       ('CASE_SHARING', 1),
                                                       ('CASE_SHARING', 2),
                                                       ('CASE_SHARING', 3),
@@ -105,7 +105,7 @@ INSERT INTO user (part_seq, ranking_seq, picture_seq, user_name, user_id, user_p
                                                                                    'ACTIVE', NOW(), NULL, NULL),
                                                                                   (3, 3, 3, 'alice_jones', 'encrypted_password3', 'Alice Jones', 'alice.jones@example.com', '010-5678-1234',
                                                                                    'USER', 'ACTIVE', NOW(), NULL, NULL),
-                                                                                  (3, 3, 4, '1234', '12345', 'Alice Jones', 'alice.jones@example.com', '010-5678-1234', 'USER', 'ACTIVE', NOW(),
+                                                                                  (3, 3, 4, '1234', '12345', '$2a$10$SewX3/pNujIKpRYr.ie6TO5tu9jEo4alIivKrZ1zlK6IO1fcbb8Jq', 'alice.jones@example.com', '010-5678-1234', 'USER', 'ACTIVE', NOW(),
                                                                                    NULL, NULL),
                                                                                   (5, 5, 5, '사용자 5', 'user5', 'password5', 'user5@example.com', '010-0000-0005', 'USER', 'ACTIVE', NOW(), NULL,
                                                                                    NULL),
@@ -237,31 +237,6 @@ INSERT INTO cp (user_seq, cp_name, cp_description, cp_view_count) VALUES
                                                                       (8, 'CP 이름 8', 'CP 설명 8', 0),
                                                                       (9, 'CP 이름 9', 'CP 설명 9', 0),
                                                                       (10, 'CP 이름 10', 'CP 설명 10', 0);
-
-INSERT INTO chatbot_history (user_seq, chatbot_history_name, created_at, updated_at, deleted_at) VALUES
-                                                                                                     (1, '챗봇 대화 1', NOW(), NULL, NULL),
-                                                                                                     (2, '챗봇 대화 2', NOW(), NULL, NULL),
-                                                                                                     (3, '챗봇 대화 3', NOW(), NULL, NULL),
-                                                                                                     (4, '챗봇 대화 4', NOW(), NULL, NULL),
-                                                                                                     (5, '챗봇 대화 5', NOW(), NULL, NULL),
-                                                                                                     (6, '챗봇 대화 6', NOW(), NULL, NULL),
-                                                                                                     (7, '챗봇 대화 7', NOW(), NULL, NULL),
-                                                                                                     (8, '챗봇 대화 8', NOW(), NULL, NULL),
-                                                                                                     (9, '챗봇 대화 9', NOW(), NULL, NULL),
-                                                                                                     (10, '챗봇 대화 10', NOW(), NULL, NULL);
-
-INSERT INTO chatbot_message (chatbot_history_seq, chatbot_message_sender_type, chatbot_message_content,
-                             chatbot_message_sent_at) VALUES
-                                                          (1, 'USER', '안녕하세요!', NOW()),
-                                                          (1, 'CHATBOT', '안녕하세요! 무엇을 도와드릴까요?', NOW()),
-                                                          (2, 'USER', '질문이 있어요.', NOW()),
-                                                          (2, 'CHATBOT', '물어보세요!', NOW()),
-                                                          (3, 'USER', '감사합니다!', NOW()),
-                                                          (3, 'CHATBOT', '천만에요!', NOW()),
-                                                          (4, 'USER', '이 기능은 어떻게 사용하나요?', NOW()),
-                                                          (4, 'CHATBOT', '사용법을 설명해 드리겠습니다.', NOW()),
-                                                          (5, 'USER', '좋아요!', NOW()),
-                                                          (5, 'CHATBOT', '기대할게요!', NOW());
 
 INSERT INTO cp_version (cp_seq, user_seq, cp_version, cp_version_description, cp_url, created_at) VALUES
                                                                                                       (1, 1, '버전 1.0', '초기 버전', 'http://example.com/version1', NOW()),
