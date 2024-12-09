@@ -523,7 +523,39 @@ public class CpController {
         }
     }
 
-    // CP 검색 카테고리 데이터 생성
+    @PostMapping(value = "/cpSearchCategory/{cpSearchCategorySeq}/cpSearchCategoryData")
+    @Operation(summary = "CP 검색 카테고리 데이터 생성",
+            description = "주어진 CP 검색 카테고리 시퀀스를 사용하여 새로운 CP 검색 카테고리 데이터를 생성합니다.")
+    public ResponseEntity<ApiResponse<ResponseCpSearchCategoryDataDTO>> createCpSearchCategoryData(
+            @PathVariable long cpSearchCategorySeq,
+            @RequestBody String cpSearchCategoryDataName) {
+
+        logger.info("CP 검색 카테고리 데이터 생성 요청: cpSearchCategorySeq={}, cpSearchCategoryDataName={}", cpSearchCategorySeq, cpSearchCategoryDataName);
+
+        ResponseCpSearchCategoryDataDTO dto;
+
+        try {
+            // 서비스 메서드를 호출하여 카테고리 데이터 생성
+            dto = cpSearchCategoryService.createCpSearchCategoryData(cpSearchCategorySeq, cpSearchCategoryDataName);
+            logger.info("CP 검색 카테고리 데이터 성공적으로 생성됨: {}", dto);
+        } catch (CustomException e) {
+            // 사용자 정의 예외 처리: 클라이언트 오류에 대한 응답
+            logger.warn("CP 검색 카테고리 데이터 생성 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (DataAccessException e) {
+            // 데이터베이스 관련 예외 처리: 서버 오류에 대한 응답
+            logger.error("데이터베이스 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR)));
+        } catch (Exception e) {
+            // 기타 예외 처리: 서버 오류에 대한 응답
+            logger.error("알 수 없는 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+
+        // 성공적으로 생성된 경우 201 Created 응답 반환
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(dto));
+    }
+
     // CP 검색 카테고리 데이터 수정
     // CP 검색 카테고리 데이터 삭제
 }

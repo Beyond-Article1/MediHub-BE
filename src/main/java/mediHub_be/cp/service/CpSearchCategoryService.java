@@ -7,6 +7,7 @@ import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpSearchCategoryDTO;
 import mediHub_be.cp.dto.ResponseCpSearchCategoryDataDTO;
 import mediHub_be.cp.entity.CpSearchCategory;
+import mediHub_be.cp.entity.CpSearchCategoryData;
 import mediHub_be.cp.repository.CpSearchCategoryDataRepository;
 import mediHub_be.cp.repository.CpSearchCategoryRepository;
 import mediHub_be.security.util.SecurityUtil;
@@ -285,7 +286,7 @@ public class CpSearchCategoryService {
 
         try {
             // 데이터 조회
-            dto = cpSearchCategoryDataRepository.findByCpSearchCategorySeqAndDataSeq(cpSearchCategorySeq, cpSearchCategoryDataSeq);
+            dto = cpSearchCategoryDataRepository.findByCpSearchCategoryDataSeq(cpSearchCategoryDataSeq);
 
             // 결과가 없을 경우 예외 처리
             if (dto == null) {
@@ -303,5 +304,56 @@ public class CpSearchCategoryService {
         }
 
         return dto;
+    }
+
+    /**
+     * 새로운 CP 검색 카테고리 데이터를 등록합니다.
+     *
+     * @param cpSearchCategorySeq      생성할 CP 검색 카테고리의 시퀀스
+     * @param cpSearchCategoryDataName 생성할 CP 검색 카테고리 데이터의 이름
+     * @return 생성된 CP 검색 카테고리 데이터의 DTO
+     * @throws CustomException 유효성 검사 실패, 중복 데이터 또는 데이터베이스 오류가 발생할 경우
+     */
+    public ResponseCpSearchCategoryDataDTO createCpSearchCategoryData(long cpSearchCategorySeq, String cpSearchCategoryDataName) {
+        // 1. 유효성 검사 및 중복 검사
+        validateAndCheckDuplicateData(cpSearchCategorySeq, cpSearchCategoryDataName);
+
+        // 2. 데이터 저장
+        CpSearchCategoryData entity = CpSearchCategoryData.builder()
+                .userSeq(SecurityUtil.getCurrentUserSeq())
+                .cpSearchCategorySeq(cpSearchCategorySeq)
+                .cpSearchCategoryDataName(cpSearchCategoryDataName)
+                .build();
+
+        try {
+            entity = cpSearchCategoryDataRepository.save(entity); // 저장 후 반환된 엔티티를 업데이트
+        } catch (DataAccessException e) {
+            logger.error("CP 검색 카테고리 데이터 저장 중 오류 발생: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        }
+
+        // 3. 데이터 반환
+        return cpSearchCategoryDataRepository.findByCpSearchCategoryDataSeq(entity.getCpSearchCategoryDataSeq());
+    }
+
+    /**
+     * CP 검색 카테고리 데이터의 유효성을 검사하고 중복 여부를 확인합니다.
+     *
+     * @param cpSearchCategorySeq      생성할 CP 검색 카테고리의 시퀀스
+     * @param cpSearchCategoryDataName 생성할 CP 검색 카테고리 데이터의 이름
+     * @throws CustomException 유효성 검사 실패 시 REQUIRED_FIELD_MISSING 예외 발생,
+     *                         중복 데이터가 발견될 경우 DUPLICATE_CP_SEARCH_CATEGORY_DATA_NAME 예외 발생
+     */
+    private void validateAndCheckDuplicateData(long cpSearchCategorySeq, String cpSearchCategoryDataName) {
+        // 유효성 검사 로직 (예: null 체크)
+        if (cpSearchCategoryDataName == null || cpSearchCategoryDataName.trim().isEmpty()) {
+            throw new CustomException(ErrorCode.REQUIRED_FIELD_MISSING);
+        }
+
+        // 중복 검사 로직
+        boolean exists = cpSearchCategoryDataRepository.existsByCpSearchCategoryDataName(cpSearchCategoryDataName);
+        if (exists) {
+            throw new CustomException(ErrorCode.DUPLICATE_CP_SEARCH_CATEGORY_DATA_NAME);
+        }
     }
 }

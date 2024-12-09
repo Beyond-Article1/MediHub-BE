@@ -47,6 +47,8 @@ public enum ErrorCode {
     NOT_FOUND_CP_VERSION(40402, HttpStatus.NOT_FOUND, "CP 버전을 찾을 수 없습니다."),
     NOT_FOUND_CP_OPINION(40403, HttpStatus.NOT_FOUND, "CP 의견을 찾을 수 없습니다."),
     NOT_FOUND_CP_OPINION_LOCATION(40404, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
+    NOT_FOUND_CP_SEARCH_CATEGORY(40405, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
+    NOT_FOUND_CP_SEARCH_CATEGORY_DATA(40406, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
 
     // 알림 (notify)
     NOT_FOUND_NOTIFY(40404, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
@@ -68,6 +70,7 @@ public enum ErrorCode {
 
     // CP 검색 카테고리 중복
     DUPLICATE_CP_SEARCH_CATEGORY_NAME(40901, HttpStatus.CONFLICT, "이미 존재하는 CP 검색 카테고리 입니다."),
+    DUPLICATE_CP_SEARCH_CATEGORY_DATA_NAME(40902, HttpStatus.CONFLICT, "이미 존재하는 CP 검색 카테고리 데이터 입니다."),
 
     /**
      * == 500 INTERNAL_SERVER_ERROR ==

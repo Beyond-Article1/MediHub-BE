@@ -1,6 +1,7 @@
 package mediHub_be.cp.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 
@@ -21,4 +22,8 @@ public class CpSearchCategoryData extends BaseFullEntity {
 
     @Column
     private String cpSearchCategoryDataName;        // cp 검색카테고리 데이터명
+
+    @Builder
+    public CpSearchCategoryData(long userSeq, long cpSearchCategorySeq, String cpSearchCategoryDataName) {
+    }
 }
