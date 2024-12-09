@@ -1,10 +1,11 @@
 package mediHub_be.board.entity;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import mediHub_be.common.aggregate.entity.BaseFullEntity;
+import mediHub_be.common.aggregate.entity.CreateTimeEntity;
 import mediHub_be.user.entity.User;
 
 @Entity
@@ -13,7 +14,8 @@ import mediHub_be.user.entity.User;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Prefer {
+public class Prefer extends CreateTimeEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long preferSeq;

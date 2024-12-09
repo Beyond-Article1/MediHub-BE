@@ -10,7 +10,7 @@ server:
   
 spring:
   config:
-    import: "classpath:Application-KEY.properties"
+    import: "classpath:application-key.properties"
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
@@ -36,10 +36,12 @@ spring:
   # MongoDB 설정
   data:
     mongodb:
-      uri: mongodb://${mariadb.host}:${mongodb.port}
+      uri: mongodb://${db.name}:${db.password}@localhost:${mongodb.port}/${db.name}?authSource=admin
       database: ${db.name}
+      username: ${db.name}
+      password: ${db.password}
 
-#    redis:
+  #    redis:
 #      host: ${db.name}
 #      port: 6379
 #      password: ${db.password}
