@@ -5,10 +5,12 @@ import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Keyword;
 import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.KeywordRepository;
+import mediHub_be.case_sharing.dto.CaseSharingKeywordDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -61,6 +63,19 @@ public class KeywordService {
         // 키워드 삭제
         keywordRepository.deleteByFlagSeq(flag.getFlagSeq());
         flagService.deleteFlag(flag.getFlagSeq());
+    }
+
+    // 특정 게시물의 키워드 조회
+    @Transactional
+    public List<CaseSharingKeywordDTO> getKeywords(String boardFlag, Long postSeq) {
+        List<Keyword> keywords = keywordRepository.findByBoardFlagAndPostSeq(boardFlag, postSeq);
+
+        return keywords.stream()
+                .map(keyword -> new CaseSharingKeywordDTO(
+                        keyword.getKeywordSeq(),
+                        keyword.getKeywordName()
+                ))
+                .collect(Collectors.toList());
     }
 }
 

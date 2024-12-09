@@ -167,7 +167,6 @@ public class TemplateService {
 
             Picture picture = Picture.builder()
                     .flag(flag)
-                    .user(user)
                     .pictureName(template.getTemplateTitle() + "_preview")
                     .pictureUrl(requestDTO.getPreviewImageUrl())
                     .build();
@@ -204,7 +203,6 @@ public class TemplateService {
             // 5.3 새 Picture 생성 및 저장
             Picture newPicture = Picture.builder()
                     .flag(flag)
-                    .user(user)
                     .pictureName(template.getTemplateTitle() + "_preview")
                     .pictureUrl(requestDTO.getPreviewImageUrl())
                     .build();
