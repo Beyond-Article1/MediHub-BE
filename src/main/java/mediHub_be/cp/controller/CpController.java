@@ -396,6 +396,24 @@ public class CpController {
     }
 
     // CP 검색 카테고리 등록
+    @PostMapping(value = "/cpSearchCategory")
+    @Operation()
+    public ResponseEntity<ApiResponse<ResponseCpSearchCategoryDTO>> createCpSearchCategory(@RequestBody String cpSearchCategoryName) {
+
+        ResponseCpSearchCategoryDTO dto = null;
+
+        try {
+            dto = cpSearchCategoryService.createCpSearchCategory(cpSearchCategoryName);
+        } catch (CustomException e) {
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (DataAccessException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR)));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+        return ResponseEntity.ok(ApiResponse.created(dto));
+
+    }
     // CP 검색 카테고리 수정
     // CP 검색 카테고리 삭제
 }

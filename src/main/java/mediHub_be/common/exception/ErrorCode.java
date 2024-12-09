@@ -61,6 +61,9 @@ public enum ErrorCode {
     // 닉네임 중복
     DUPLICATE_NICKNAME(40901, HttpStatus.CONFLICT, "이미 존재하는 닉네임입니다."),
 
+    // CP 검색 카테고리 중복
+    DUPLICATE_CP_SEARCH_CATEGORY_NAME(40901, HttpStatus.CONFLICT, "이미 존재하는 CP 검색 카테고리 입니다."),
+
     /**
      * == 500 INTERNAL_SERVER_ERROR ==
      */

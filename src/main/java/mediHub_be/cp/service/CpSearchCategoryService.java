@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpSearchCategoryDTO;
+import mediHub_be.cp.entity.CpSearchCategory;
 import mediHub_be.cp.repository.CpSearchCategoryRepository;
+import mediHub_be.security.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -93,4 +95,62 @@ public class CpSearchCategoryService {
 
         return dto;
     }
+
+    /**
+     * 새로운 CP 검색 카테고리를 등록합니다.
+     *
+     * @param cpSearchCategoryName 생성할 CP 검색 카테고리의 이름
+     * @return 생성된 CP 검색 카테고리의 DTO
+     * @throws CustomException 유효성 검사 실패, 중복 카테고리 또는 데이터베이스 오류가 발생할 경우
+     */
+    public ResponseCpSearchCategoryDTO createCpSearchCategory(String cpSearchCategoryName) {
+        // 1. 유효성 검사 및 중복 검사
+        validateAndCheckDuplicate(cpSearchCategoryName);
+
+        // 2. 데이터 저장
+        CpSearchCategory entity = CpSearchCategory.builder()
+                .userSeq(SecurityUtil.getCurrentUserSeq())
+                .cpSearchCategoryName(cpSearchCategoryName)
+                .build();
+
+        try {
+            entity = cpSearchCategoryRepository.save(entity); // 저장 후 반환된 엔티티를 업데이트
+        } catch (DataAccessException e) {
+            logger.error("CP 검색 카테고리 저장 중 오류 발생: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        }
+
+        // 3. 데이터 반환
+        return cpSearchCategoryRepository.findByCpSearchCategorySeq(entity.getCpSearchCategorySeq());
+    }
+
+    /**
+     * CP 검색 카테고리 이름의 유효성을 검사하고 중복 여부를 확인합니다.
+     *
+     * @param cpSearchCategoryName 확인할 검색 카테고리 이름
+     * @throws CustomException 유효성 검사 실패 또는 중복 카테고리인 경우 발생
+     */
+    public void validateAndCheckDuplicate(String cpSearchCategoryName) {
+        // 유효성 검사
+        if (cpSearchCategoryName == null || cpSearchCategoryName.trim().isEmpty()) {
+            throw new CustomException(ErrorCode.REQUIRED_FIELD_MISSING);
+        }
+
+        // 중복 검사
+        if (existsByName(cpSearchCategoryName)) {
+            throw new CustomException(ErrorCode.DUPLICATE_CP_SEARCH_CATEGORY_NAME);
+        }
+    }
+
+    /**
+     * 주어진 이름의 CP 검색 카테고리가 존재하는지 확인합니다.
+     *
+     * @param cpSearchCategoryName 확인할 검색 카테고리 이름
+     * @return 존재 여부
+     */
+    public boolean existsByName(String cpSearchCategoryName) {
+        return cpSearchCategoryRepository.findByCpSearchCategoryName(cpSearchCategoryName).isPresent();
+    }
+
+
 }

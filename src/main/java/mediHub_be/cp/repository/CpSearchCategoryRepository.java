@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CpSearchCategoryRepository extends JpaRepository<CpSearchCategory, Long> {
@@ -38,4 +39,6 @@ public interface CpSearchCategoryRepository extends JpaRepository<CpSearchCatego
             "LEFT JOIN User AS u ON csc.userSeq = u.userSeq " +
             "WHERE csc.cpSearchCategorySeq = :cpSearchCategorySeq")
     ResponseCpSearchCategoryDTO findByCpSearchCategorySeq(@Param("cpSearchCategorySeq") long cpSearchCategorySeq);
+
+    Optional<Object> findByCpSearchCategoryName(String cpSearchCategoryName);
 }
