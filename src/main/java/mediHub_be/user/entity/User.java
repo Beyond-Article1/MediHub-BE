@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import mediHub_be.board.entity.Picture;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.part.entity.Part;
 import mediHub_be.ranking.entity.Ranking;

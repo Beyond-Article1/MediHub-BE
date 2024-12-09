@@ -14,10 +14,10 @@ public interface KeywordRepository extends JpaRepository<Keyword, Long> {
     @Query("SELECT k FROM Keyword k " +
             "WHERE k.flagSeq IN (" +
             "   SELECT f.flagSeq FROM Flag f " +
-            "   WHERE f.flagBoardFlag = :boardFlag AND f.flagPostSeq = :postSeq" +
+            "   WHERE f.flagType = :flagType AND f.flagEntitySeq = :entitySeq" +
             ")")
-    List<Keyword> findByBoardFlagAndPostSeq(@Param("boardFlag") String boardFlag,
-                                            @Param("postSeq") Long postSeq);
+    List<Keyword> findByFlagTypeAndEntitySeq(@Param("flagType") String flagType,
+                                            @Param("entitySeq") Long entitySeq);
 
 
     void deleteByFlagSeq(Long flagSeq);
