@@ -6,13 +6,13 @@ import mediHub_be.chatbot.entity.ChatbotMessage;
 import mediHub_be.chatbot.entity.ChatbotSession;
 import mediHub_be.chatbot.repository.ChatbotMessageRepository;
 import mediHub_be.chatbot.repository.ChatbotSessionRepository;
+import mediHub_be.common.utils.DateTimeUtil;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +30,7 @@ public class ChatbotRestService {
         ChatbotSession session = ChatbotSession.builder()
                 .userSeq(user.getUserSeq())
                 .title(title)
-                .createdAt(LocalDateTime.now())
+                .createdAt(DateTimeUtil.localDateTimeToLocalDateTime(LocalDateTime.now()))
                 .build();
 
         ChatbotSession savedSession = chatbotSessionRepository.save(session);
@@ -47,7 +47,7 @@ public class ChatbotRestService {
                 .sessionId(sessionId)
                 .sender(sender)
                 .content(content)
-                .timestamp(LocalDateTime.now())
+                .timestamp(DateTimeUtil.localDateTimeToLocalDateTime(LocalDateTime.now()))
                 .build();
 
         chatbotMessageRepository.save(message);
@@ -57,7 +57,7 @@ public class ChatbotRestService {
         ChatbotSession session = chatbotSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 세션입니다."));
 
-        session.updateLastMessage(LocalDateTime.now(), content);
+        session.updateLastMessage(DateTimeUtil.localDateTimeToLocalDateTime(LocalDateTime.now()), content);
         chatbotSessionRepository.save(session);
         log.info("세션 업데이트 - ID: {}, 마지막 메시지: {}", sessionId, content);
     }
