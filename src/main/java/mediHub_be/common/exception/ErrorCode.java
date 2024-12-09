@@ -51,6 +51,9 @@ public enum ErrorCode {
     // 알림 (notify)
     NOT_FOUND_NOTIFY(40404, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
 
+    // 채팅 (chat)
+    NOT_FOUND_CHATROOM(40405, HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
+
     /**
      * == 409 CONFLICT ==
      */
