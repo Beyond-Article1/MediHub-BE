@@ -26,4 +26,12 @@ public class CpSearchCategoryData extends BaseFullEntity {
     @Builder
     public CpSearchCategoryData(long userSeq, long cpSearchCategorySeq, String cpSearchCategoryDataName) {
     }
+
+    public void updateUserSeq(long userSeq) {
+        this.userSeq = userSeq;
+    }
+
+    public void updateCpSearchCategoryDataName(String cpSearchCategoryDataName) {
+        this.cpSearchCategoryDataName = cpSearchCategoryDataName;
+    }
 }

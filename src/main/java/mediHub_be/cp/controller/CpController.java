@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -557,5 +558,33 @@ public class CpController {
     }
 
     // CP 검색 카테고리 데이터 수정
+    @PutMapping(value = "/cpSearchCategory/{cpSearchCategorySeq}/cpSearchCategoryData/{cpSearchCategoryDataSeq}")
+    @Operation(summary = "CP 검색 카테고리 데이터 수정",
+            description = "주어진 CP 검색 카테고리 시퀀스와 데이터 시퀀스를 사용하여 해당 카테고리 데이터를 수정합니다.")
+    public ResponseEntity<ApiResponse<ResponseCpSearchCategoryDataDTO>> updateCpSearchCategoryData(
+            @PathVariable long cpSearchCategorySeq,
+            @PathVariable long cpSearchCategoryDataSeq,
+            @RequestBody String cpSearchCategoryDataName) {
+
+        ResponseCpSearchCategoryDataDTO dto;
+
+        try {
+            // 서비스 메서드를 호출하여 카테고리 데이터 수정
+            dto = cpSearchCategoryService.updateCpSearchCategoryDataData(cpSearchCategoryDataSeq, cpSearchCategoryDataName);
+        } catch (CustomException e) {
+            // 사용자 정의 예외 처리: 클라이언트 오류에 대한 응답
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (DataAccessException e) {
+            // 데이터베이스 관련 예외 처리: 서버 오류에 대한 응답
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR)));
+        } catch (Exception e) {
+            // 기타 예외 처리: 서버 오류에 대한 응답
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+
+        // 성공적으로 수정된 경우 200 OK 응답 반환
+        return ResponseEntity.ok(ApiResponse.ok(dto));
+    }
+
     // CP 검색 카테고리 데이터 삭제
 }
