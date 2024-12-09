@@ -468,4 +468,62 @@ public class CpController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
     }
+
+    // CP 검색 카테고리 데이터 전체 조회
+    @GetMapping(value = "/cpSearchCategory/{cpSearchCategorySeq}/cpSearchCategoryData")
+    @Operation(summary = "CP 검색 카테고리 데이터 조회",
+            description = "주어진 CP 검색 카테고리 ID에 대한 모든 데이터를 조회하여 리스트로 반환합니다.")
+    public ResponseEntity<ApiResponse<List<ResponseCpSearchCategoryDataDTO>>> getCpSearchCategoryDataList(@PathVariable long cpSearchCategorySeq) {
+
+        List<ResponseCpSearchCategoryDataDTO> dtoList;
+
+        logger.info("CP 검색 카테고리 데이터 조회 요청: ID={}", cpSearchCategorySeq);
+
+        try {
+            // 서비스 호출하여 데이터 리스트 조회
+            dtoList = cpSearchCategoryService.getCpSearchCategoryDataListByCpSearchCategorySeq(cpSearchCategorySeq);
+            logger.info("CP 검색 카테고리 데이터 조회 성공: ID={} 데이터 수={}", cpSearchCategorySeq, dtoList.size());
+        } catch (CustomException e) {
+            logger.error("CP 검색 카테고리 데이터 조회 실패: {}", e.getMessage(), e);
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (DataAccessException e) {
+            logger.error("데이터 접근 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR)));
+        } catch (Exception e) {
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+
+        return ResponseEntity.ok(ApiResponse.ok(dtoList));
+    }
+
+
+    // CP 검색 카테고리 데이터 단일 조회
+    @GetMapping(value = "/cpSearchCategory/{cpSearchCategorySeq}/cpSearchCategoryData/{cpSearchCategoryDataSeq}")
+    @Operation(summary = "CP 검색 카테고리 데이터 조회",
+            description = "주어진 CP 검색 카테고리 시퀀스와 CP 검색 카테고리 데이터 시퀀스를 사용하여 데이터를 조회합니다.")
+    public ResponseEntity<ApiResponse<ResponseCpSearchCategoryDataDTO>> getCpSearchCategoryData(
+            @PathVariable long cpSearchCategorySeq,
+            @PathVariable long cpSearchCategoryDataSeq) {
+
+        logger.info("CP 검색 카테고리 번호: {}, CP 검색 카테고리 데이터 번호: {}로 조회 요청했습니다.", cpSearchCategorySeq, cpSearchCategoryDataSeq);
+
+        try {
+            // CP 검색 카테고리 데이터를 가져오는 서비스 호출
+            ResponseCpSearchCategoryDataDTO cpSearchCategoryData = cpSearchCategoryService.getCpSearchCategoryData(cpSearchCategorySeq, cpSearchCategoryDataSeq);
+
+            logger.info("CP 검색 카테고리 데이터 조회 성공: {}", cpSearchCategoryData);
+            return ResponseEntity.ok(ApiResponse.ok(cpSearchCategoryData));
+        } catch (CustomException e) {
+            logger.error("CP 검색 카테고리 데이터 조회 중 CustomException 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (Exception e) {
+            logger.error("CP 검색 카테고리 데이터 조회 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+    }
+
+    // CP 검색 카테고리 데이터 생성
+    // CP 검색 카테고리 데이터 수정
+    // CP 검색 카테고리 데이터 삭제
 }

@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpSearchCategoryDTO;
+import mediHub_be.cp.dto.ResponseCpSearchCategoryDataDTO;
 import mediHub_be.cp.entity.CpSearchCategory;
+import mediHub_be.cp.repository.CpSearchCategoryDataRepository;
 import mediHub_be.cp.repository.CpSearchCategoryRepository;
 import mediHub_be.security.util.SecurityUtil;
 import org.slf4j.Logger;
@@ -22,6 +24,7 @@ public class CpSearchCategoryService {
 
     // Repository
     private final CpSearchCategoryRepository cpSearchCategoryRepository;
+    private final CpSearchCategoryDataRepository cpSearchCategoryDataRepository;
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpSearchCategoryService");     // Logger
 
@@ -233,4 +236,72 @@ public class CpSearchCategoryService {
         }
     }
 
+    /**
+     * 주어진 CP 검색 카테고리 ID에 대한 모든 데이터를 조회하여 리스트로 반환합니다.
+     *
+     * @param cpSearchCategorySeq 조회할 CP 검색 카테고리의 ID
+     * @return CP 검색 카테고리 데이터 DTO 리스트
+     * @throws CustomException NOT_FOUND_CP_SEARCH_CATEGORY_DATA:
+     *                         조회 결과가 없을 경우 발생.
+     */
+    public List<ResponseCpSearchCategoryDataDTO> getCpSearchCategoryDataListByCpSearchCategorySeq(long cpSearchCategorySeq) {
+        logger.info("CP 검색 카테고리 데이터 조회 요청 시작: ID={}", cpSearchCategorySeq);
+
+        List<ResponseCpSearchCategoryDataDTO> dtoList;
+
+        // DB 조회
+        try {
+            dtoList = cpSearchCategoryDataRepository.findByCpSearchCategorySeq(cpSearchCategorySeq); // 데이터 조회
+
+            if (dtoList.isEmpty()) {
+                logger.warn("CP 검색 카테고리 데이터 조회 결과가 비어 있습니다: ID={}", cpSearchCategorySeq);
+                throw new CustomException(ErrorCode.NOT_FOUND_CP_SEARCH_CATEGORY_DATA);
+            }
+
+            logger.info("CP 검색 카테고리 데이터 조회 성공: ID={} 데이터 수={}", cpSearchCategorySeq, dtoList.size());
+        } catch (DataAccessException e) {
+            logger.error("데이터 접근 오류 발생: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
+        } catch (Exception e) {
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+        return dtoList;
+    }
+
+    /**
+     * CP 검색 카테고리 데이터를 조회하는 서비스 메서드.
+     *
+     * @param cpSearchCategorySeq     조회할 CP 검색 카테고리의 고유 번호
+     * @param cpSearchCategoryDataSeq 조회할 CP 검색 카테고리 데이터의 고유 번호
+     * @return ResponseCpSearchCategoryDataDTO 해당 데이터의 정보
+     * @throws CustomException 내부 데이터 접근 오류 또는 데이터 미발견 시 예외 발생
+     */
+    public ResponseCpSearchCategoryDataDTO getCpSearchCategoryData(long cpSearchCategorySeq, long cpSearchCategoryDataSeq) {
+        logger.info("CP 검색 카테고리 데이터 조회 시작: cpSearchCategorySeq={}, cpSearchCategoryDataSeq={}", cpSearchCategorySeq, cpSearchCategoryDataSeq);
+
+        ResponseCpSearchCategoryDataDTO dto;
+
+        try {
+            // 데이터 조회
+            dto = cpSearchCategoryDataRepository.findByCpSearchCategorySeqAndDataSeq(cpSearchCategorySeq, cpSearchCategoryDataSeq);
+
+            // 결과가 없을 경우 예외 처리
+            if (dto == null) {
+                logger.warn("CP 검색 카테고리 데이터 조회 결과가 없음: cpSearchCategorySeq={}, cpSearchCategoryDataSeq={}", cpSearchCategorySeq, cpSearchCategoryDataSeq);
+                throw new CustomException(ErrorCode.NOT_FOUND_CP_SEARCH_CATEGORY_DATA);
+            }
+
+            logger.info("CP 검색 카테고리 데이터 조회 성공: {}", dto);
+        } catch (DataAccessException e) {
+            logger.error("데이터 접근 오류 발생: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
+        } catch (Exception e) {
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+        return dto;
+    }
 }
