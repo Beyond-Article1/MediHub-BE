@@ -395,15 +395,47 @@ public class CpController {
         return ResponseEntity.ok(ApiResponse.ok(entity));
     }
 
-    // CP 검색 카테고리 등록
     @PostMapping(value = "/cpSearchCategory")
-    @Operation()
+    @Operation(summary = "CP 검색 카테고리 생성", description = "제공된 이름으로 새로운 CP 검색 카테고리를 생성합니다.")
     public ResponseEntity<ApiResponse<ResponseCpSearchCategoryDTO>> createCpSearchCategory(@RequestBody String cpSearchCategoryName) {
 
-        ResponseCpSearchCategoryDTO dto = null;
+        ResponseCpSearchCategoryDTO dto;
+
+        // 요청받은 카테고리 이름 로그
+        logger.info("CP 검색 카테고리 생성 요청: {}", cpSearchCategoryName);
 
         try {
+            // 서비스 메서드를 호출하여 카테고리 생성
             dto = cpSearchCategoryService.createCpSearchCategory(cpSearchCategoryName);
+            logger.info("CP 검색 카테고리 성공적으로 생성됨: {}", dto);
+        } catch (CustomException e) {
+            // 사용자 정의 예외 처리: 클라이언트 오류에 대한 응답
+            logger.warn("CP 검색 카테고리 생성 중 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+        } catch (DataAccessException e) {
+            // 데이터베이스 관련 예외 처리: 서버 오류에 대한 응답
+            logger.error("데이터베이스 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR)));
+        } catch (Exception e) {
+            // 기타 예외 처리: 서버 오류에 대한 응답
+            logger.error("알 수 없는 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+
+        // 성공적으로 생성된 경우 201 Created 응답 반환
+        return ResponseEntity.ok(ApiResponse.created(dto));
+    }
+
+    // CP 검색 카테고리 수정
+    @PutMapping(value = "/cpSearchCategory/{cpSearchCategorySeq}")
+    public ResponseEntity<ApiResponse<ResponseCpSearchCategoryDTO>> updateCpSearchCategory(
+            @PathVariable long cpSearchCategorySeq,
+            @RequestBody String cpSearchCategoryName) {
+
+        ResponseCpSearchCategoryDTO dto;
+
+        try {
+            dto = cpSearchCategoryService.updateCpSearchCategory(cpSearchCategorySeq, cpSearchCategoryName);
         } catch (CustomException e) {
             return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
         } catch (DataAccessException e) {
@@ -411,9 +443,8 @@ public class CpController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
-        return ResponseEntity.ok(ApiResponse.created(dto));
-
+        return ResponseEntity.ok(ApiResponse.ok(dto));
     }
-    // CP 검색 카테고리 수정
+
     // CP 검색 카테고리 삭제
 }

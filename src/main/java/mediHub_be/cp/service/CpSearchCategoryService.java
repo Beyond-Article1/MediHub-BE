@@ -14,6 +14,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -153,4 +154,51 @@ public class CpSearchCategoryService {
     }
 
 
+    /**
+     * CP 검색 카테고리를 업데이트합니다.
+     *
+     * @param cpSearchCategorySeq 수정할 CP 검색 카테고리의 ID
+     * @param cpSearchCategoryName 새로운 CP 검색 카테고리 이름
+     * @return 업데이트된 CP 검색 카테고리의 DTO
+     * @throws CustomException 유효성 검사 실패, 카테고리 없음, 또는 데이터베이스 오류가 발생할 경우
+     */
+    public ResponseCpSearchCategoryDTO updateCpSearchCategory(long cpSearchCategorySeq, String cpSearchCategoryName) {
+        // 1. 유효성 검사 및 중복 확인
+        validateAndCheckDuplicate(cpSearchCategoryName);
+        logger.info("CP 검색 카테고리 업데이트 요청: ID={} 이름={}", cpSearchCategorySeq, cpSearchCategoryName);
+
+        // 2. 수정
+        CpSearchCategory entity = cpSearchCategoryRepository.findById(cpSearchCategorySeq)
+                .orElseThrow(() -> {
+                    logger.warn("CP 검색 카테고리 찾기 실패: ID={}", cpSearchCategorySeq);
+                    return new CustomException(ErrorCode.NOT_FOUND_CP_SEARCH_CATEGORY);
+                });
+
+        // 카테고리 데이터 업데이트
+        updateCpSearchCategoryData(entity, cpSearchCategoryName);
+
+        // 3. 데이터 저장
+        try {
+            cpSearchCategoryRepository.save(entity); // 수정된 엔티티를 데이터베이스에 저장
+            logger.info("CP 검색 카테고리 업데이트 성공: ID={}", cpSearchCategorySeq);
+        } catch (DataAccessException e) {
+            logger.error("CP 검색 카테고리 업데이트 중 오류 발생: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        }
+
+        // 4. 반환
+        return cpSearchCategoryRepository.findByCpSearchCategorySeq(cpSearchCategorySeq);
+    }
+
+    /**
+     * CP 검색 카테고리 엔티티의 데이터를 업데이트합니다.
+     *
+     * @param entity 수정할 CP 검색 카테고리 엔티티
+     * @param cpSearchCategoryName 새로운 CP 검색 카테고리 이름
+     */
+    public void updateCpSearchCategoryData(CpSearchCategory entity, String cpSearchCategoryName) {
+        entity.updateUserSeq(SecurityUtil.getCurrentUserSeq()); // 현재 사용자 ID 업데이트
+        entity.updateCpSearchCategoryName(cpSearchCategoryName); // 카테고리 이름 업데이트
+        logger.info("CP 검색 카테고리 데이터 업데이트: ID={} 이름={}", entity.getCpSearchCategorySeq(), cpSearchCategoryName);
+    }
 }
