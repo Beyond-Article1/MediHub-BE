@@ -31,12 +31,12 @@ public class AdminController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(newUserSeq));
     }
 
-    @Operation(summary = "회원 수정", description = "관리자가 기존 회원의 정보를 수정합니다.")
-    @PutMapping("/update/{userSeq}")
-    public ResponseEntity<ApiResponse<Long>> updateUser(@PathVariable Long userSeq, @RequestBody AdminDTO adminDTO) {
-        Long updatedUserSeq = adminService.updateUser(userSeq, new CreateUserDTO());
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.ok(updatedUserSeq));
-    }
+//    @Operation(summary = "회원 수정", description = "관리자가 기존 회원의 정보를 수정합니다.")
+//    @PutMapping("/update/{userSeq}")
+//    public ResponseEntity<ApiResponse<Long>> updateUser(@PathVariable Long userSeq, @RequestBody AdminDTO adminDTO) {
+//        Long updatedUserSeq = adminService.updateUser(userSeq, new CreateUserDTO());
+//        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.ok(updatedUserSeq));
+//    }
 
     @Operation(summary = "전체 회원 조회", description = "관리자가 모든 회원 정보를 조회합니다.")
     @GetMapping("/users")
