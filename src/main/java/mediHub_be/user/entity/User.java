@@ -57,18 +57,27 @@ public class User extends BaseFullEntity {
     @Enumerated(EnumType.STRING)
     private UserAuth userAuth = UserAuth.USER;
 
-    public User(String userId, String userPassword, String userName, String userEmail, String userPhone) {
+    public User(String userId, String userPassword, String userName, String userEmail, String userPhone, Part part, Ranking ranking, Picture picture, UserAuth userAuth, UserStatus userStatus) {
         this.userId = userId;
         this.userPassword = userPassword;
         this.userName = userName;
         this.userEmail = userEmail;
         this.userPhone = userPhone;
+        this.part = part;
+        this.ranking = ranking;
+        this.picture = picture;
+        this.userAuth = userAuth != null ? userAuth : UserAuth.USER;
+        this.userStatus = userStatus != null ? userStatus : UserStatus.ACTIVE;
     }
 
-    public void encryptPassword(String encodedPwd) {
-        this.userPassword= encodedPwd;
+    public void updateUser(String userPassword, String userName, String userEmail, String userPhone, Part part, Ranking ranking) {
+        this.userPassword = userPassword;
+        this.userName = userName;
+        this.userEmail = userEmail;
+        this.userPhone = userPhone;
+        this.part = part;
+        this.ranking = ranking;
     }
-
 }
 
 
