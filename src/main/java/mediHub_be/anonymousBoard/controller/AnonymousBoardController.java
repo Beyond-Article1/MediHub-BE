@@ -221,4 +221,44 @@ public class AnonymousBoardController {
                 "익명 게시글 댓글을 찾을 수 없습니다."
         ));
     }
+
+    @Operation(summary = "익명 게시글 북마크", description = "익명 게시글 북마크를 등록/해제")
+    @PatchMapping("/{anonymousBoardSeq}/bookmark")
+    public ResponseEntity<ApiResponse<Boolean>> toggleBookmark(@PathVariable Long anonymousBoardSeq) {
+
+        String userId = SecurityUtil.getCurrentUserId();
+        boolean isBookmarked = anonymousBoardService.toggleBookmark(anonymousBoardSeq, userId);
+
+        return ResponseEntity.ok(ApiResponse.ok(isBookmarked));
+    }
+
+    @Operation(summary = "북마크 여부 확인", description = "익명 게시글에 대해 북마크 여부 확인")
+    @GetMapping("/{anonymousBoardSeq}/bookmark")
+    public ResponseEntity<ApiResponse<Boolean>> isBookmarked(@PathVariable Long anonymousBoardSeq) {
+
+        String userId = SecurityUtil.getCurrentUserId();
+        boolean isBookmarked = anonymousBoardService.isBookmarked(anonymousBoardSeq, userId);
+
+        return ResponseEntity.ok(ApiResponse.ok(isBookmarked));
+    }
+
+    @Operation(summary = "익명 게시글 좋아요", description = "익명 게시글 좋아요를 등록/해제")
+    @PatchMapping("/{anonymousBoardSeq}/prefer")
+    public ResponseEntity<ApiResponse<Boolean>> togglePrefer(@PathVariable Long anonymousBoardSeq) {
+
+        String userId = SecurityUtil.getCurrentUserId();
+        boolean isPreferred = anonymousBoardService.togglePrefer(anonymousBoardSeq, userId);
+
+        return ResponseEntity.ok(ApiResponse.ok(isPreferred));
+    }
+
+    @Operation(summary = "좋아요 여부 확인", description = "익명 게시글에 대해 좋아요 여부 확인")
+    @GetMapping("/{anonymousBoardSeq}/prefer")
+    public ResponseEntity<ApiResponse<Boolean>> isPreferred(@PathVariable Long anonymousBoardSeq) {
+
+        String userId = SecurityUtil.getCurrentUserId();
+        boolean isPreferred = anonymousBoardService.isPreferred(anonymousBoardSeq, userId);
+
+        return ResponseEntity.ok(ApiResponse.ok(isPreferred));
+    }
 }

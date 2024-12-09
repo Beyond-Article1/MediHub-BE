@@ -16,7 +16,9 @@ import mediHub_be.board.repository.CommentRepository;
 import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.KeywordRepository;
 import mediHub_be.board.repository.PictureRepository;
+import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.KeywordService;
+import mediHub_be.board.service.PreferService;
 import mediHub_be.security.util.SecurityUtil;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
@@ -46,6 +48,8 @@ public class AnonymousBoardService {
     private final KeywordService keywordService;
     private final AmazonS3Service amazonS3Service;
     private final CommentRepository commentRepository;
+    private final BookmarkService bookmarkService;
+    private final PreferService preferService;
 
     // 익명 게시글 목록 조회
     @Transactional(readOnly = true)
@@ -485,5 +489,33 @@ public class AnonymousBoardService {
         commentRepository.save(comment);
 
         return true;
+    }
+
+    // 북마크 설정/해제
+    @Transactional
+    public boolean toggleBookmark(Long anonymousBoard, String userId) {
+
+        return bookmarkService.toggleBookmark("ANONYMOUS_BOARD", anonymousBoard, userId);
+    }
+
+    // 해당 익명 게시글 북마크 여부 반환
+    @Transactional
+    public boolean isBookmarked(Long anonymousBoard, String userId) {
+
+        return bookmarkService.isBookmarked("ANONYMOUS_BOARD", anonymousBoard, userId);
+    }
+
+    // 좋아요 설정/해제
+    @Transactional
+    public boolean togglePrefer(Long anonymousBoard, String userId) {
+
+        return preferService.togglePrefer("ANONYMOUS_BOARD", anonymousBoard, userId);
+    }
+
+    // 해당 익명 게시글 좋아요 여부 반환
+    @Transactional
+    public boolean isPreferred(Long anonymousBoard, String userId) {
+
+        return preferService.isPreferred("ANONYMOUS_BOARD", anonymousBoard, userId);
     }
 }

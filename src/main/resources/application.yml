@@ -57,5 +57,3 @@ spring:
 token:
   expiration_time: 7200000
   secret: ${SECRET_KEY}
-
-
