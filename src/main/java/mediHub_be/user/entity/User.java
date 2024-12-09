@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import mediHub_be.board.entity.Picture;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.part.entity.Part;
 import mediHub_be.ranking.entity.Ranking;
@@ -32,10 +31,6 @@ public class User extends BaseFullEntity {
     @JoinColumn(name = "ranking_seq", nullable = false)
     private Ranking ranking;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "picture_seq")
-    private Picture picture;
-
     @Column(name = "user_id", nullable = false, unique = true)
     private String userId;
 
@@ -57,7 +52,7 @@ public class User extends BaseFullEntity {
     @Enumerated(EnumType.STRING)
     private UserAuth userAuth = UserAuth.USER;
 
-    public User(String userId, String userPassword, String userName, String userEmail, String userPhone, Part part, Ranking ranking, Picture picture, UserAuth userAuth, UserStatus userStatus) {
+    public User(String userId, String userPassword, String userName, String userEmail, String userPhone, Part part, Ranking ranking, UserAuth userAuth, UserStatus userStatus) {
         this.userId = userId;
         this.userPassword = userPassword;
         this.userName = userName;
@@ -65,7 +60,6 @@ public class User extends BaseFullEntity {
         this.userPhone = userPhone;
         this.part = part;
         this.ranking = ranking;
-        this.picture = picture;
         this.userAuth = userAuth != null ? userAuth : UserAuth.USER;
         this.userStatus = userStatus != null ? userStatus : UserStatus.ACTIVE;
     }

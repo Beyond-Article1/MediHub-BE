@@ -277,7 +277,6 @@ CREATE TABLE user (
                       user_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                       part_seq	bigint	NOT NULL,
                       ranking_seq	bigint	NOT NULL,
-                      picture_seq	bigint	NULL,
                       user_name	varchar(50)	NOT NULL,
                       user_id	varchar(50)	NOT NULL,
                       user_password	varchar(255)	NOT NULL,
@@ -446,8 +445,7 @@ ALTER TABLE chat
 
 ALTER TABLE user
     ADD CONSTRAINT FK_user_part FOREIGN KEY (part_seq) REFERENCES part (part_seq) ON DELETE CASCADE,
-    ADD CONSTRAINT FK_user_ranking FOREIGN KEY (ranking_seq) REFERENCES ranking (ranking_seq) ON DELETE CASCADE,
-    ADD CONSTRAINT FK_user_picture FOREIGN KEY (picture_seq) REFERENCES picture (picture_seq) ON DELETE CASCADE;
+    ADD CONSTRAINT FK_user_ranking FOREIGN KEY (ranking_seq) REFERENCES ranking (ranking_seq) ON DELETE CASCADE;
 
 ALTER TABLE ranking
     ADD CONSTRAINT FK_ranking_dept FOREIGN KEY (dept_seq) REFERENCES dept (dept_seq) ON DELETE CASCADE;
