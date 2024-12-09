@@ -35,7 +35,7 @@ DROP TABLE IF EXISTS part;
 DROP TABLE IF EXISTS dept;
 DROP TABLE IF EXISTS picture;
 DROP TABLE IF EXISTS flag;
-DROP TABLE IF EXISTS chat_group;
+DROP TABLE IF EXISTS chatroom;
 
 
 CREATE TABLE cp_opinion_vote (
@@ -293,15 +293,6 @@ CREATE TABLE cp (
                     PRIMARY KEY (cp_seq)
 );
 
-CREATE TABLE chat (
-                      chat_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
-                      user_seq	bigint	NOT NULL,
-                      chat_group_seq	bigint	NOT NULL,
-                      chat_group_name	varchar(255)	NOT NULL,
-                      joined_at	datetime	NOT NULL,
-                      PRIMARY KEY (chat_seq)
-);
-
 CREATE TABLE user (
                       user_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                       part_seq	bigint	NOT NULL,
@@ -361,11 +352,22 @@ CREATE TABLE flag (
                       PRIMARY KEY (flag_seq)
 );
 
-CREATE TABLE chat_group (
-                              chat_group_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
-                              created_at	datetime	NOT NULL	DEFAULT NOW(),
-                              deleted_at	datetime	NULL,
-                              PRIMARY KEY (chat_group_seq)
+CREATE TABLE chatroom (
+                          chatroom_seq    bigint    NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
+                          chatroom_default_name    varchar(255)    NOT NULL,
+                          created_at    datetime    NOT NULL    DEFAULT NOW(),
+                          updated_at    datetime    NULL,
+                          deleted_at    datetime    NULL,
+                          PRIMARY KEY (chatroom_seq)
+);
+
+CREATE TABLE chat (
+                      chat_seq    bigint    NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
+                      user_seq    bigint    NOT NULL,
+                      chatroom_seq    bigint    NOT NULL,
+                      chatroom_custom_name    varchar(255)    NULL,
+                      joined_at    datetime    NOT NULL    DEFAULT NOW(),
+                      PRIMARY KEY (chat_seq)
 );
 
 
@@ -466,7 +468,7 @@ ALTER TABLE cp
 
 ALTER TABLE chat
     ADD CONSTRAINT FK_chat_user FOREIGN KEY (user_seq) REFERENCES user (user_seq) ON DELETE CASCADE,
-    ADD CONSTRAINT FK_chat_chat_group FOREIGN KEY (chat_group_seq) REFERENCES chat_group (chat_group_seq)
+    ADD CONSTRAINT FK_chat_chatroom FOREIGN KEY (chatroom_seq) REFERENCES chatroom (chatroom_seq)
         ON DELETE CASCADE;
 
 ALTER TABLE user
