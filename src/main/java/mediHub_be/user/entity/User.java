@@ -5,10 +5,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mediHub_be.board.entity.Picture;
+import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.part.entity.Part;
 import mediHub_be.ranking.entity.Ranking;
-import mediHub_be.user.entity.UserAuth;
-import mediHub_be.user.entity.UserStatus;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -18,7 +17,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE user SET user_state = 'DELETE', del_date = LOCALTIME WHERE user_seq = ?")
-public class User {
+public class User extends BaseFullEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
