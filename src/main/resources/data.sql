@@ -56,19 +56,19 @@ INSERT INTO ranking (dept_seq, ranking_num, ranking_name) VALUES
                                                               (3, 1, 'Pediatrician'),
                                                               (3, 2, 'Senior Pediatrician'),
                                                               (3, 3, 'Chief Pediatrician'),
-                                                              (1, 10, '직급 10');
+                                                              (10, 10, '직급 10');
 
 INSERT INTO part (dept_seq, part_name) VALUES
                                            (1, 'Interventional Cardiology'),
                                            (2, 'Neuro Surgery'),
                                            (3, 'Child Care'),
-                                           (1, '부서 4'),
-                                           (1, '부서 5'),
-                                           (1, '부서 6'),
-                                           (1, '부서 7'),
-                                           (1, '부서 8'),
-                                           (1, '부서 9'),
-                                           (1, '부서 10');
+                                           (4, '부서 4'),
+                                           (5, '부서 5'),
+                                           (6, '부서 6'),
+                                           (7, '부서 7'),
+                                           (8, '부서 8'),
+                                           (9, '부서 9'),
+                                           (10, '부서 10');
 
 INSERT INTO flag (flag_board_flag, flag_post_seq) VALUES
                                                       ('CASE_SHARING', 1),
@@ -80,7 +80,8 @@ INSERT INTO flag (flag_board_flag, flag_post_seq) VALUES
                                                       ('ANONYMOUS_BOARD', 1),
                                                       ('ANONYMOUS_BOARD', 2),
                                                       ('ANONYMOUS_BOARD', 3),
-                                                      ('FLAG_10', 10);
+                                                      ('FLAG_10', 10),
+                                                      ('FLAG_11', 11);
 
 INSERT INTO picture (flag_seq, picture_name, picture_changed_name, picture_url, picture_type, picture_is_deleted,
                      created_at, deleted_at) VALUES
@@ -93,7 +94,8 @@ INSERT INTO picture (flag_seq, picture_name, picture_changed_name, picture_url, 
                                                  (7, '사진 7', '변경된 사진 7', 'http://example.com/pic7.jpg', 'image/jpeg', false, NOW(), NULL),
                                                  (8, '사진 8', '변경된 사진 8', 'http://example.com/pic8.jpg', 'image/jpeg', false, NOW(), NULL),
                                                  (9, '사진 9', '변경된 사진 9', 'http://example.com/pic9.jpg', 'image/jpeg', false, NOW(), NULL),
-                                                 (10, '사진 10', '변경된 사진 10', 'http://example.com/pic10.jpg', 'image/jpeg', false, NOW(), NULL);
+                                                 (10, '사진 10', '변경된 사진 10', 'http://example.com/pic10.jpg', 'image/jpeg', false, NOW(), NULL),
+                                                 (11, '사진 11', '변경된 사진 11', 'http://example.com/pic11.jpg', 'image/jpeg', false, NOW(), NULL);
 
 INSERT INTO user (part_seq, ranking_seq, picture_seq, user_name, user_id, user_password, user_email, user_phone,
                   user_auth, user_status, created_at, updated_at, deleted_at) VALUES
@@ -105,17 +107,17 @@ INSERT INTO user (part_seq, ranking_seq, picture_seq, user_name, user_id, user_p
                                                                                    'USER', 'ACTIVE', NOW(), NULL, NULL),
                                                                                   (3, 3, 4, '1234', '12345', 'Alice Jones', 'alice.jones@example.com', '010-5678-1234', 'USER', 'ACTIVE', NOW(),
                                                                                    NULL, NULL),
-                                                                                  (1, 1, 5, '사용자 5', 'user5', 'password5', 'user5@example.com', '010-0000-0005', 'USER', 'ACTIVE', NOW(), NULL,
+                                                                                  (5, 5, 5, '사용자 5', 'user5', 'password5', 'user5@example.com', '010-0000-0005', 'USER', 'ACTIVE', NOW(), NULL,
                                                                                    NULL),
-                                                                                  (1, 1, 6, '사용자 6', 'user6', 'password6', 'user6@example.com', '010-0000-0006', 'USER', 'ACTIVE', NOW(), NULL,
+                                                                                  (6, 6, 6, '사용자 6', 'user6', 'password6', 'user6@example.com', '010-0000-0006', 'USER', 'ACTIVE', NOW(), NULL,
                                                                                    NULL),
-                                                                                  (1, 1, 7, '사용자 7', 'user7', 'password7', 'user7@example.com', '010-0000-0007', 'USER', 'ACTIVE', NOW(), NULL,
+                                                                                  (7, 7, 7, '사용자 7', 'user7', 'password7', 'user7@example.com', '010-0000-0007', 'USER', 'ACTIVE', NOW(), NULL,
                                                                                    NULL),
-                                                                                  (1, 1, 8, '사용자 8', 'user8', 'password8', 'user8@example.com', '010-0000-0008', 'USER', 'ACTIVE', NOW(), NULL,
+                                                                                  (8, 8, 8, '사용자 8', 'user8', 'password8', 'user8@example.com', '010-0000-0008', 'USER', 'ACTIVE', NOW(), NULL,
                                                                                    NULL),
-                                                                                  (1, 1, 9, '사용자 9', 'user9', 'password9', 'user9@example.com', '010-0000-0009', 'USER', 'ACTIVE', NOW(), NULL,
+                                                                                  (9, 9, 9, '사용자 9', 'user9', 'password9', 'user9@example.com', '010-0000-0009', 'USER', 'ACTIVE', NOW(), NULL,
                                                                                    NULL),
-                                                                                  (1, 1, 10, '사용자 10', 'user10', 'password10', 'user10@example.com', '010-0000-0010', 'USER', 'ACTIVE', NOW(),
+                                                                                  (10, 10, 10, '사용자 10', 'user10', 'password10', 'user10@example.com', '010-0000-0010', 'USER', 'ACTIVE', NOW(),
                                                                                    NULL, NULL),
                                                                                   (1, 1, 11, '박상현', 'psh950519', '12345', 'tkdgus0519@naver.com', '010-7474-5101', 'USER', 'ACTIVE', NOW(),
                                                                                    NULL, NULL);
@@ -186,23 +188,23 @@ INSERT INTO cp_search_category_data (user_seq, cp_search_category_seq, cp_search
 INSERT INTO template (user_seq, part_seq, template_title, template_content, template_open_scope, created_at,
                       updated_at, deleted_at) VALUES
                                                   (1, 1, 'Template 1', 'This is the content of template 1.', 'PUBLIC', NOW(), NOW(), NULL),
-                                                  (2, 1, 'Template 2', 'This is the content of template 2.', 'CLASS_OPEN', NOW(), NOW(), NULL),
-                                                  (3, 2, 'Template 3', 'This is the content of template 3.', 'PRIVATE', NOW(), NOW(), NULL),
-                                                  (4, 1, '템플릿 제목 4', '템플릿 내용 4', 'PRIVATE', NOW(), NULL, NULL),
-                                                  (5, 1, '템플릿 제목 5', '템플릿 내용 5', 'CLASS_OPEN', NOW(), NULL, NULL),
-                                                  (6, 1, '템플릿 제목 6', '템플릿 내용 6', 'PUBLIC', NOW(), NULL, NULL),
-                                                  (7, 1, '템플릿 제목 7', '템플릿 내용 7', 'PRIVATE', NOW(), NULL, NULL),
-                                                  (8, 1, '템플릿 제목 8', '템플릿 내용 8', 'CLASS_OPEN', NOW(), NULL, NULL),
-                                                  (9, 1, '템플릿 제목 9', '템플릿 내용 9', 'PUBLIC', NOW(), NULL, NULL),
-                                                  (10, 1, '템플릿 제목 10', '템플릿 내용 10', 'PRIVATE', NOW(), NULL, NULL);
+                                                  (2, 2, 'Template 2', 'This is the content of template 2.', 'CLASS_OPEN', NOW(), NOW(), NULL),
+                                                  (3, 3, 'Template 3', 'This is the content of template 3.', 'PRIVATE', NOW(), NOW(), NULL),
+                                                  (4, 4, '템플릿 제목 4', '템플릿 내용 4', 'PRIVATE', NOW(), NULL, NULL),
+                                                  (5, 5, '템플릿 제목 5', '템플릿 내용 5', 'CLASS_OPEN', NOW(), NULL, NULL),
+                                                  (6, 6, '템플릿 제목 6', '템플릿 내용 6', 'PUBLIC', NOW(), NULL, NULL),
+                                                  (7, 7, '템플릿 제목 7', '템플릿 내용 7', 'PRIVATE', NOW(), NULL, NULL),
+                                                  (8, 8, '템플릿 제목 8', '템플릿 내용 8', 'CLASS_OPEN', NOW(), NULL, NULL),
+                                                  (9, 9, '템플릿 제목 9', '템플릿 내용 9', 'PUBLIC', NOW(), NULL, NULL),
+                                                  (10, 10, '템플릿 제목 10', '템플릿 내용 10', 'PRIVATE', NOW(), NULL, NULL);
 
 INSERT INTO case_sharing (user_seq, part_seq, template_seq, case_sharing_group_seq, case_sharing_title,
                           case_sharing_content, case_sharing_is_draft, case_sharing_is_latest, created_at, deleted_at,
                           case_sharing_view_count) VALUES
                                                        (1, 1, 1, 1, 'Case Study 1', 'This is the content for case study 1.', TRUE, FALSE, NOW(), NOW(), 1),
-                                                       (2, 2, 1, 2, 'Case Study 2', 'This is the content for case study 2.', TRUE, FALSE, NOW(), NOW(), 2),
-                                                       (3, 3, 2, 3, 'Case Study 3', 'This is the content for case study 3.', FALSE, FALSE, NOW(), NOW(), 3),
-                                                       (3, 3, 2, 3, 'Case Study 4', 'This is the content for case study 4.', TRUE, FALSE, NOW(), NOW(), 4),
+                                                       (2, 2, 2, 2, 'Case Study 2', 'This is the content for case study 2.', TRUE, FALSE, NOW(), NOW(), 2),
+                                                       (3, 3, 3, 3, 'Case Study 3', 'This is the content for case study 3.', FALSE, FALSE, NOW(), NOW(), 3),
+                                                       (4, 4, 4, 4, 'Case Study 4', 'This is the content for case study 4.', TRUE, FALSE, NOW(), NOW(), 4),
                                                        (5, 1, 1, 5, '사례 공유 제목 5', '사례 공유 내용 5', false, true, NOW(), NULL, 0),
                                                        (6, 1, 1, 6, '사례 공유 제목 6', '사례 공유 내용 6', false, true, NOW(), NULL, 0),
                                                        (7, 1, 1, 7, '사례 공유 제목 7', '사례 공유 내용 7', false, true, NOW(), NULL, 0),
@@ -214,15 +216,15 @@ INSERT INTO case_sharing_comment (user_seq, case_sharing_seq, case_sharing_comme
                                   case_sharing_comment_start_offset, case_sharing_comment_end_offset, created_at,
                                   updated_at, deleted_at) VALUES
                                                               (1, 1, 'This is a comment on case study 1.', 10, 50, NOW(), NOW(), NULL),
-                                                              (2, 1, 'This is a comment on case study 2.', 20, 60, NOW(), NOW(), NULL),
-                                                              (3, 2, 'Another comment on case study 1.', 30, 70, NOW(), NOW(), NULL),
-                                                              (4, 2, '댓글 내용 4', 30, 40, NOW(), NULL, NULL),
-                                                              (5, 3, '댓글 내용 5', 40, 50, NOW(), NULL, NULL),
-                                                              (6, 3, '댓글 내용 6', 50, 60, NOW(), NULL, NULL),
-                                                              (7, 4, '댓글 내용 7', 60, 70, NOW(), NULL, NULL),
-                                                              (8, 4, '댓글 내용 8', 70, 80, NOW(), NULL, NULL),
-                                                              (9, 5, '댓글 내용 9', 80, 90, NOW(), NULL, NULL),
-                                                              (10, 5, '댓글 내용 10', 90, 100, NOW(), NULL, NULL);
+                                                              (2, 2, 'This is a comment on case study 2.', 20, 60, NOW(), NOW(), NULL),
+                                                              (3, 3, 'Another comment on case study 1.', 30, 70, NOW(), NOW(), NULL),
+                                                              (4, 4, '댓글 내용 4', 30, 40, NOW(), NULL, NULL),
+                                                              (5, 5, '댓글 내용 5', 40, 50, NOW(), NULL, NULL),
+                                                              (6, 6, '댓글 내용 6', 50, 60, NOW(), NULL, NULL),
+                                                              (7, 7, '댓글 내용 7', 60, 70, NOW(), NULL, NULL),
+                                                              (8, 8, '댓글 내용 8', 70, 80, NOW(), NULL, NULL),
+                                                              (9, 9, '댓글 내용 9', 80, 90, NOW(), NULL, NULL),
+                                                              (10, 10, '댓글 내용 10', 90, 100, NOW(), NULL, NULL);
 
 INSERT INTO cp (user_seq, cp_name, cp_description, cp_view_count) VALUES
                                                                       (1, 'CP 이름 1', 'CP 설명 1', 0),
@@ -299,10 +301,10 @@ INSERT INTO cp_opinion_location (cp_version_seq, cp_opinion_location_x, cp_opini
 
 INSERT INTO keyword (flag_seq, keyword_name) VALUES
                                                  (1, 'Orthopedics'),
-                                                 (1, 'Surgery'),
-                                                 (2, 'Rehabilitation'),
-                                                 (3, 'Heart'),
-                                                 (3, 'Transplant'),
+                                                 (2, 'Surgery'),
+                                                 (3, 'Rehabilitation'),
+                                                 (4, 'Heart'),
+                                                 (5, 'Transplant'),
                                                  (6, '키워드 6'),
                                                  (7, '키워드 7'),
                                                  (8, '키워드 8'),
@@ -383,26 +385,26 @@ INSERT INTO notify (user_seq, flag_seq, noti_sender_user_name, noti_sender_user_
                                                          (9, 5, '보내는 사용자 9', '부서 9', '알림 내용 9', 'CASE', 'http://example.com/9', 'N', NOW()),
                                                          (10, 5, '보내는 사용자 10', '부서 10', '알림 내용 10', 'BOARD', 'http://example.com/10', 'N', NOW());
 
-INSERT INTO chat_group (created_at, deleted_at) VALUES
-                                                    (NOW(), NULL),
-                                                    (NOW(), NULL),
-                                                    (NOW(), NULL),
-                                                    (NOW(), NULL),
-                                                    (NOW(), NULL),
-                                                    (NOW(), NULL),
-                                                    (NOW(), NULL),
-                                                    (NOW(), NULL),
-                                                    (NOW(), NULL),
-                                                    (NOW(), NULL);
+INSERT INTO chatroom (chatroom_default_name, created_at, updated_at, deleted_at) VALUES
+                                                                                     ('일상 대화', NOW(), NULL, NULL),
+                                                                                     ('게임 토론', NOW(), NULL, NULL),
+                                                                                     ('영화 추천', NOW(), NULL, NULL),
+                                                                                     ('음악 감상', NOW(), NULL, NULL),
+                                                                                     ('책 이야기', NOW(), NULL, NULL),
+                                                                                     ('여행 계획', NOW(), NULL, NULL),
+                                                                                     ('기술 공유', NOW(), NULL, NULL),
+                                                                                     ('운동 동아리', NOW(), NULL, NULL),
+                                                                                     ('요리 레시피', NOW(), NULL, NULL),
+                                                                                     ('스포츠 소식', NOW(), NULL, NULL);
 
-INSERT INTO chat (user_seq, chat_group_seq, chat_group_name, joined_at) VALUES
-                                                                            (1, 1, '채팅 그룹 1', NOW()),
-                                                                            (2, 1, '채팅 그룹 1', NOW()),
-                                                                            (3, 2, '채팅 그룹 2', NOW()),
-                                                                            (4, 2, '채팅 그룹 2', NOW()),
-                                                                            (5, 3, '채팅 그룹 3', NOW()),
-                                                                            (6, 3, '채팅 그룹 3', NOW()),
-                                                                            (7, 4, '채팅 그룹 4', NOW()),
-                                                                            (8, 4, '채팅 그룹 4', NOW()),
-                                                                            (9, 5, '채팅 그룹 5', NOW()),
-                                                                            (10, 5, '채팅 그룹 5', NOW());
+INSERT INTO chat (user_seq, chatroom_seq, chatroom_custom_name, joined_at) VALUES
+                                                                               (1, 1, '친구 방', NOW()),
+                                                                               (2, 1, '가족 방', NOW()),
+                                                                               (3, 2, '게임 방', NOW()),
+                                                                               (4, 2, '영화 방', NOW()),
+                                                                               (5, 3, '음악 방', NOW()),
+                                                                               (6, 3, '책 방', NOW()),
+                                                                               (7, 4, '여행 방', NOW()),
+                                                                               (8, 4, '기술 방', NOW()),
+                                                                               (9, 5, '운동 방', NOW()),
+                                                                               (10, 5, '요리 방', NOW());
