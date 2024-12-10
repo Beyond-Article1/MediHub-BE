@@ -15,10 +15,4 @@ public class ChatbotConfig {
 
     @Value("${openai.api.url}")
     private String apiUrl;
-
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
-
 }
