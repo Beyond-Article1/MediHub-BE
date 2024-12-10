@@ -3,7 +3,7 @@ package mediHub_be.anonymousBoard.dto;
 import lombok.Data;
 
 @Data
-public class RequestPicture {
+public class AnonymousBoardPictureRequestDTO {
 
     private Long flagSeq;
     private String pictureName;
