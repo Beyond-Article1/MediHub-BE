@@ -1,6 +1,5 @@
 package mediHub_be.openai.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
@@ -12,19 +11,22 @@ import mediHub_be.openai.repository.JournalRepository;
 import mediHub_be.openai.repository.JournalSearchRepository;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
-import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
-public class OpenAiService implements JournalService{
+public class JournalServiceImpl implements JournalService{
 
     @Value("${openai.model}")
     private String model;
@@ -49,7 +51,7 @@ public class OpenAiService implements JournalService{
     // 논문 조회 repository
     private final JournalSearchRepository journalSearchRepository;
 
-    public OpenAiService(@Qualifier(value = "openAiWebClient") WebClient webClient,
+    public JournalServiceImpl(@Qualifier(value = "openAiWebClient") WebClient webClient,
                          JournalRepository journalRepository,
                          UserRepository userRepository,
                          JournalSearchRepository journalSearchRepository) {
@@ -100,6 +102,7 @@ public class OpenAiService implements JournalService{
     /**
      * 논문 상세보기
      */
+    @Transactional
     public ResponseAbstractDTO summarizeAbstractByPmid(String userId, String journalPmid, ResponsePubmedDTO requestDTO) {
         Map<String, Object> requestBody = Map.of(
                 "model", model,

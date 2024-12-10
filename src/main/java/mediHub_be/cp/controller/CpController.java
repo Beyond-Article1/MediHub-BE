@@ -2,6 +2,8 @@ package mediHub_be.cp.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
@@ -100,12 +102,15 @@ public class CpController {
     @GetMapping(value = "/{cpVersionSeq}")
     @Operation(summary = "CP 조회",
             description = "주어진 CP 버전 시퀀스를 사용하여 CP를 조회합니다.")
-    public ResponseEntity<ApiResponse<ResponseCpDTO>> getCpByCpVersionSeq(@PathVariable long cpVersionSeq) {
+    public ResponseEntity<ApiResponse<ResponseCpDTO>> getCpByCpVersionSeq(
+            @PathVariable long cpVersionSeq,
+            HttpServletRequest request,
+            HttpServletResponse response) {
         logger.info("버전 시퀀스: {}로 CP를 가져오는 요청을 받았습니다.", cpVersionSeq);
 
         try {
             // Cp 버전을 통하여 Cp 를 가져오는 서비스 호출
-            ResponseCpDTO cpList = cpService.getCpByCpVersionSeq(cpVersionSeq);
+            ResponseCpDTO cpList = cpService.getCpByCpVersionSeq(cpVersionSeq, request, response);
 
             if (cpList == null) {
                 logger.warn("버전 시퀀스 '{}'에 대한 CP 레코드가 없습니다.", cpVersionSeq);
@@ -134,7 +139,7 @@ public class CpController {
     @GetMapping(value = "/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}")
     @Operation(summary = "CP 의견 리스트 조회",
             description = "주어진 CP 버전 시퀀스와 CP 의견 위치 시퀀스를 기준으로 CP 의견 리스트를 조회합니다.")
-    public ResponseEntity<ApiResponse<List<ResponseCpOpinionDTO>>> getCpOpinionListByCpOpinionLocationSeq(
+    public ResponseEntity<ApiResponse<List<ResponseCpOpinionWithKeywordListDTO>>> getCpOpinionListByCpOpinionLocationSeq(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
             @RequestParam(required = false, defaultValue = "false") boolean isDeleted) {
@@ -142,7 +147,7 @@ public class CpController {
 
         try {
             // CP 번호로 CP 의견을 가져오는 서비스 호출
-            List<ResponseCpOpinionDTO> cpOpinionList = cpOpinionService.findCpOpinionListByCpVersionSeq(cpVersionSeq, cpOpinionLocationSeq, isDeleted);
+            List<ResponseCpOpinionWithKeywordListDTO> cpOpinionList = cpOpinionService.findCpOpinionListByCpVersionSeq(cpVersionSeq, cpOpinionLocationSeq, isDeleted);
 
             logger.info("CP 위치 번호로 CP 의견 리스트 조회 성공");
             logger.info("조회된 CP 의견 리스트의 크기: {}", cpOpinionList.size());
@@ -611,5 +616,4 @@ public class CpController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
     }
-
 }

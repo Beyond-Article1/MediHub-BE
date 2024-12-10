@@ -23,4 +23,8 @@ public class Cp {
 
     @Column
     private long cpViewCount;       // cp 조회수
+
+    public void increaseCpViewCount() {
+        this.cpViewCount++;
+    }
 }

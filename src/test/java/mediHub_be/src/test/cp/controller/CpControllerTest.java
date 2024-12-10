@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -134,8 +136,10 @@ class CpControllerTest {
         // Given
         ApiResponse<ResponseCpDTO> responseApi = ApiResponse.ok(cp1);
         long inputCpVersionSeq = 12L;
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
 
-        given(cpService.getCpByCpVersionSeq(inputCpVersionSeq))
+        given(cpService.getCpByCpVersionSeq(inputCpVersionSeq, request, response))
                 .willReturn(responseApi.data());
 
         // When: CP 버전 번호로 요청을 보냄
@@ -153,6 +157,6 @@ class CpControllerTest {
                 .andDo(print());
 
         // Then: cpService의 getCpByCpVersionSeq 메서드가 올바르게 호출되었는지 검증
-        verify(cpService).getCpByCpVersionSeq(inputCpVersionSeq);
+        verify(cpService).getCpByCpVersionSeq(inputCpVersionSeq, request, response);
     }
 }

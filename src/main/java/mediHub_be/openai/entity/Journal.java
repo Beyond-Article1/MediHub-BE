@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import mediHub_be.openai.dto.ResponsePubmedDTO;
 
 import java.util.List;
 
@@ -27,7 +26,7 @@ public class Journal {
     private String journalTitle;
 
     // 논문 한글 제목
-    @Column(name = "journal_korean", nullable = false)
+    @Column(name = "journal_korean_title", nullable = false)
     private String journalKorean;
 
     // 저자들 (List 컨버터로 변환 후 저장)

@@ -1,5 +1,7 @@
 package mediHub_be.src.test.cp.service;
 
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpDTO;
 import mediHub_be.cp.repository.CpVersionRepository;
 import mediHub_be.cp.service.CpService;
@@ -14,10 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -185,10 +184,11 @@ class CpServiceTest {
                 .build();
 
         Mockito.when(cpVersionRepository.findByCpVersionSeq(anyLong()))
-                .thenReturn(expectedResponse);
+                .thenReturn(Optional.of(expectedResponse));
 
         // When
-        ResponseCpDTO result = cpVersionRepository.findByCpVersionSeq(1L); // 예시로 1L 사용
+        ResponseCpDTO result = cpVersionRepository.findByCpVersionSeq(1L)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CP_VERSION));
 
         // Then
         assertThat(result).isNotNull();

@@ -1,10 +1,15 @@
 package mediHub_be.cp.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.Util.ViewCountManager;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpDTO;
+import mediHub_be.cp.entity.Cp;
+import mediHub_be.cp.repository.CpRepository;
 import mediHub_be.cp.repository.CpVersionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +26,11 @@ import java.util.stream.Collectors;
 public class CpService {
 
     // Repository
+    private final CpRepository cpRepository;
     private final CpVersionRepository cpVersionRepository;
 
-    private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpService");
+    private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpService");       // Logger
+    private final ViewCountManager viewCountManager;        // 조회수 매니저
 
     /**
      * 주어진 카테고리 시퀀스와 카테고리 데이터를 기준으로 CP 리스트를 조회하는 메서드입니다.
@@ -94,23 +101,40 @@ public class CpService {
      * @return 조회된 CP 정보를 포함하는 ResponseCpDTO 객체
      * @throws CustomException 조회 결과가 없을 경우 발생합니다.
      */
-    @Transactional(readOnly = true)
-    public ResponseCpDTO getCpByCpVersionSeq(long cpVersionSeq) {
+    @Transactional
+    public ResponseCpDTO getCpByCpVersionSeq(
+            long cpVersionSeq,
+            HttpServletRequest request,
+            HttpServletResponse response) {
         logger.info("CP 버전 시퀀스로 검색: {}", cpVersionSeq);
 
         // DB 조회
-        ResponseCpDTO findCp = cpVersionRepository.findByCpVersionSeq(cpVersionSeq);
+        Cp entity = cpRepository.findByCpVersionSeq(cpVersionSeq)
+                .orElseThrow(() -> {
+                    logger.warn("조회된 CP가 없습니다: CP 버전 시퀀스={}", cpVersionSeq);
+                    return new CustomException(ErrorCode.NOT_FOUND_CP);
+                });
+        logger.info("조회된 CP: {}", entity);
 
-        if (findCp == null) {
-            // 조회 결과 없음
-            logger.info("조회 결과 없음: CP 버전 시퀀스 '{}'에 대한 결과가 없습니다.", cpVersionSeq);
-            throw new CustomException(ErrorCode.NOT_FOUND_CP_VERSION);
-
+        boolean shouldIncrease = viewCountManager.shouldIncreaseViewCount(entity.getCpSeq(), request, response);
+        if (shouldIncrease) {
+            logger.info("뷰 카운트를 증가시킵니다: CP 시퀀스={}", entity.getCpSeq());
+            entity.increaseCpViewCount();
+            cpRepository.save(entity);
+            logger.info("뷰 카운트 증가 완료: CP 시퀀스={}", entity.getCpSeq());
         } else {
-            logger.info("조회된 CP: {}", findCp);
-            // 조회된 결과 반환
-            return findCp;
+            logger.info("뷰 카운트를 증가시키지 않습니다: CP 시퀀스={} - 사유: 조건 미충족", entity.getCpSeq());
         }
+
+        ResponseCpDTO dto = cpVersionRepository.findByCpVersionSeq(cpVersionSeq)
+                .orElseThrow(() -> {
+                    logger.warn("조회된 CP 버전 정보가 없습니다: CP 버전 시퀀스={}", cpVersionSeq);
+                    return new CustomException(ErrorCode.NOT_FOUND_CP_VERSION);
+                });
+
+        logger.info("조회된 CP 버전 정보: {}", dto);
+
+        return dto;
     }
 
     /**
