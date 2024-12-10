@@ -52,6 +52,28 @@ public class ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO {
                 .build();
     }
 
+    public static ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO create(
+            ResponseCpOpinionDTO data,
+            List<Keyword> keywordList) {
+
+        return ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO.builder()
+                .cpOpinionSeq(data.getCpOpinionSeq())
+                .cpOpinionContent(data.getCpOpinionContent())
+                .createdAt(data.getCreatedAt())
+                .updatedAt(data.getUpdatedAt())
+                .deletedAt(data.getDeletedAt())
+                .cpOpinionViewCount(data.getCpOpinionViewCount())
+                .userName(data.getUserName())
+                .userId(data.getUserId())
+                .partName(data.getPartName())
+                .keywordList(keywordList)
+                .positiveVotes(0)
+                .negativeVotes(0)
+                .positiveRatio(0.0)
+                .negativeRatio(0.0)
+                .build();
+    }
+
     public static ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO calculateVoteRatioAndCreate(
             ResponseCpOpinionDTO data,
             List<Keyword> keywordList,

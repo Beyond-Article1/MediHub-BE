@@ -150,31 +150,19 @@ public class CpOpinionService {
             List<Keyword> keywordList = keywordRepository.findByFlagTypeAndEntitySeq(FlagService.CP_OPINION_BOARD_FLAG, dto.getCpOpinionSeq());
             List<CpOpinionVoteDTO> voteList = getCpOpinionVoteList(dto.getCpOpinionSeq());
 
-            if (voteList == null || voteList.isEmpty()) {
-                return ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO.create(
-                        dto,
-                        keywordList,
-                        0, 0, 0.0, 0.0
-                );
+            // 비율 계산 및 DTO 생성
+            if (voteList.isEmpty()) {
+                return ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO.create(dto, keywordList);
             } else {
-                return ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO.calculateVoteRatioAndCreate(
-                        dto,
-                        keywordList,
-                        voteList
-                );
+                return ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO.calculateVoteRatioAndCreate(dto, keywordList, voteList);
             }
         } catch (DataAccessException e) {
-            // 데이터 접근 예외 발생 시 로그 남기기
-            logger.error("데이터베이스 접근 오류: {}", e.getMessage());
-            throw e; // 필요에 따라 다시 던질 수 있음
+            throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
         } catch (CustomException e) {
-            // 사용자 정의 예외 발생 시 로그 남기기
-            logger.error("사용자 정의 예외 발생: {}", e.getMessage());
-            throw e; // 필요에 따라 다시 던질 수 있음
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
-            // 일반 예외 발생 시 로그 남기기
-            logger.error("예기치 못한 오류 발생: {}", e.getMessage());
-            throw new RuntimeException("예기치 못한 오류가 발생했습니다.", e); // 새로운 런타임 예외로 감싸서 던짐
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
