@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CpOpinionLocationRepository extends JpaRepository<CpOpinionLocation, Long> {
@@ -24,5 +25,5 @@ public interface CpOpinionLocationRepository extends JpaRepository<CpOpinionLoca
             "FROM CpOpinionLocation AS col " +
             "JOIN CpOpinion AS co ON col.cpOpinionLocationSeq = co.cpOpinionLocationSeq " +
             "WHERE col.cpOpinionLocationSeq = :cpOpinionLocationSeq")
-    ResponseCpOpinionLocationDTO findByCpOpinionLocation_CpOpinion_CpOpinionLocationSeq(@Param("cpOpinionLocationSeq") long cpOpinionLocationSeq);
+    Optional<ResponseCpOpinionLocationDTO> findByCpOpinionLocation_CpOpinion_CpOpinionLocationSeq(@Param("cpOpinionLocationSeq") long cpOpinionLocationSeq);
 }
