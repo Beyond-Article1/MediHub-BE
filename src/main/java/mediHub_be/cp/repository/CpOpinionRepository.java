@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CpOpinionRepository extends JpaRepository<CpOpinion, Long> {
@@ -62,10 +63,5 @@ public interface CpOpinionRepository extends JpaRepository<CpOpinion, Long> {
             "FROM CpOpinion AS co " +
             "JOIN User AS u ON u.userSeq = co.userSeq " +
             "WHERE co.cpOpinionSeq = :cpOpinionSeq")
-    ResponseCpOpinionDTO findByCpOpinionSeq(@Param("cpOpinionSeq") long cpOpinionSeq);
-
-    @Modifying
-    @Query("UPDATE CpOpinion co SET co.cpOpinionViewCount = co.cpOpinionViewCount + 1 WHERE co.cpOpinionSeq = :cpOpinionSeq")
-    void incrementViewCount(@Param("cpOpinionSeq") long cpOpinionSeq);
-
+    Optional<ResponseCpOpinionDTO> findByCpOpinionSeq(@Param("cpOpinionSeq") long cpOpinionSeq);
 }
