@@ -53,7 +53,7 @@ public class CpOpinionService {
      * @throws CustomException 조회된 의견이 없을 경우
      */
     @Transactional(readOnly = true)
-    public List<ResponseCpOpinionDTO> findCpOpinionListByCpVersionSeq(
+    public List<ResponseCpOpinionWithKeywordListDTO> findCpOpinionListByCpVersionSeq(
             long cpVersionSeq,
             long cpOpinionLocationSeq,
             boolean isDeleted) {
@@ -73,17 +73,17 @@ public class CpOpinionService {
             }
 
             // 키워드 목록 설정
-            setKeywordListForCpOpinions(responseCpOpinionDtoList);
+            List<ResponseCpOpinionWithKeywordListDTO> dtoList = setKeywordListForCpOpinions(responseCpOpinionDtoList);
 
             // 결과 확인
-            if (responseCpOpinionDtoList.isEmpty()) {
+            if (dtoList.isEmpty()) {
                 logger.warn("조회된 CP 의견이 없습니다. CP 버전 번호: {}, CP 의견 위치 번호: {}", cpVersionSeq, cpOpinionLocationSeq);
                 throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
             } else {
-                logger.info("조회된 CP 의견의 수: {}", responseCpOpinionDtoList.size());
+                logger.info("조회된 CP 의견의 수: {}", dtoList.size());
             }
 
-            return responseCpOpinionDtoList;
+            return dtoList;
         } catch (CustomException e) {
             logger.error("사용자 정의 예외 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -139,10 +139,9 @@ public class CpOpinionService {
      * @param dto 설정할 CP 의견 DTO
      * @return 키워드 목록이 포함된 CP 의견 DTO
      * @throws DataAccessException 데이터베이스 접근 중 오류가 발생한 경우
-     * @throws CustomException 사용자 정의 예외가 발생한 경우
-     * @throws RuntimeException 기타 예기치 않은 오류가 발생한 경우
+     * @throws CustomException     사용자 정의 예외가 발생한 경우
+     * @throws RuntimeException    기타 예기치 않은 오류가 발생한 경우
      */
-    @Transactional(readOnly = true)
     public ResponseCpOpinionWithKeywordListDTO setKeywordForCpOpinion(ResponseCpOpinionDTO dto) {
         logger.info("CP 의견 번호: {}에 대한 키워드 목록을 설정합니다.", dto.getCpOpinionSeq());
 
@@ -167,7 +166,6 @@ public class CpOpinionService {
         }
     }
 
-
     /**
      * 주어진 CP 의견 번호에 해당하는 CP 의견을 조회합니다.
      *
@@ -180,34 +178,51 @@ public class CpOpinionService {
         logger.info("CP 의견 번호: {}로 조회 요청했습니다.", cpOpinionSeq);
 
         // DB 조회
-        ResponseCpOpinionDTO result = cpOpinionRepository.findByCpOpinionSeq(cpOpinionSeq);
+        CpOpinion entity = cpOpinionRepository.findById(cpOpinionSeq)
+                .orElseThrow(() -> {
+                    logger.warn("조회된 CP 의견이 없습니다. CP 의견 번호: {}", cpOpinionSeq);
+                    return new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
+                });
 
-        if (result == null) {
-            logger.warn("조회된 CP 의견이 없습니다. CP 의견 번호: {}", cpOpinionSeq);
-            throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
-        }
-
-        // 키워드 조회
-        logger.info("CP 의견 번호: {}에 대한 키워드 목록을 조회합니다.", cpOpinionSeq);
-        setKeywordForCpOpinion(result);
-
-        if (result.getDeletedAt() == null) {
+        if (entity.getDeletedAt() == null) {
             // 활성 상태
             logger.info("CP 의견 번호: {}는 활성 상태입니다.", cpOpinionSeq);
-            incrementViewCount(cpOpinionSeq); // 조회수 증가 메서드 호출
+            incrementViewCount(entity, cpOpinionSeq); // 조회수 증가 메서드 호출
             logger.info("CP 의견 번호: {}의 조회수가 증가했습니다.", cpOpinionSeq);
-            return result;
+
+            return retrieveCpOpinionDto(cpOpinionSeq);
         } else {
             // 삭제 상태
             logger.info("CP 의견 번호: {}는 삭제된 상태입니다.", cpOpinionSeq);
             if (isAdminUser()) {
                 logger.info("관리자 권한으로 CP 의견 번호: {}를 조회합니다.", cpOpinionSeq);
-                return result;
+                return retrieveCpOpinionDto(cpOpinionSeq);
             } else {
                 logger.warn("CP 의견 번호: {}에 대한 접근 권한이 없습니다.", cpOpinionSeq);
                 throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
             }
         }
+    }
+
+    /**
+     * CP 의견 번호에 해당하는 CP 의견 DTO를 조회합니다.
+     *
+     * @param cpOpinionSeq 조회할 CP 의견의 ID
+     * @return 조회된 CP 의견의 DTO
+     * @throws CustomException 조회된 의견이 없을 경우
+     */
+    private ResponseCpOpinionDTO retrieveCpOpinionDto(long cpOpinionSeq) {
+        ResponseCpOpinionDTO dto = cpOpinionRepository.findByCpOpinionSeq(cpOpinionSeq)
+                .orElseThrow(() -> {
+                    logger.warn("조회된 CP 의견이 없습니다. CP 의견 번호: {}", cpOpinionSeq);
+                    return new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
+                });
+
+        // 키워드 조회
+        logger.info("CP 의견 번호: {}에 대한 키워드 목록을 조회합니다.", cpOpinionSeq);
+        setKeywordForCpOpinion(dto);
+
+        return dto;
     }
 
     /**
@@ -221,7 +236,6 @@ public class CpOpinionService {
         return isAdmin;
     }
 
-
     /**
      * 주어진 CP 의견의 조회 수를 증가시킵니다.
      *
@@ -229,8 +243,9 @@ public class CpOpinionService {
      * @throws CustomException 주어진 ID에 해당하는 CP 의견이 존재하지 않을 경우 예외를 발생시킬 수 있습니다.
      */
     @Transactional
-    public void incrementViewCount(long cpOpinionSeq) {
-        cpOpinionRepository.incrementViewCount(cpOpinionSeq);
+    public void incrementViewCount(CpOpinion entity, long cpOpinionSeq) {
+        entity.increaseCpOpinionViewCount();
+        cpOpinionRepository.save(entity);
     }
 
     /**
@@ -304,7 +319,6 @@ public class CpOpinionService {
                 logger.error("예기치 못한 오류 발생: {}", e.getMessage());
                 throw new RuntimeException("예기치 못한 오류가 발생했습니다.", e);
             }
-
         }
 
         return cpOpinionDTO;
@@ -352,7 +366,8 @@ public class CpOpinionService {
         CpOpinion cpOpinion = cpOpinionRepository.findById(cpOpinionSeq)
                 .orElseThrow(() -> {
                     logger.warn("조회된 CP 의견이 없습니다. CP 의견 번호: {}", cpOpinionSeq);
-                    throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION); // 의견이 존재하지 않을 경우 예외 발생
+                    return new CustomException(ErrorCode.NOT_FOUND_CP_OPINION); // 의견이 존재하지 않을 경우 예외 발생
+                            // 의견이 존재하지 않을 경우 예외 발생
                 });
 
         // 로그인 유저 번호 및 권한 확인
