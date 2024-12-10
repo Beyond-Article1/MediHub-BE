@@ -21,7 +21,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
 
-        log.info("StompEndpoints 작동");
+        log.info("Chat StompEndpoints 작동");
 
         registry.addEndpoint("/ws")      // 처음 웹소켓 Handshake를 위한 경로
                 .setAllowedOriginPatterns("*")  // 모든 Origin 허용 -> 배포 시에는 보안을 위해 Origin을 정확히 지정할 예정

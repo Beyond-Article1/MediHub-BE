@@ -58,6 +58,7 @@ public enum ErrorCode {
 
     // 채팅 (chat)
     NOT_FOUND_CHATROOM(40408, HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
+    NOT_FOUND_CHATMESSAGE(40407, HttpStatus.NOT_FOUND, "채팅 메시지를 찾을 수 없습니다."),
 
     // 익명 게시판 (anonymous_board)
     NOT_FOUND_ANONYMOUS_BOARD(40409, HttpStatus.NOT_FOUND, "익명 게시글을 찾을 수 없습니다."),
