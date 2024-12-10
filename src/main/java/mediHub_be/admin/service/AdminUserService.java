@@ -3,6 +3,8 @@ package mediHub_be.admin.service;
 import lombok.RequiredArgsConstructor;
 import mediHub_be.admin.dto.AdminUpdateDTO;
 import mediHub_be.admin.dto.UserCreateDTO;
+import mediHub_be.amazonS3.service.AmazonS3Service;
+import mediHub_be.anonymousBoard.dto.RequestPicture;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
 import mediHub_be.board.repository.FlagRepository;
@@ -20,89 +22,79 @@ import mediHub_be.user.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Service
-@RequiredArgsConstructor
-public class AdminUserService {
+    @RequiredArgsConstructor
+    public class AdminUserService {
 
-    private final UserRepository userRepository;
-    private final PartRepository partRepository;
-    private final RankingRepository rankingRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
-    private final FlagRepository flagRepository;
-    private final PictureRepository pictureRepository;
+        private final UserRepository userRepository;
+        private final PartRepository partRepository;
+        private final RankingRepository rankingRepository;
+        private final FlagRepository flagRepository;
+        private final PictureRepository pictureRepository;
+        private final BCryptPasswordEncoder passwordEncoder;
+        private final AmazonS3Service amazonS3Service; // S3 서비스 추가
 
-    // 회원 등록
-    @Transactional
-    public User registerUser(UserCreateDTO userCreateDTO) {
-        Part part = partRepository.findById(userCreateDTO.getPartSeq())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+        @Transactional
 
-        Ranking ranking = rankingRepository.findById(userCreateDTO.getRankingSeq())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+        public User registerUser(UserCreateDTO userCreateDTO, MultipartFile profileImage) throws IOException {
+            // 1. 사용자 생성
+            Part part = partRepository.findById(userCreateDTO.getPartSeq())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PART));
 
-        String encodedPassword = passwordEncoder.encode(userCreateDTO.getUserPassword());
+            Ranking ranking = rankingRepository.findById(userCreateDTO.getRankingSeq())
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_RANKING));
 
-        User user = new User(
-                userCreateDTO.getUserId(),
-                encodedPassword,
-                userCreateDTO.getUserName(),
-                userCreateDTO.getUserEmail(),
-                userCreateDTO.getUserPhone(),
-                part,
-                ranking,
-                userCreateDTO.getUserAuth() != null ? UserAuth.valueOf(userCreateDTO.getUserAuth()) : UserAuth.USER,
-                userCreateDTO.getUserStatus() != null ? UserStatus.valueOf(userCreateDTO.getUserStatus()) : UserStatus.ACTIVE
-        );
+            String encodedPassword = passwordEncoder.encode(userCreateDTO.getUserPassword());
 
-        userRepository.save(user);
+            User user = new User(
+                    userCreateDTO.getUserId(),
+                    encodedPassword,
+                    userCreateDTO.getUserName(),
+                    userCreateDTO.getUserEmail(),
+                    userCreateDTO.getUserPhone(),
+                    part,
+                    ranking,
+                    userCreateDTO.getUserAuth() != null ? userCreateDTO.getUserAuth() : UserAuth.USER,
+                    userCreateDTO.getUserStatus() != null ? userCreateDTO.getUserStatus() : UserStatus.ACTIVE
+            );
 
-        // 2. Flag 생성
-        Flag flag = Flag.builder()
-                .flagtype("user") // 플래그 타입 설정
-                .flagentity_seq(user.getUserSeq()) // 사용자와 연결
-                .build();
+            userRepository.save(user);
 
-        flagRepository.save(flag);
+            // 2. Flag 생성
+            Flag flag = Flag.builder()
+                    .flagType("USER")
+                    .flagEntitySeq(user.getUserSeq())
+                    .build();
 
-        // 3. 사진 등록
-        Picture picture = Picture.builder()
-                .user(user)
-                .flag(flag)
-                .pictureUrl("pictureUrl")
-                .pictureName("pictureName")
-                .pictureType("pictureType")
-                .build();
+            flagRepository.save(flag);
 
-        pictureRepository.save(picture);
+            // 3. 프로필 사진 업로드 및 저장
+            if (profileImage != null && !profileImage.isEmpty()) {
+                // S3에 업로드
+                AmazonS3Service.MetaData metaData = amazonS3Service.upload(profileImage);
 
-        return user;
-    }
+                // Picture 데이터 생성
+                RequestPicture requestPicture = new RequestPicture();
 
-    // 회원 수정
-    @Transactional
-    public User updateUser(Long userSeq, AdminUpdateDTO adminUpdateDTO) {
-        User user = userRepository.findById(userSeq)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+                requestPicture.setFlagSeq(flag.getFlagSeq());
+                requestPicture.setPictureName(metaData.getOriginalFileName());
+                requestPicture.setPictureChangedName(metaData.getChangeFileName());
+                requestPicture.setPictureUrl(metaData.getUrl());
+                requestPicture.setPictureType(metaData.getType());
 
-        Part part = partRepository.findById(adminUpdateDTO.getPartSeq())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+                Picture picture = new Picture();
 
-        Ranking ranking = rankingRepository.findById(adminUpdateDTO.getRankingSeq())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+                picture.create(flag, requestPicture);
 
+                pictureRepository.save(picture);
+            }
 
-        user.updateUser(
-                adminUpdateDTO.getUserEmail(),
-                adminUpdateDTO.getUserPhone(),
-                part,
-                ranking,
-                adminUpdateDTO.getUserAuth(),
-                adminUpdateDTO.getUserStatus()
-        );
-
-        return user;
-    }
+            return user;
+        }
 
     // 비밀번호 초기화
     @Transactional
@@ -118,13 +110,6 @@ public class AdminUserService {
         user.initializePassword(encodedPassword);
     }
 
-    // 회원 삭제
-    @Transactional
-    public void deleteUser(Long userSeq) {
-        User user = userRepository.findById(userSeq)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
-        userRepository.delete(user);
-    }
 }
 
 

@@ -13,4 +13,5 @@ public class AdminUpdateDTO {
     private String userPhone;
     private UserAuth userAuth;
     private UserStatus userStatus;
+
 }

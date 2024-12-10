@@ -1,10 +1,12 @@
 package mediHub_be.admin.dto;
 
 import lombok.Data;
+import mediHub_be.user.entity.UserAuth;
+import mediHub_be.user.entity.UserStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class UserCreateDTO {
-    private Long userSeq;
     private Long partSeq;
     private Long rankingSeq;
     private String userName;
@@ -12,10 +14,7 @@ public class UserCreateDTO {
     private String userPassword;
     private String userEmail;
     private String userPhone;
-    private String userAuth;
-    private String userStatus;
-
-    private String pictureUrl;
-    private String pictureName;
-    private String pictureType;
+    private UserAuth userAuth;
+    private UserStatus userStatus;
+    private MultipartFile profileImage;
 }

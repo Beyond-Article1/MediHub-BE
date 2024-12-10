@@ -10,6 +10,9 @@ import mediHub_be.user.entity.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/admin/users")
@@ -18,20 +21,13 @@ public class AdminUserController {
 
     private final AdminUserService adminUserService;
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<Long>> registerUser(@RequestBody UserCreateDTO userCreateDTO) {
-        User createdUser = adminUserService.registerUser(userCreateDTO);
+    @PostMapping(consumes = {"multipart/form-data"})
+    public ResponseEntity<ApiResponse<Long>> registerUser(
+            @RequestPart UserCreateDTO userCreateDTO,
+            @RequestPart(required = false) MultipartFile profileImage) throws IOException {
+        User createdUser = adminUserService.registerUser(userCreateDTO, profileImage);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.created(createdUser.getUserSeq()));
-    }
-
-    @PutMapping("/{userSeq}")
-    public ResponseEntity<ApiResponse<Long>> updateUser(
-            @PathVariable Long userSeq,
-            @RequestBody AdminUpdateDTO adminUpdateDTO
-    ) {
-        User updatedUser = adminUserService.updateUser(userSeq,adminUpdateDTO);
-        return ResponseEntity.ok(ApiResponse.ok(updatedUser.getUserSeq()));
     }
 
     @PatchMapping("/{userSeq}/reset-password")
@@ -40,10 +36,5 @@ public class AdminUserController {
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
-    @DeleteMapping("/{userSeq}")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userSeq) {
-        adminUserService.deleteUser(userSeq);
-        return ResponseEntity.ok(ApiResponse.ok(null));
-    }
 }
 
