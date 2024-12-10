@@ -50,4 +50,8 @@ public class CpOpinion extends BaseFullEntity {
     public void editCpOpinionContent(String cpOpinionContent) {
         this.cpOpinionContent = cpOpinionContent;
     }
+
+    public void increaseCpOpinionViewCount() {
+        this.cpOpinionViewCount++;
+    }
 }

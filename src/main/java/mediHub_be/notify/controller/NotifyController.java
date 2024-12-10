@@ -34,7 +34,7 @@ public class NotifyController {
     public SseEmitter subscribe(@RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId){
 
         String userId = SecurityUtil.getCurrentUserId();
-        log.info(userId);
+        log.debug(userId);
 
         return notifyService.subscribe(userId, lastEventId);
     }
