@@ -148,7 +148,7 @@ public class CpOpinionService {
 
         try {
             // 키워드 리스트 조회
-            List<Keyword> keywordList = keywordRepository.findByBoardFlagAndPostSeq(FlagService.CP_OPINION_BOARD_FLAG, dto.getCpOpinionSeq());
+            List<Keyword> keywordList = keywordRepository.findByFlagTypeAndEntitySeq(FlagService.CP_OPINION_BOARD_FLAG, dto.getCpOpinionSeq());
 
             // CP 의견 DTO에 키워드 목록을 설정 및 반환
             return ResponseCpOpinionWithKeywordListDTO.create(dto, keywordList);
@@ -281,8 +281,8 @@ public class CpOpinionService {
                 // 1. Flag 생성
                 Flag flag = Flag.builder()
                         .flagSeq(null)
-                        .flagBoardFlag(FlagService.CP_OPINION_BOARD_FLAG)
-                        .flagPostSeq(cpOpinion.getCpOpinionSeq())
+                        .flagType(FlagService.CP_OPINION_BOARD_FLAG)
+                        .flagEntitySeq(cpOpinion.getCpOpinionSeq())
                         .build();
 
                 flag = flagRepository.save(flag);

@@ -27,13 +27,6 @@ public class JwtFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
         log.info("Request URI: {}", requestURI);
 
-//        // 로그인 요청은 JWT 검증 제외
-//        if ("/api/user/login".equals(requestURI)) {
-//            log.info("Skipping JwtFilter for login endpoint: {}", requestURI);
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-
         String authorizationHeader = request.getHeader("Authorization");
         log.info("Authorization header: {}", authorizationHeader);
 
@@ -45,6 +38,8 @@ public class JwtFilter extends OncePerRequestFilter {
                     Authentication authentication = jwtUtil.getAuthentication(token);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     log.info("JWT validation successful for token: {}", token);
+                    log.info("Authentication 확인: {}", authentication);
+
                 } else {
                     log.warn("Invalid JWT token: {}", token);
                 }

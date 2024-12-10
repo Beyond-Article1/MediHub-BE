@@ -21,11 +21,11 @@ public class BookmarkService {
     private final UserRepository userRepository;
 
     @Transactional
-    public boolean toggleBookmark(String boardFlag, Long postSeq, String userId) {
+    public boolean toggleBookmark(String flagType, Long entitySeq, String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
-        Flag flag = flagRepository.findByFlagBoardFlagAndFlagPostSeq(boardFlag, postSeq)
+        Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq)
                 .orElseThrow(() -> new IllegalArgumentException("게시글 정보를 찾을 수 없습니다."));
 
         // 기존 북마크 존재 여부 확인
@@ -46,11 +46,11 @@ public class BookmarkService {
         }
     }
 
-    public boolean isBookmarked(String boardFlag, Long postSeq, String userId) {
+    public boolean isBookmarked(String flagType, Long entitySeq, String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
-        Flag flag = flagRepository.findByFlagBoardFlagAndFlagPostSeq(boardFlag, postSeq)
+        Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq)
                 .orElseThrow(() -> new IllegalArgumentException("게시글 정보를 찾을 수 없습니다."));
 
         // 북마크 존재 여부 반환

@@ -18,8 +18,6 @@ DROP TABLE IF EXISTS cp_search_category;
 DROP TABLE IF EXISTS case_sharing_comment;
 DROP TABLE IF EXISTS case_sharing;
 DROP TABLE IF EXISTS template;
-DROP TABLE IF EXISTS chatbot_message;
-DROP TABLE IF EXISTS chatbot_history;
 DROP TABLE IF EXISTS comment;
 DROP TABLE IF EXISTS case_sharing_group;
 DROP TABLE IF EXISTS bookmark;
@@ -28,16 +26,18 @@ DROP TABLE IF EXISTS follow;
 DROP TABLE IF EXISTS cp_opinion_location;
 DROP TABLE IF EXISTS cp_version;
 DROP TABLE IF EXISTS cp;
+DROP TABLE IF EXISTS chat;
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS ranking;
 DROP TABLE IF EXISTS part;
 DROP TABLE IF EXISTS dept;
 DROP TABLE IF EXISTS picture;
 DROP TABLE IF EXISTS flag;
+DROP TABLE IF EXISTS chatroom;
 
 
 CREATE TABLE cp_opinion_vote (
-                                 cp_opinion_vote_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                                 cp_opinion_vote_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                                  cp_opinion_seq	bigint	NOT NULL,
                                  cp_opinion_vote	boolean	NOT NULL	COMMENT 'true, false',
                                  created_at	datetime	NOT NULL	DEFAULT NOW(),
@@ -46,7 +46,7 @@ CREATE TABLE cp_opinion_vote (
 );
 
 CREATE TABLE cp_opinion (
-                            cp_opinion_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                            cp_opinion_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                             user_seq	bigint	NOT NULL,
                             cp_opinion_location_seq	bigint	NOT NULL,
                             keyword_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
@@ -59,7 +59,7 @@ CREATE TABLE cp_opinion (
 );
 
 CREATE TABLE medical_life (
-                              medical_life_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                              medical_life_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                               user_seq	bigint	NOT NULL,
                               dept_seq	bigint	NOT NULL,
                               part_seq	bigint	NOT NULL,
@@ -73,7 +73,7 @@ CREATE TABLE medical_life (
 );
 
 CREATE TABLE journal_search (
-                                journal_search_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                                journal_search_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                                 journal_seq	bigint	NOT NULL,
                                 user_seq	bigint	NOT NULL,
                                 created_at	datetime	NOT NULL	DEFAULT NOW(),
@@ -82,7 +82,7 @@ CREATE TABLE journal_search (
 );
 
 CREATE TABLE journal (
-                         journal_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                         journal_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                          journal_pmid   varchar(50) NOT NULL COMMENT 'UNIQUE',
                          journal_title	varchar(255)	NOT NULL	COMMENT 'UNIQUE',
                          journal_authors	text	NOT NULL,
@@ -94,18 +94,19 @@ CREATE TABLE journal (
 );
 
 CREATE TABLE keyword (
-                         keyword_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                         keyword_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                          flag_seq	bigint	NOT NULL,
                          keyword_name	varchar(50)	NOT NULL,
                          PRIMARY KEY (keyword_seq)
 );
 
 CREATE TABLE anonymous_board (
-                                 anonymous_board_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                                 anonymous_board_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                                  user_seq	bigint	NOT NULL,
                                  anonymous_board_title	varchar(255)	NOT NULL,
                                  anonymous_board_content	text	NOT NULL,
                                  anonymous_board_is_deleted	boolean	NOT NULL	DEFAULT false,
+                                 anonymous_board_view_count bigint  NOT NULL    DEFAULT 0,
                                  created_at	datetime	NOT NULL	DEFAULT NOW(),
                                  updated_at	datetime	NULL,
                                  deleted_at	datetime	NULL,
@@ -113,7 +114,7 @@ CREATE TABLE anonymous_board (
 );
 
 CREATE TABLE prefer (
-                        prefer_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                        prefer_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                         user_seq	bigint	NOT NULL,
                         flag_seq	bigint	NOT NULL,
                         created_at	datetime	NOT NULL	DEFAULT NOW(),
@@ -121,14 +122,15 @@ CREATE TABLE prefer (
 );
 
 CREATE TABLE cp_search_data (
-                                cp_search_data_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                                cp_search_data_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                                 cp_version_seq	bigint	NOT NULL,
                                 cp_search_category_data_seq	bigint	NOT NULL,
                                 PRIMARY KEY (cp_search_data_seq)
 );
 
 CREATE TABLE cp_search_category_data (
-                                         cp_search_category_data_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                                         cp_search_category_data_seq	bigint	NOT NULL AUTO_INCREMENT
+                                             COMMENT 'AUTO_INCREMENT',
                                          user_seq	bigint	NOT NULL,
                                          cp_search_category_seq	bigint	NOT NULL,
                                          cp_search_category_data_name	varchar(50)	NOT NULL,
@@ -139,7 +141,7 @@ CREATE TABLE cp_search_category_data (
 );
 
 CREATE TABLE cp_search_category (
-                                    cp_search_category_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                                    cp_search_category_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                                     user_seq	bigint	NOT NULL,
                                     cp_search_category_name	varchar(50)	NOT NULL,
                                     created_at	datetime	NOT NULL	DEFAULT NOW(),
@@ -149,7 +151,8 @@ CREATE TABLE cp_search_category (
 );
 
 CREATE TABLE case_sharing_comment (
-                                      case_sharing_comment_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                                      case_sharing_comment_seq	bigint	NOT NULL AUTO_INCREMENT
+                                          COMMENT 'AUTO_INCREMENT',
                                       user_seq	bigint	NOT NULL,
                                       case_sharing_seq	bigint	NOT NULL,
                                       case_sharing_comment_content	text	NOT NULL,
@@ -162,7 +165,7 @@ CREATE TABLE case_sharing_comment (
 );
 
 CREATE TABLE case_sharing (
-                              case_sharing_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                              case_sharing_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                               user_seq	bigint	NOT NULL,
                               part_seq	bigint	NOT NULL,
                               template_seq	bigint	NOT NULL,
@@ -178,7 +181,7 @@ CREATE TABLE case_sharing (
 );
 
 CREATE TABLE template (
-                          template_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                          template_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                           user_seq	bigint	NOT NULL,
                           part_seq	bigint	NOT NULL,
                           template_title	varchar(255)	NOT NULL,
@@ -190,27 +193,9 @@ CREATE TABLE template (
                           PRIMARY KEY (template_seq)
 );
 
-CREATE TABLE chatbot_message (
-                                 chatbot_message_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
-                                 chatbot_history_seq	bigint	NOT NULL,
-                                 chatbot_message_sender_type	varchar(50)	NOT NULL	COMMENT 'USER, CHATBOT',
-                                 chatbot_message_content	text	NOT NULL,
-                                 chatbot_message_sent_at	datetime	NOT NULL	DEFAULT NOW(),
-                                 PRIMARY KEY (chatbot_message_seq)
-);
-
-CREATE TABLE chatbot_history (
-                                 chatbot_history_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
-                                 user_seq	bigint	NOT NULL,
-                                 chatbot_history_name	varchar(255)	NOT NULL,
-                                 created_at	datetime	NOT NULL	DEFAULT NOW(),
-                                 updated_at	datetime	NULL,
-                                 deleted_at	datetime	NULL,
-                                 PRIMARY KEY (chatbot_history_seq)
-);
 
 CREATE TABLE comment (
-                         comment_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                         comment_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                          user_seq	bigint	NOT NULL,
                          flag_seq	bigint	NOT NULL,
                          comment_content	text	NOT NULL,
@@ -222,7 +207,7 @@ CREATE TABLE comment (
 );
 
 CREATE TABLE case_sharing_group (
-                                    case_sharing_group_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                                    case_sharing_group_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                                     created_at	datetime	NOT NULL	DEFAULT NOW(),
                                     updated_at	datetime	NULL,
                                     deleted_at	datetime	NULL,
@@ -230,7 +215,7 @@ CREATE TABLE case_sharing_group (
 );
 
 CREATE TABLE bookmark (
-                          bookmark_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                          bookmark_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                           user_seq	bigint	NOT NULL,
                           flag_seq	bigint	NOT NULL,
                           created_at	datetime	NOT NULL	DEFAULT NOW(),
@@ -238,7 +223,7 @@ CREATE TABLE bookmark (
 );
 
 CREATE TABLE notify (
-                        noti_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                        noti_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                         user_seq	bigint	NOT NULL,
                         flag_seq	bigint	NOT NULL,
                         noti_sender_user_name	varchar(50)	NOT NULL,
@@ -251,15 +236,16 @@ CREATE TABLE notify (
                         PRIMARY KEY (noti_seq)
 );
 
-CREATE TABLE follow (
-                        follow_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
-                        user_from_seq	bigint	NOT NULL,
-                        user_to_seq	bigint	NOT NULL,
-                        PRIMARY KEY (follow_seq)
-);
+# CREATE TABLE follow (
+#                         follow_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
+#                         user_from_seq	bigint	NOT NULL,
+#                         user_to_seq	bigint	NOT NULL,
+#                         PRIMARY KEY (follow_seq)
+# );
 
 CREATE TABLE cp_opinion_location (
-                                     cp_opinion_location_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                                     cp_opinion_location_seq	bigint	NOT NULL AUTO_INCREMENT
+                                         COMMENT 'AUTO_INCREMENT',
                                      cp_version_seq	bigint	NOT NULL,
                                      cp_opinion_location_x	double	NOT NULL,
                                      cp_opinion_location_y	double	NOT NULL,
@@ -269,7 +255,7 @@ CREATE TABLE cp_opinion_location (
 );
 
 CREATE TABLE cp_version (
-                            cp_version_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                            cp_version_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                             cp_seq	bigint	NOT NULL,
                             user_seq	bigint	NOT NULL,
                             cp_version	varchar(255)	NOT NULL,
@@ -280,7 +266,7 @@ CREATE TABLE cp_version (
 );
 
 CREATE TABLE cp (
-                    cp_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                    cp_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                     user_seq	bigint	NOT NULL,
                     cp_name	varchar(255)	NOT NULL,
                     cp_description	varchar(255)	NULL,
@@ -289,10 +275,9 @@ CREATE TABLE cp (
 );
 
 CREATE TABLE user (
-                      user_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                      user_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                       part_seq	bigint	NOT NULL,
                       ranking_seq	bigint	NOT NULL,
-                      picture_seq	bigint	NULL,
                       user_name	varchar(50)	NOT NULL,
                       user_id	varchar(50)	NOT NULL,
                       user_password	varchar(255)	NOT NULL,
@@ -307,7 +292,7 @@ CREATE TABLE user (
 );
 
 CREATE TABLE ranking (
-                         ranking_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                         ranking_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                          dept_seq	bigint	NOT NULL,
                          ranking_num	bigint	NOT NULL	COMMENT '낮은 번호가 높은 직급',
                          ranking_name	varchar(50)	NOT NULL,
@@ -315,20 +300,20 @@ CREATE TABLE ranking (
 );
 
 CREATE TABLE part (
-                      part_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                      part_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                       dept_seq	bigint	NOT NULL,
                       part_name	varchar(50)	NOT NULL,
                       PRIMARY KEY (part_seq)
 );
 
 CREATE TABLE dept (
-                      dept_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                      dept_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                       dept_name	varchar(50)	NOT NULL,
                       PRIMARY KEY (dept_seq)
 );
 
 CREATE TABLE picture (
-                         picture_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                         picture_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                          flag_seq	bigint	NOT NULL,
                          picture_name	varchar(255)	NOT NULL,
                          picture_changed_name	varchar(255)	NULL,
@@ -341,10 +326,28 @@ CREATE TABLE picture (
 );
 
 CREATE TABLE flag (
-                      flag_seq	bigint	NOT NULL,
-                      flag_board_flag	varchar(50)	NOT NULL,
-                      flag_post_seq	bigint	NOT NULL,
+                      flag_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
+                      flag_type	varchar(50)	NOT NULL,
+                      flag_entity_seq	bigint	NOT NULL,
                       PRIMARY KEY (flag_seq)
+);
+
+CREATE TABLE chatroom (
+                          chatroom_seq    bigint    NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
+                          chatroom_default_name    varchar(255)    NOT NULL,
+                          created_at    datetime    NOT NULL    DEFAULT NOW(),
+                          updated_at    datetime    NULL,
+                          deleted_at    datetime    NULL,
+                          PRIMARY KEY (chatroom_seq)
+);
+
+CREATE TABLE chat (
+                      chat_seq    bigint    NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
+                      user_seq    bigint    NOT NULL,
+                      chatroom_seq    bigint    NOT NULL,
+                      chatroom_custom_name    varchar(255)    NULL,
+                      joined_at    datetime    NOT NULL    DEFAULT NOW(),
+                      PRIMARY KEY (chat_seq)
 );
 
 
@@ -409,13 +412,6 @@ ALTER TABLE template
     ADD CONSTRAINT FK_template_user FOREIGN KEY (user_seq) REFERENCES user (user_seq) ON DELETE CASCADE,
     ADD CONSTRAINT FK_template_part FOREIGN KEY (part_seq) REFERENCES part (part_seq) ON DELETE CASCADE;
 
-ALTER TABLE chatbot_message
-    ADD CONSTRAINT FK_chatbot_message_chatbot_history FOREIGN KEY (chatbot_history_seq)
-        REFERENCES chatbot_history (chatbot_history_seq) ON DELETE CASCADE;
-
-ALTER TABLE chatbot_history
-    ADD CONSTRAINT FK_chatbot_history_user FOREIGN KEY (user_seq) REFERENCES user (user_seq) ON DELETE CASCADE;
-
 ALTER TABLE comment
     ADD CONSTRAINT FK_comment_user FOREIGN KEY (user_seq) REFERENCES user (user_seq) ON DELETE CASCADE,
     ADD CONSTRAINT FK_comment_flag FOREIGN KEY (flag_seq) REFERENCES flag (flag_seq) ON DELETE CASCADE;
@@ -443,10 +439,14 @@ ALTER TABLE cp_version
 ALTER TABLE cp
     ADD CONSTRAINT FK_cp_user FOREIGN KEY (user_seq) REFERENCES user (user_seq) ON DELETE CASCADE;
 
+ALTER TABLE chat
+    ADD CONSTRAINT FK_chat_user FOREIGN KEY (user_seq) REFERENCES user (user_seq) ON DELETE CASCADE,
+    ADD CONSTRAINT FK_chat_chatroom FOREIGN KEY (chatroom_seq) REFERENCES chatroom (chatroom_seq)
+        ON DELETE CASCADE;
+
 ALTER TABLE user
     ADD CONSTRAINT FK_user_part FOREIGN KEY (part_seq) REFERENCES part (part_seq) ON DELETE CASCADE,
-    ADD CONSTRAINT FK_user_ranking FOREIGN KEY (ranking_seq) REFERENCES ranking (ranking_seq) ON DELETE CASCADE,
-    ADD CONSTRAINT FK_user_picture FOREIGN KEY (picture_seq) REFERENCES picture (picture_seq) ON DELETE CASCADE;
+    ADD CONSTRAINT FK_user_ranking FOREIGN KEY (ranking_seq) REFERENCES ranking (ranking_seq) ON DELETE CASCADE;
 
 ALTER TABLE ranking
     ADD CONSTRAINT FK_ranking_dept FOREIGN KEY (dept_seq) REFERENCES dept (dept_seq) ON DELETE CASCADE;

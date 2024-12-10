@@ -9,10 +9,8 @@ import mediHub_be.case_sharing.entity.CaseSharing;
 import mediHub_be.case_sharing.entity.CaseSharingComment;
 import mediHub_be.case_sharing.repository.CaseSharingCommentRepository;
 import mediHub_be.case_sharing.repository.CaseSharingRepository;
-import mediHub_be.common.response.ApiResponse;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +23,6 @@ public class CaseSharingCommentService {
 
     private final UserRepository userRepository;
     private final CaseSharingCommentRepository commentRepository;
-    private final CaseSharingService caseSharingService;
     private final CaseSharingRepository caseSharingRepository;
 
     public List<CaseSharingCommentListDTO> getCommentList(String userId, Long caseSharingSeq) {

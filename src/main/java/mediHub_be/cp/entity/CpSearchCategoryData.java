@@ -1,12 +1,14 @@
 package mediHub_be.cp.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
+import mediHub_be.common.aggregate.entity.BaseFullEntity;
 
 @Entity
 @Table(name = "cp_search_category_data")
 @Getter
-public class CpSearchCategoryData {
+public class CpSearchCategoryData extends BaseFullEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,4 +22,16 @@ public class CpSearchCategoryData {
 
     @Column
     private String cpSearchCategoryDataName;        // cp 검색카테고리 데이터명
+
+    @Builder
+    public CpSearchCategoryData(long userSeq, long cpSearchCategorySeq, String cpSearchCategoryDataName) {
+    }
+
+    public void updateUserSeq(long userSeq) {
+        this.userSeq = userSeq;
+    }
+
+    public void updateCpSearchCategoryDataName(String cpSearchCategoryDataName) {
+        this.cpSearchCategoryDataName = cpSearchCategoryDataName;
+    }
 }

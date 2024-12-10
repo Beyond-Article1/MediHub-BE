@@ -46,9 +46,8 @@ dependencies {
     // MongoDB
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
-    //Swagger
+    // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
-
 
     // MockMvc와 REST 테스트를 위한 의존성
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -76,6 +75,8 @@ dependencies {
     // XML 파싱 Jsoup
     implementation group: 'org.jsoup', name: 'jsoup', version: '1.18.3'
 
+    // AWS S3 의존성 설정
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 }
 
 //// .env 파일 로드

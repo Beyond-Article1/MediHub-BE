@@ -1,13 +1,14 @@
 package mediHub_be.user.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
-@Builder
+@Data
 public class UserDTO {
-    private String UserId;
-    private String UserPassword;
+    private long userSeq;
+    private String userId;
+    private String userName;
+    private String userEmail;
+    private String userPhone;
+    private long partSeq;
+    private long rankingSeq;
 }
