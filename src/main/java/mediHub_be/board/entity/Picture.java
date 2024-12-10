@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import mediHub_be.anonymousBoard.dto.RequestPicture;
+import mediHub_be.anonymousBoard.dto.AnonymousBoardPictureRequestDTO;
 import mediHub_be.common.aggregate.entity.BaseCreateDeleteEntity;
 
 import java.time.LocalDateTime;
@@ -39,7 +39,7 @@ public class Picture extends BaseCreateDeleteEntity {
         this.deletedAt = LocalDateTime.now();
     }
 
-    public void create(Flag flag, RequestPicture requestPicture) {
+    public void create(Flag flag, AnonymousBoardPictureRequestDTO requestPicture) {
 
         this.flag = flag;
         this.pictureName = requestPicture.getPictureName();

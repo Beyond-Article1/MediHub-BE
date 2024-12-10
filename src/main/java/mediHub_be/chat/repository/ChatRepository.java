@@ -15,5 +15,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     long countByChatroom_ChatroomSeq(Long chatroomSeq);
 
     List<Chat> findByChatroom_ChatroomSeq(Long chatroomSeq);
+
+    List<Chat> findByUser_UserSeq(Long userSeq);
 }
 
