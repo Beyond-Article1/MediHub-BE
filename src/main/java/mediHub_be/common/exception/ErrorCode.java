@@ -70,6 +70,8 @@ public enum ErrorCode {
     // 플레그 없음
     NOT_FOUND_FLAG(40409,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
 
+    FILE_DELETE_FAILED(40410,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
+
 
     /**
      * == 409 CONFLICT ==

@@ -1,8 +1,6 @@
 package mediHub_be.admin.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import mediHub_be.admin.dto.AdminResponseDTO;
 import mediHub_be.admin.dto.AdminUpdateDTO;
 import mediHub_be.admin.dto.AdminUserDetailResponseDTO;
@@ -26,7 +24,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;

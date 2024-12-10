@@ -68,18 +68,25 @@ public class User extends BaseFullEntity {
         this.userPassword = encodedPassword;
     }
 
-    public void updateUserDetails(String email, String phone, Part part, Ranking ranking, UserAuth auth, UserStatus status) {
-        this.userEmail = email;
-        this.userPhone = phone;
+    public void updateUserDetails(String userEmail, String userPhone, Part part, Ranking ranking, UserAuth userAuth, UserStatus userStatus) {
+        this.userEmail = userEmail;
+        this.userPhone = userPhone;
         this.part = part;
         this.ranking = ranking;
-        this.userAuth = auth;
-        this.userStatus = status;
+        this.userAuth = userAuth;
+        this.userStatus = userStatus;
     }
 
     public void markAsDeleted() {
         this.userStatus = UserStatus.DELETE;
     }
+
+    public void updateUserinfo(String userEmail, String userPhone, String userPassword) {
+        this.userEmail = userEmail;
+        this.userPhone = userPhone;
+        this.userPassword = userPassword;
+    }
+
 }
 
 
