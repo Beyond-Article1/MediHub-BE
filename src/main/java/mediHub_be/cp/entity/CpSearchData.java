@@ -3,7 +3,7 @@ package mediHub_be.cp.entity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
-import mediHub_be.cp.dto.RequestCpSearchData;
+import mediHub_be.cp.dto.RequestCpSearchDataDTO;
 
 @Entity
 @Table(name = "cp_search_data")
@@ -26,7 +26,7 @@ public class CpSearchData {
             long cpSearchCategoryDataSeq) {
     }
 
-    public static CpSearchData toEntity(RequestCpSearchData requestBody) {
+    public static CpSearchData toEntity(RequestCpSearchDataDTO requestBody) {
         return CpSearchData.builder()
                 .cpVersionSeq(requestBody.getCpVersionSeq())
                 .cpSearchCategoryDataSeq(requestBody.getCpSearchCategoryDataSeq())

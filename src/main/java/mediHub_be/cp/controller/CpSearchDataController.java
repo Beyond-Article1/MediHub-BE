@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.cp.dto.CpSearchDataDTO;
-import mediHub_be.cp.dto.RequestCpSearchData;
+import mediHub_be.cp.dto.RequestCpSearchDataDTO;
 import mediHub_be.cp.dto.ResponseCpSearchDataDTO;
 import mediHub_be.cp.service.CpSearchDataService;
 import org.slf4j.Logger;
@@ -47,7 +47,7 @@ public class CpSearchDataController {
     @PostMapping
     @Operation(summary = "CP 검색 데이터 생성",
             description = "주어진 정보를 기반으로 새로운 CP 검색 데이터를 생성합니다.")
-    public ResponseEntity<ApiResponse<CpSearchDataDTO>> createCpSearchData(@RequestBody RequestCpSearchData requestBody) {
+    public ResponseEntity<ApiResponse<CpSearchDataDTO>> createCpSearchData(@RequestBody RequestCpSearchDataDTO requestBody) {
         logger.info("CP 검색 데이터 생성 요청: {}", requestBody);
 
         CpSearchDataDTO dto = cpSearchDataService.createCpSearchData(requestBody);
@@ -57,7 +57,9 @@ public class CpSearchDataController {
     }
 
     @DeleteMapping(value = "/{cpVersionSeq}/{cpSearchDataSeq}")
-    @Operation()
+    @Operation(
+            summary = "CP 검색 데이터 삭제",
+            description = "주어진 CP 버전 시퀀스와 CP 검색 데이터 시퀀스를 사용하여 해당 CP 검색 데이터를 삭제합니다.")
     public ResponseEntity<ApiResponse<Void>> deleteCpSearchData(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpSearchDataSeq) {

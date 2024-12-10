@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.CpSearchDataDTO;
-import mediHub_be.cp.dto.RequestCpSearchData;
+import mediHub_be.cp.dto.RequestCpSearchDataDTO;
 import mediHub_be.cp.dto.ResponseCpSearchDataDTO;
 import mediHub_be.cp.entity.CpSearchData;
 import mediHub_be.cp.repository.CpSearchDataRepository;
@@ -55,7 +55,7 @@ public class CpSearchDataService {
      * @throws CustomException  데이터 접근 오류 발생 시
      * @throws RuntimeException 예기치 않은 오류 발생 시
      */
-    public CpSearchDataDTO createCpSearchData(RequestCpSearchData requestBody) {
+    public CpSearchDataDTO createCpSearchData(RequestCpSearchDataDTO requestBody) {
         CpSearchData entity = CpSearchData.toEntity(requestBody);
 
         try {
