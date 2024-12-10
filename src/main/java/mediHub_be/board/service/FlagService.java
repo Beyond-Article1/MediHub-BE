@@ -23,6 +23,17 @@ public class FlagService {
         return flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq);
     }
 
+    // 게시판 식별 생성 or 있는 식별 반환
+    @Transactional
+    public Flag createFlag(String flagType, Long entitySeq) {
+
+        return flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq)
+                .orElseGet(() -> flagRepository.save(Flag.builder()
+                        .flagType(flagType)
+                        .flagEntitySeq(entitySeq)
+                        .build()));
+    }
+
     public void deleteFlag(Long flagSeq) {
         flagRepository.deleteById(flagSeq);
     }

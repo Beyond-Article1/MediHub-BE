@@ -23,7 +23,10 @@ public enum ErrorCode {
     REQUIRED_FIELD_MISSING(40003, HttpStatus.BAD_REQUEST, "필수 입력값이 누락되었습니다. 모든 필드를 확인해 주세요."),
 
     // 삭제 불가 데이터 요청
-    CANNOT_DELETE_DATA(40904,HttpStatus.CONFLICT, "데이터 제약 조건으로 인해 삭제가 불가능합니다."),
+    CANNOT_DELETE_DATA(40904, HttpStatus.CONFLICT, "데이터 제약 조건으로 인해 삭제가 불가능합니다."),
+
+    // 입력 오류
+    BAD_REQUEST_INPUT(40905, HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
     /**
      * == 401 UNAUTHORIZED ==
      */
@@ -70,6 +73,8 @@ public enum ErrorCode {
     // 플레그 없음
     NOT_FOUND_FLAG(40409,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
 
+    // 논문
+    NOT_FOUND_JOURNAL(40410, HttpStatus.NOT_FOUND, "해당 논문이 존재하지 않습니다."),
 
     /**
      * == 409 CONFLICT ==
