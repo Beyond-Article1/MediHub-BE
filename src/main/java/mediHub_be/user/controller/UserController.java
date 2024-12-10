@@ -1,8 +1,9 @@
 package mediHub_be.user.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import mediHub_be.admin.dto.AdminResponseDTO;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.security.util.SecurityUtil;
 import mediHub_be.user.dto.UserResponseDTO;
@@ -13,10 +14,10 @@ import mediHub_be.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 
+@Tag(name = "회원", description = "회원정보 API")
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
