@@ -12,11 +12,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChatMessageDTO {
+public class ResponseChatMessageDTO {
+    private String messageSeq;  // 메시지 고유번호(_id)
     private Long chatroomSeq;
     private Long senderUserSeq;
-    private String type;                // 메시지 타입(text, file, image 등)
+    private String senderUserName;
+    private String type;
     private String message;
     private LocalDateTime createdAt;
-    private List<String> attachments;   // 첨부파일 url
+    private List<String> attachments;
 }

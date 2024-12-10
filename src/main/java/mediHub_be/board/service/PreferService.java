@@ -5,6 +5,8 @@ import mediHub_be.board.entity.Prefer;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.repository.PreferRepository;
 import mediHub_be.board.repository.FlagRepository;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -24,9 +26,9 @@ public class PreferService {
     public boolean togglePrefer(String flagType, Long entitySeq, String userId) {
 
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
         Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq)
-                .orElseThrow(() -> new IllegalArgumentException("게시글 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
         // 기존 좋아요 존재 여부 확인
         Optional<Prefer> existingPrefer = preferRepository.findByUserAndFlag(user, flag);
 
@@ -34,9 +36,10 @@ public class PreferService {
             // 좋아요 해제 (삭제)
             preferRepository.delete(existingPrefer.get());
 
-            return false; // 좋아요 해제 상태 반환
+            // 좋아요 해제 상태 반환
+            return false;
         } else {
-            // 좋아요 설정 (생성)
+            // 좋아요 설정(생성)
             Prefer prefer = Prefer.builder()
                     .user(user)
                     .flag(flag)
@@ -44,16 +47,17 @@ public class PreferService {
 
             preferRepository.save(prefer);
 
-            return true; // 좋아요 설정 상태 반환
+            // 좋아요 설정 상태 반환
+            return true;
         }
     }
 
     public boolean isPreferred(String flagType, Long entitySeq, String userId) {
 
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
         Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq)
-                .orElseThrow(() -> new IllegalArgumentException("게시글 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
         // 좋아요 존재 여부 반환
         return preferRepository.existsByUserAndFlag(user, flag);

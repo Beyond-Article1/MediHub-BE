@@ -5,9 +5,9 @@ import lombok.Data;
 
 @Data
 @Builder
-public class FlagDTO {
+public class AnonymousBoardFlagDTO {
 
     private Long flagSeq;
     private String flagType;
-    private Long flagentitySeq;
+    private Long flagEntitySeq;
 }

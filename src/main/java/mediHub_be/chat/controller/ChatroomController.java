@@ -6,10 +6,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.chat.dto.ChatroomDTO;
-import mediHub_be.chat.dto.ChatroomInfoDTO;
+import mediHub_be.chat.dto.ResponseChatUserDTO;
+import mediHub_be.chat.dto.ResponseChatroomDTO;
 import mediHub_be.chat.dto.UpdateChatroomDTO;
 import mediHub_be.chat.service.ChatroomService;
 import mediHub_be.common.response.ApiResponse;
+import mediHub_be.security.util.SecurityUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,8 +44,7 @@ public class ChatroomController {
     @Operation(summary = "채팅방 이름 수정", description = "채팅방 이름 수정")
     @PutMapping("/{chatroomSeq}")
     public ResponseEntity<ApiResponse<Void>> updateChatroomName(@PathVariable Long chatroomSeq, @RequestBody @Valid UpdateChatroomDTO updatechatroomDTO) {
-        //Long userSeq = SecurityUtil.getCurrentUserSeq();
-        Long userSeq = 11L; // Security 개발 전 테스트용
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
         chatroomService.updateChatroomName(userSeq, chatroomSeq, updatechatroomDTO);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.ok(null));
     }
@@ -51,27 +52,32 @@ public class ChatroomController {
     @Operation(summary = "채팅방 나가기", description = "채팅방 나가기")
     @DeleteMapping("/{chatroomSeq}")
     public ResponseEntity<ApiResponse<Void>> deleteChatroom(@PathVariable Long chatroomSeq) {
-        // Long userSeq = SecurityUtil.getCurrentUserSeq();
-        Long userSeq = 5L;  // Security 개발 전 테스트용
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
         chatroomService.deleteChatroom(userSeq, chatroomSeq);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.ok(null));
-
     }
 
     @Operation(summary = "채팅방 목록 조회", description = "채팅방 목록 조회")
     @GetMapping("/list")
-    public ResponseEntity<ApiResponse<List<ChatroomInfoDTO>>> getChatroomListByUserSeq() {
-        //Long userSeq = SecurityUtil.getCurrentUserSeq();
-        Long userSeq = 1L;  // Security 개발 전 테스트용
-        List<ChatroomInfoDTO> chatrooms = chatroomService.getChatroomListByUserSeq(userSeq);
+    public ResponseEntity<ApiResponse<List<ResponseChatroomDTO>>> getChatroomListByUserSeq() {
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        List<ResponseChatroomDTO> chatrooms = chatroomService.getChatroomListByUserSeq(userSeq);
         return ResponseEntity.ok(ApiResponse.ok(chatrooms));
     }
 
     @Operation(summary = "채팅방 정보 조회", description = "채팅방 정보 조회")
     @GetMapping("/{chatroomSeq}")
-    public ResponseEntity<ApiResponse<ChatroomInfoDTO>> getChatroomInfoBySeq(@PathVariable Long chatroomSeq) {
-        ChatroomInfoDTO chatroom = chatroomService.getChatroomInfoBySeq(chatroomSeq);
+    public ResponseEntity<ApiResponse<ResponseChatroomDTO>> getChatroomInfoBySeq(@PathVariable Long chatroomSeq) {
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        ResponseChatroomDTO chatroom = chatroomService.getChatroomInfoBySeq(userSeq, chatroomSeq);
         return ResponseEntity.ok(ApiResponse.ok(chatroom));
+    }
+
+    @Operation(summary = "채팅방 참여자 조회", description = "특정 채팅방 참여자 조회")
+    @GetMapping("/{chatroomSeq}/user")
+    public ResponseEntity<ApiResponse<List<ResponseChatUserDTO>>> getChatUsers(@PathVariable Long chatroomSeq) {
+        List<ResponseChatUserDTO> users = chatroomService.getChatUsers(chatroomSeq);
+        return ResponseEntity.ok(ApiResponse.ok(users));
     }
 
 }

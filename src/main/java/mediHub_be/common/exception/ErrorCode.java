@@ -23,7 +23,10 @@ public enum ErrorCode {
     REQUIRED_FIELD_MISSING(40003, HttpStatus.BAD_REQUEST, "필수 입력값이 누락되었습니다. 모든 필드를 확인해 주세요."),
 
     // 삭제 불가 데이터 요청
-    CANNOT_DELETE_DATA(40904,HttpStatus.CONFLICT, "데이터 제약 조건으로 인해 삭제가 불가능합니다."),
+    CANNOT_DELETE_DATA(40004,HttpStatus.CONFLICT, "데이터 제약 조건으로 인해 삭제가 불가능합니다."),
+    CANNOT_DELETE_DATA_ANONYMOUS_BOARD(40005,HttpStatus.CONFLICT, "이미 삭제된 익명 게시글입니다."),
+    CANNOT_DELETE_DATA_COMMENT(40006,HttpStatus.CONFLICT, "이미 삭제된 댓글입니다."),
+
     /**
      * == 401 UNAUTHORIZED ==
      */
@@ -47,31 +50,38 @@ public enum ErrorCode {
     NOT_FOUND_END_POINT(40401, HttpStatus.NOT_FOUND, "존재하지 않는 API입니다."),
 
     NOT_FOUND_CP(40402, HttpStatus.NOT_FOUND, "CP 버전을 찾을 수 없습니다."),
-    NOT_FOUND_CP_VERSION(40402, HttpStatus.NOT_FOUND, "CP 버전을 찾을 수 없습니다."),
-    NOT_FOUND_CP_OPINION(40403, HttpStatus.NOT_FOUND, "CP 의견을 찾을 수 없습니다."),
-    NOT_FOUND_CP_OPINION_LOCATION(40404, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
-    NOT_FOUND_CP_SEARCH_CATEGORY(40405, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
-    NOT_FOUND_CP_SEARCH_CATEGORY_DATA(40406, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
+    NOT_FOUND_CP_VERSION(40403, HttpStatus.NOT_FOUND, "CP 버전을 찾을 수 없습니다."),
+    NOT_FOUND_CP_OPINION(40404, HttpStatus.NOT_FOUND, "CP 의견을 찾을 수 없습니다."),
+    NOT_FOUND_CP_OPINION_LOCATION(40405, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
+    NOT_FOUND_CP_OPINION_VOTE(40406, HttpStatus.NOT_FOUND, "CP 의견 투표를 찾을 수 없습니다."),
+    NOT_FOUND_CP_SEARCH_CATEGORY(40407, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
+    NOT_FOUND_CP_SEARCH_CATEGORY_DATA(40408, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
 
     // 알림 (notify)
-    NOT_FOUND_NOTIFY(40407, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
+    NOT_FOUND_NOTIFY(40409, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
 
     // 채팅 (chat)
-    NOT_FOUND_CHATROOM(40408, HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
+    NOT_FOUND_CHATROOM(40410, HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
+    NOT_FOUND_CHATMESSAGE(40411, HttpStatus.NOT_FOUND, "채팅 메시지를 찾을 수 없습니다."),
 
     // 익명 게시판 (anonymous_board)
-    NOT_FOUND_ANONYMOUS_BOARD(40409, HttpStatus.NOT_FOUND, "익명 게시글을 찾을 수 없습니다."),
+    NOT_FOUND_ANONYMOUS_BOARD(40412, HttpStatus.NOT_FOUND, "익명 게시글을 찾을 수 없습니다."),
 
     // 사용자 부서 및 랭킹
-    NOT_FOUND_PART(40407, HttpStatus.NOT_FOUND, "존재하지 않는 부서 입니다."),
+    NOT_FOUND_PART(40413, HttpStatus.NOT_FOUND, "존재하지 않는 부서 입니다."),
 
-    NOT_FOUND_RANKING(40408,HttpStatus.NOT_FOUND, "존재하지 않는 직급 입니다."),
+    NOT_FOUND_RANKING(40414,HttpStatus.NOT_FOUND, "존재하지 않는 직급 입니다."),
 
     // 플레그 없음
-    NOT_FOUND_FLAG(40409,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
+    NOT_FOUND_FLAG(40415,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
 
     FILE_DELETE_FAILED(40410,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
 
+    // 댓글 (comment)
+    NOT_FOUND_COMMENT(40416, HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
+
+    // 사진 (picture)
+    NOT_FOUND_PICTURE(40417, HttpStatus.NOT_FOUND, "사진을 찾을 수 없습니다."),
 
     /**
      * == 409 CONFLICT ==

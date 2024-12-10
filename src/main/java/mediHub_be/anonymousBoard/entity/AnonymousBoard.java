@@ -10,7 +10,6 @@ import mediHub_be.user.entity.User;
 @Table(name = "anonymous_board")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@ToString
 @Builder
 public class AnonymousBoard extends BaseFullEntity {
 
