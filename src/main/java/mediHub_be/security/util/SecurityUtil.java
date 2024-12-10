@@ -32,6 +32,7 @@ public class SecurityUtil {
                         .map(GrantedAuthority::getAuthority) // 권한을 String으로 변환
                         .collect(Collectors.joining(",")))
                 .orElse("");
+
     }
 
 

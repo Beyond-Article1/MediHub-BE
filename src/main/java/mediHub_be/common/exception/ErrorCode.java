@@ -62,6 +62,15 @@ public enum ErrorCode {
     // 익명 게시판 (anonymous_board)
     NOT_FOUND_ANONYMOUS_BOARD(40409, HttpStatus.NOT_FOUND, "익명 게시글을 찾을 수 없습니다."),
 
+    // 사용자 부서 및 랭킹
+    NOT_FOUND_PART(40407, HttpStatus.NOT_FOUND, "존재하지 않는 부서 입니다."),
+
+    NOT_FOUND_RANKING(40408,HttpStatus.NOT_FOUND, "존재하지 않는 직급 입니다."),
+
+    // 플레그 없음
+    NOT_FOUND_FLAG(40409,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
+
+
     /**
      * == 409 CONFLICT ==
      */
