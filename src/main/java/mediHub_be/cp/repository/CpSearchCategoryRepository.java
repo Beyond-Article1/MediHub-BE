@@ -38,7 +38,7 @@ public interface CpSearchCategoryRepository extends JpaRepository<CpSearchCatego
             "FROM CpSearchCategory AS csc " +
             "LEFT JOIN User AS u ON csc.userSeq = u.userSeq " +
             "WHERE csc.cpSearchCategorySeq = :cpSearchCategorySeq")
-    ResponseCpSearchCategoryDTO findByCpSearchCategorySeq(@Param("cpSearchCategorySeq") long cpSearchCategorySeq);
+    Optional<ResponseCpSearchCategoryDTO> findByCpSearchCategorySeq(@Param("cpSearchCategorySeq") long cpSearchCategorySeq);
 
     Optional<Object> findByCpSearchCategoryName(String cpSearchCategoryName);
 }
