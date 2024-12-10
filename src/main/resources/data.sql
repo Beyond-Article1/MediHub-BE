@@ -1,14 +1,14 @@
-INSERT INTO journal (journal_pmid, journal_title, journal_authors, journal_journal, journal_date, journal_size, journal_doi) VALUES
-                                                                                                                                 ('저널 PMID 1', '저널 제목 1', '저자 1', '저널 1', '2024-01-01', 'A4', '10.1234/journal1'),
-                                                                                                                                 ('저널 PMID 2', '저널 제목 2', '저자 2', '저널 2', '2024-01-02', 'A4', '10.1234/journal2'),
-                                                                                                                                 ('저널 PMID 3', '저널 제목 3', '저자 3', '저널 3', '2024-01-03', 'A4', '10.1234/journal3'),
-                                                                                                                                 ('저널 PMID 4', '저널 제목 4', '저자 4', '저널 4', '2024-01-04', 'A4', '10.1234/journal4'),
-                                                                                                                                 ('저널 PMID 5', '저널 제목 5', '저자 5', '저널 5', '2024-01-05', 'A4', '10.1234/journal5'),
-                                                                                                                                 ('저널 PMID 6', '저널 제목 6', '저자 6', '저널 6', '2024-01-06', 'A4', '10.1234/journal6'),
-                                                                                                                                 ('저널 PMID 7', '저널 제목 7', '저자 7', '저널 7', '2024-01-07', 'A4', '10.1234/journal7'),
-                                                                                                                                 ('저널 PMID 8', '저널 제목 8', '저자 8', '저널 8', '2024-01-08', 'A4', '10.1234/journal8'),
-                                                                                                                                 ('저널 PMID 9', '저널 제목 9', '저자 9', '저널 9', '2024-01-09', 'A4', '10.1234/journal9'),
-                                                                                                                                 ('저널 PMID 10', '저널 제목 10', '저자 10', '저널 10', '2024-01-10', 'A4', '10.1234/journal10');
+INSERT INTO journal (journal_pmid, journal_title, journal_korean_title, journal_authors, journal_journal, journal_date, journal_size, journal_doi) VALUES
+                                                                                                                                 ('저널 PMID 1', '저널 제목 1', '저널 한글 제목 1', '저자 1', '저널 1', '2024-01-01', 'A4', '10.1234/journal1'),
+                                                                                                                                 ('저널 PMID 2', '저널 제목 2', '저널 한글 제목 2', '저자 2', '저널 2', '2024-01-02', 'A4', '10.1234/journal2'),
+                                                                                                                                 ('저널 PMID 3', '저널 제목 3', '저널 한글 제목 3', '저자 3', '저널 3', '2024-01-03', 'A4', '10.1234/journal3'),
+                                                                                                                                 ('저널 PMID 4', '저널 제목 4', '저널 한글 제목 4', '저자 4', '저널 4', '2024-01-04', 'A4', '10.1234/journal4'),
+                                                                                                                                 ('저널 PMID 5', '저널 제목 5', '저널 한글 제목 5', '저자 5', '저널 5', '2024-01-05', 'A4', '10.1234/journal5'),
+                                                                                                                                 ('저널 PMID 6', '저널 제목 6', '저널 한글 제목 6', '저자 6', '저널 6', '2024-01-06', 'A4', '10.1234/journal6'),
+                                                                                                                                 ('저널 PMID 7', '저널 제목 7', '저널 한글 제목 7', '저자 7', '저널 7', '2024-01-07', 'A4', '10.1234/journal7'),
+                                                                                                                                 ('저널 PMID 8', '저널 제목 8', '저널 한글 제목 8', '저자 8', '저널 8', '2024-01-08', 'A4', '10.1234/journal8'),
+                                                                                                                                 ('저널 PMID 9', '저널 제목 9', '저널 한글 제목 9', '저자 9', '저널 9', '2024-01-09', 'A4', '10.1234/journal9'),
+                                                                                                                                 ('저널 PMID 10', '저널 제목 10', '저널 한글 제목 10', '저자 10', '저널 10', '2024-01-10', 'A4', '10.1234/journal10');
 
 INSERT INTO case_sharing_group (created_at, updated_at, deleted_at) VALUES
                                                                         (NOW(), NOW(), NULL),
@@ -80,8 +80,7 @@ INSERT INTO flag (flag_type, flag_entity_seq) VALUES
                                                       ('ANONYMOUS_BOARD', 1),
                                                       ('ANONYMOUS_BOARD', 2),
                                                       ('ANONYMOUS_BOARD', 3),
-                                                      ('FLAG_10', 10),
-                                                      ('FLAG_11', 11);
+                                                      ('FLAG_10', 10);
 
 INSERT INTO picture (flag_seq, picture_name, picture_changed_name, picture_url, picture_type, picture_is_deleted,
                      created_at, deleted_at) VALUES
@@ -94,8 +93,7 @@ INSERT INTO picture (flag_seq, picture_name, picture_changed_name, picture_url, 
                                                  (7, '사진 7', '변경된 사진 7', 'http://example.com/pic7.jpg', 'image/jpeg', false, NOW(), NULL),
                                                  (8, '사진 8', '변경된 사진 8', 'http://example.com/pic8.jpg', 'image/jpeg', false, NOW(), NULL),
                                                  (9, '사진 9', '변경된 사진 9', 'http://example.com/pic9.jpg', 'image/jpeg', false, NOW(), NULL),
-                                                 (10, '사진 10', '변경된 사진 10', 'http://example.com/pic10.jpg', 'image/jpeg', false, NOW(), NULL),
-                                                 (11, '사진 11', '변경된 사진 11', 'http://example.com/pic11.jpg', 'image/jpeg', false, NOW(), NULL);
+                                                 (10, '사진 10', '변경된 사진 10', 'http://example.com/pic10.jpg', 'image/jpeg', false, NOW(), NULL);
 
 INSERT INTO user (part_seq, ranking_seq, user_name, user_id, user_password, user_email, user_phone,
                   user_auth, user_status, created_at, updated_at, deleted_at) VALUES
@@ -135,17 +133,17 @@ INSERT INTO medical_life (user_seq, dept_seq, part_seq, medical_life_title, medi
                                                                                          (9, 1, 1, '의료 생활 제목 9', '의료 생활 내용 9', false, NOW(), NULL, NULL),
                                                                                          (10, 1, 1, '의료 생활 제목 10', '의료 생활 내용 10', false, NOW(), NULL, NULL);
 
-INSERT INTO journal_search (journal_seq, user_seq, created_at) VALUES
-                                                                   (1, 1, NOW()),
-                                                                   (1, 2, NOW()),
-                                                                   (2, 3, NOW()),
-                                                                   (2, 4, NOW()),
-                                                                   (3, 5, NOW()),
-                                                                   (3, 6, NOW()),
-                                                                   (4, 7, NOW()),
-                                                                   (4, 8, NOW()),
-                                                                   (5, 9, NOW()),
-                                                                   (5, 10, NOW());
+INSERT INTO journal_search (journal_seq, user_seq, created_at, updated_at) VALUES
+                                                                   (1, 1, NOW(), NOW()),
+                                                                   (1, 2, NOW(), NOW()),
+                                                                   (2, 3, NOW(), NOW()),
+                                                                   (2, 4, NOW(), NOW()),
+                                                                   (3, 5, NOW(), NOW()),
+                                                                   (3, 6, NOW(), NOW()),
+                                                                   (4, 7, NOW(), NOW()),
+                                                                   (4, 8, NOW(), NOW()),
+                                                                   (5, 9, NOW(), NOW()),
+                                                                   (5, 10, NOW(), NOW());
 
 INSERT INTO anonymous_board (user_seq, anonymous_board_title, anonymous_board_content, anonymous_board_is_deleted,
                              anonymous_board_view_count, created_at, updated_at, deleted_at) VALUES
