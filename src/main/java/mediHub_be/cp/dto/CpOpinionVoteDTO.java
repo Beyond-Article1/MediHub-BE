@@ -5,6 +5,7 @@ import lombok.Data;
 import mediHub_be.cp.entity.CpOpinionVote;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
