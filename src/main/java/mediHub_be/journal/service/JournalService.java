@@ -1,7 +1,8 @@
-package mediHub_be.openai.service;
+package mediHub_be.journal.service;
 
-import mediHub_be.openai.dto.ResponseAbstractDTO;
-import mediHub_be.openai.dto.ResponsePubmedDTO;
+import mediHub_be.journal.dto.ResponseAbstractDTO;
+import mediHub_be.journal.dto.ResponseJournalSearchDTO;
+import mediHub_be.journal.dto.ResponsePubmedDTO;
 
 import java.util.List;
 
@@ -17,5 +18,8 @@ public interface JournalService {
      */
     ResponseAbstractDTO summarizeAbstractByPmid(String userId, String journalPmid, ResponsePubmedDTO requestDTO);
 
-
+    /**
+     * 논문들 TOP 100 조회 (조회순, 북마크순)
+     */
+    List<ResponseJournalSearchDTO> getJournalTop100(String sortBy);
 }

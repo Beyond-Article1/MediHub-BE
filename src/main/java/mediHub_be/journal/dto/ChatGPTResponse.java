@@ -1,4 +1,4 @@
-package mediHub_be.openai.dto;
+package mediHub_be.journal.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

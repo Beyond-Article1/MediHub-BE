@@ -1,4 +1,4 @@
-package mediHub_be.openai.entity;
+package mediHub_be.journal.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

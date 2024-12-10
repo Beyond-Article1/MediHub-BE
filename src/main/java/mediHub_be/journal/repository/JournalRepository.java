@@ -1,6 +1,6 @@
-package mediHub_be.openai.repository;
+package mediHub_be.journal.repository;
 
-import mediHub_be.openai.entity.Journal;
+import mediHub_be.journal.entity.Journal;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

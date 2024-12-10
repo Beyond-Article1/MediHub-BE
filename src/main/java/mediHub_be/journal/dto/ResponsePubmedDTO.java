@@ -1,15 +1,15 @@
-package mediHub_be.openai.dto;
+package mediHub_be.journal.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import mediHub_be.openai.entity.Journal;
+import mediHub_be.journal.entity.Journal;
 
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 public class ResponsePubmedDTO {
-    
+
     // 제목
     private String title;
     // 한글 제목
@@ -27,6 +27,7 @@ public class ResponsePubmedDTO {
     // PMID 값
     private String pmid;
 
+    // === 변환 로직 === //
     // toEntity
     public Journal toEntity() {
         return Journal.builder()
@@ -40,4 +41,6 @@ public class ResponsePubmedDTO {
                 .journalDoi(this.getDoi())
                 .build();
     }
+
+    //
 }
