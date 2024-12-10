@@ -11,8 +11,10 @@ import mediHub_be.case_sharing.service.CaseSharingService;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.security.util.SecurityUtil;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -60,21 +62,25 @@ public class CaseSharingController {
     }
 
     @Operation(summary = "케이스 공유글 등록", description = "케이스 공유 템플릿 선택 후 글 작성 및 등록")
-    @PostMapping
-    public ResponseEntity<ApiResponse<Long>> createCaseSharing(@RequestBody CaseSharingCreateRequestDTO requestDTO) {
-        String userId = SecurityUtil.getCurrentUserId();
-        Long caseSharingSeq = caseSharingService.createCaseSharing(requestDTO, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(caseSharingSeq));
-    }
-
-    @Operation(summary = "케이스 공유글 수정 (새 버전 생성)", description = "기존 케이스 공유글을 수정하고 새로운 버전을 생성합니다.")
-    @PostMapping("/{caseSharingSeq}/versions")
-    public ResponseEntity<ApiResponse<Long>> createNewVersion(
-            @PathVariable Long caseSharingSeq,
-            @RequestBody CaseSharingUpdateRequestDTO requestDTO
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<Long>> createCaseSharing(
+            @RequestPart("data") CaseSharingCreateRequestDTO requestDTO, // JSON 데이터
+            @RequestPart(value = "images", required = false) List<MultipartFile> pictures // 이미지 파일
     ) {
         String userId = SecurityUtil.getCurrentUserId();
-        Long newVersionSeq = caseSharingService.createNewVersion(caseSharingSeq, requestDTO, userId);
+        Long caseSharingSeq = caseSharingService.createCaseSharing(requestDTO, pictures, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(caseSharingSeq));
+    }
+    
+    @Operation(summary = "케이스 공유글 수정 (새 버전 생성)", description = "기존 케이스 공유글을 수정하고 새로운 버전을 생성합니다.")
+    @PostMapping(value = "/{caseSharingSeq}/versions", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<Long>> createNewVersion(
+            @PathVariable Long caseSharingSeq,
+            @RequestBody CaseSharingUpdateRequestDTO requestDTO,
+            @RequestPart(value = "images", required = false) List<MultipartFile> pictures // 이미지 파일
+    ) {
+        String userId = SecurityUtil.getCurrentUserId();
+        Long newVersionSeq = caseSharingService.createNewVersion(caseSharingSeq, requestDTO, pictures, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(newVersionSeq));
     }
 
@@ -87,10 +93,13 @@ public class CaseSharingController {
     }
 
     @Operation(summary = "임시 저장 등록", description = "케이스 공유 글을 임시 저장합니다.")
-    @PostMapping("/draft")
-    public ResponseEntity<ApiResponse<Long>> saveDraft(@RequestBody CaseSharingCreateRequestDTO requestDTO) {
+    @PostMapping(value ="/draft", consumes = MediaType.MULTIPART_FORM_DATA_VALUE )
+    public ResponseEntity<ApiResponse<Long>> saveDraft(
+            @RequestPart CaseSharingCreateRequestDTO requestDTO,
+            @RequestPart(value = "images", required = false) List<MultipartFile> pictures // 이미지 파일
+    ) {
         String userId = SecurityUtil.getCurrentUserId();
-        Long caseSharingSeq = caseSharingService.saveDraft(requestDTO, userId);
+        Long caseSharingSeq = caseSharingService.saveDraft(requestDTO, pictures, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(caseSharingSeq));
     }
 
@@ -111,13 +120,15 @@ public class CaseSharingController {
     }
 
     @Operation(summary = "임시 저장 내용 수정", description = "임시 저장 글의 제목과 내용, keyword 등을 수정합니다.")
-    @PutMapping("/drafts/{caseSharingSeq}")
+    @PutMapping(value= "/drafts/{caseSharingSeq}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Long>> updateDraft(
             @PathVariable("caseSharingSeq") Long caseSharingSeq,
-            @RequestBody CaseSharingDraftUpdateDTO updateDTO
+            @RequestPart CaseSharingDraftUpdateDTO updateDTO,
+            @RequestPart(value = "images", required = false) List<MultipartFile> pictures // 이미지 파일
+
     ) {
         String userId = SecurityUtil.getCurrentUserId();
-        Long updatedSeq = caseSharingService.updateDraft(caseSharingSeq, userId, updateDTO);
+        Long updatedSeq = caseSharingService.updateDraft(caseSharingSeq, userId, pictures, updateDTO);
         return ResponseEntity.ok(ApiResponse.ok(updatedSeq));
     }
 

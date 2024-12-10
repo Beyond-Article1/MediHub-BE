@@ -2,6 +2,7 @@ package mediHub_be.case_sharing.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import mediHub_be.common.aggregate.entity.BaseCreateDeleteEntity;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.part.entity.Part;
 import mediHub_be.user.entity.User;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "case_sharing")
 @ToString
-public class CaseSharing extends BaseFullEntity {
+public class CaseSharing extends BaseCreateDeleteEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long caseSharingSeq;
@@ -36,6 +37,7 @@ public class CaseSharing extends BaseFullEntity {
 
     private String caseSharingTitle;
 
+    @Column(columnDefinition = "LONGTEXT")
     private String caseSharingContent;
 
     private Boolean caseSharingIsDraft; // 임시저장 여부

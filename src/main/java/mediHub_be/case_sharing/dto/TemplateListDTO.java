@@ -12,5 +12,4 @@ import lombok.NoArgsConstructor;
 public class TemplateListDTO {
     private Long templateSeq;
     private String templateTitle;
-    private String previewImageUrl; // 미리보기 이미지 URL
 }
