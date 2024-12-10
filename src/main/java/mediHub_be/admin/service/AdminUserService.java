@@ -50,7 +50,7 @@ public class AdminUserService {
 
 
     @Transactional
-    public User registerUser(UserCreateDTO userCreateDTO, MultipartFile profileImage, String currentUserId) throws IOException {
+    public User registerUser(UserCreateDTO userCreateDTO, String currentUserId) throws IOException {
 
         // Part 및 Ranking 정보 확인
         Part part = partRepository.findById(userCreateDTO.getPartSeq())
@@ -83,8 +83,8 @@ public class AdminUserService {
         flagRepository.save(flag);
 
         // S3에 프로필 사진 업로드 및 Picture 저장
-        if (profileImage != null && !profileImage.isEmpty()) {
-            AmazonS3Service.MetaData metaData = amazonS3Service.upload(profileImage);
+        if (userCreateDTO.getProfileImage() != null && !userCreateDTO.getProfileImage().isEmpty()) {
+            AmazonS3Service.MetaData metaData = amazonS3Service.upload(userCreateDTO.getProfileImage());
 
             Picture picture = Picture.builder()
                     .flag(flag)
@@ -99,6 +99,7 @@ public class AdminUserService {
         return user;
     }
 
+
     // 비밀번호 초기화
     @Transactional
     public void initializePassword(Long userSeq) {
@@ -111,7 +112,7 @@ public class AdminUserService {
     }
 
     @Transactional
-    public User updateUser(Long userSeq, AdminUpdateDTO adminUpdateDTO, MultipartFile profileImage) throws IOException {
+    public User updateUser(Long userSeq, AdminUpdateDTO adminUpdateDTO) throws IOException {
         // 사용자 정보 조회
         User user = userRepository.findById(userSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
@@ -137,14 +138,11 @@ public class AdminUserService {
         Flag flag = flags.stream()
                 .filter(f -> f.getFlagType().equals("USER"))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
-        if (flag == null) {
-            throw new CustomException(ErrorCode.NOT_FOUND_FLAG);
-        }
-
-        // 기존 사진 삭제
-        if (profileImage != null && !profileImage.isEmpty()) {
+        // 기존 사진 삭제 및 새 사진 업로드
+        if (adminUpdateDTO.getProfileImage() != null && !adminUpdateDTO.getProfileImage().isEmpty()) {
+            // 기존 사진 삭제
             List<Picture> pictures = pictureRepository.findAllByFlag_FlagSeq(flag.getFlagSeq());
             for (Picture picture : pictures) {
                 amazonS3Service.deleteImageFromS3(picture.getPictureUrl());
@@ -153,7 +151,7 @@ public class AdminUserService {
             }
 
             // 새 사진 업로드
-            AmazonS3Service.MetaData metaData = amazonS3Service.upload(profileImage);
+            AmazonS3Service.MetaData metaData = amazonS3Service.upload(adminUpdateDTO.getProfileImage());
             Picture newPicture = Picture.builder()
                     .flag(flag)
                     .pictureName(metaData.getOriginalFileName())
@@ -167,6 +165,7 @@ public class AdminUserService {
 
         return user;
     }
+
 
     // 유저 소프트 삭제 - > 상태 값이 ACTIVE 에서 DELETE 로 변환
     @Transactional
