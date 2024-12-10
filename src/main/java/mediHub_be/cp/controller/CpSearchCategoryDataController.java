@@ -27,7 +27,6 @@ public class CpSearchCategoryDataController {
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpController"); // Logger
 
-
     // CP 검색 카테고리 데이터 전체 조회
     @GetMapping
     @Operation(summary = "CP 검색 카테고리 데이터 조회",
