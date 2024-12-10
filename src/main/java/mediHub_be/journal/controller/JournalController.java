@@ -1,11 +1,15 @@
 package mediHub_be.journal.controller;
 
 import lombok.RequiredArgsConstructor;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
+import mediHub_be.journal.dto.ResponseJournalLogDTO;
 import mediHub_be.journal.dto.ResponseJournalSearchDTO;
 import mediHub_be.journal.dto.ResponsePubmedDTO;
 import mediHub_be.journal.service.JournalServiceImpl;
 import mediHub_be.security.util.SecurityUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,5 +51,35 @@ public class JournalController {
                 ApiResponse.ok(journalService.getJournalTop100(sortBy))
         );
     }
+    
+    // 논문 북마크
+    @PostMapping("/bookmark/{journalSeq}")
+    public ResponseEntity<ApiResponse<?>> bookmark(@PathVariable("journalSeq") Long journalSeq){
 
+        String currentUserId = SecurityUtil.getCurrentUserId();
+        
+        if (journalService.journalBookmark(currentUserId, journalSeq)){
+            return ResponseEntity.ok(ApiResponse.ok("북마크 완료"));
+        }
+        return ResponseEntity.ok(ApiResponse.ok("북마크 해제"));
+    }
+
+    // 내가 조회한 논문 (북마크, 조회)
+    @GetMapping("/mypage")
+    public ResponseEntity<ApiResponse<List<?>>> getJournalSearch(@RequestParam("sortBy") String sortBy){
+
+        String currentUserId = SecurityUtil.getCurrentUserId();
+
+        // 조회 (select)
+        if (sortBy.equals("select")){
+            return ResponseEntity.ok(
+                    ApiResponse.ok(journalService.getMySearchJournal(currentUserId)));
+            // 북마크 (bookmark)
+        } else if (sortBy.equals("bookmark")) {
+            return ResponseEntity.ok(
+                    ApiResponse.ok(journalService.getMyBookmarkJournal(currentUserId)));
+            // 그 외
+        } return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.fail(new CustomException(ErrorCode.BAD_REQUEST_INPUT)));
+    }
 }

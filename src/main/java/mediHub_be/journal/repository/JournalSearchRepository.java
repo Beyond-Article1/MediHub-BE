@@ -1,5 +1,6 @@
 package mediHub_be.journal.repository;
 
+import mediHub_be.journal.dto.ResponseJournalLogDTO;
 import mediHub_be.journal.dto.ResponseJournalSearchDTO;
 import mediHub_be.journal.entity.Journal;
 import mediHub_be.journal.entity.JournalSearch;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface JournalSearchRepository extends JpaRepository<JournalSearch, Long> {
@@ -22,4 +24,11 @@ public interface JournalSearchRepository extends JpaRepository<JournalSearch, Lo
             "GROUP BY js.journal " +
             "ORDER BY COUNT(js) DESC")
     Page<ResponseJournalSearchDTO> findTopJournalsWithSearchCount(Pageable pageable);
+
+    // 내가 조회한 논문 시간순으로 정렬
+    @Query("SELECT new mediHub_be.journal.dto.ResponseJournalLogDTO(js.journal, js.createdAt) " +
+            "FROM JournalSearch js " +
+            "WHERE js.user = :user " +
+            "ORDER BY js.createdAt DESC")
+    List<ResponseJournalLogDTO> findJournalLogs(User user);
 }
