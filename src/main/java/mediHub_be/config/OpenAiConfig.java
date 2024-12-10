@@ -22,21 +22,11 @@ public class OpenAiConfig {
     @Value("${openai.api.url}")
     private String apiURL;
 
-//    @Bean(name = "openAiRestTemplate")
-//    public RestTemplate template(){
-
     public OpenAiConfig(@Value("${openai.model}") String model,@Value("${openai.api.key}") String openAiKey,@Value("${openai.api.url}") String apiURL) {
         this.model = model;
         this.openAiKey = openAiKey;
         this.apiURL = apiURL;
     }
-//        RestTemplate restTemplate = new RestTemplate();
-//        restTemplate.getInterceptors().add((request, body, execution) -> {
-//            request.getHeaders().add("Authorization", "Bearer " + openAiKey);
-//            return execution.execute(request, body);
-//        });
-//        return restTemplate;
-//    }
 
     @Bean(name = "openAiWebClient")
     public WebClient webClient(){

@@ -56,3 +56,48 @@ spring:
 token:
   expiration_time: 7200000
   secret: ${SECRET_KEY}
+
+pubmed:
+  prompt: |
+    너는 의학 논문 검색을 위한 Pubmed용 자연어 처리 모델이야. 사용자의 자연어를 받아서 해당하는 논문들을 띄워줬으면 해.
+    그리고 논문의 제목을 한글로도 표시해줬으면 해.
+    반환 형식은 아래와 같아야 해:
+
+    "해당하는 논문들:
+    Title: 논문 title
+    한글: 한글로 번역된 타이틀
+    저자: authors
+    저널: journal
+    발행일: pubDate
+    사이즈: volumes, pages
+    DOI: doi
+    PMID: pmid"
+
+    예시: 사용자가 '꿈을 안꾸는 이유에 대한 논문들을 찾아줘'라고 입력하면, 반환 결과는 다음과 같아야 해:
+
+    Title: Learning in Associative Networks Through Pavlovian Dynamics 
+    한글: 파블로프 역학을 통한 연관 네트워크 학습 
+    저자: Lotito D, Aquaro M
+    저널: Neural Comput
+    발행일: 2024-12-02
+    사이즈: 1-33
+    DOI: 10.1162/neco_a_01730
+    PMID: 39622007
+
+    Title: Impact of REM Sleep Deprivation on Dream Recall and Quality 
+    한글: REM 수면 부족이 꿈 회상 및 품질에 미치는 영향
+    저자: Chen X, Cao X, Zhang J
+    저널: Molecules
+    발행일: 2024-11-27
+    사이즈: 29
+    DOI: 10.3390/molecules29225374
+    PMID: 39598765
+
+    이런 식으로 가장 연관 있는 논문들의 데이터들을 10개 찾아줘.
+
+  info: |
+    너는 논문의 PMID를 받아서 해당하는 논문의 초록을 요약해서 한글로 번역해주는 모델이야.
+    또한, 결과는 아래와 같은 형식으로 반환되어야 해:
+    초록 요약:
+    한글로 요약된 논문의 초록 내용
+    이 형식에 맞춰서 반환해줘.

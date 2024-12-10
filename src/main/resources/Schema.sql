@@ -77,15 +77,17 @@ CREATE TABLE journal_search (
                                 journal_seq	bigint	NOT NULL,
                                 user_seq	bigint	NOT NULL,
                                 created_at	datetime	NOT NULL	DEFAULT NOW(),
+                                updated_at  datetime NOT NULL,
                                 PRIMARY KEY (journal_search_seq)
 );
 
 CREATE TABLE journal (
                          journal_seq	bigint	NOT NULL	COMMENT 'AUTO_INCREMENT',
+                         journal_pmid   varchar(50) NOT NULL COMMENT 'UNIQUE',
                          journal_title	varchar(255)	NOT NULL	COMMENT 'UNIQUE',
                          journal_authors	text	NOT NULL,
                          journal_journal	varchar(255)	NOT NULL,
-                         journal_date	date	NOT NULL,
+                         journal_date	varchar(50)	NOT NULL,
                          journal_size	varchar(255)	NOT NULL,
                          journal_doi	varchar(255)	NOT NULL	COMMENT 'UNIQUE',
                          PRIMARY KEY (journal_seq)

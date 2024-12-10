@@ -1,49 +1,62 @@
 package mediHub_be.openai.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.openai.dto.ResponseAbstractDTO;
 import mediHub_be.openai.dto.ResponsePubmedDTO;
-import org.jsoup.nodes.Document;
+import mediHub_be.openai.entity.Journal;
+import mediHub_be.openai.entity.JournalSearch;
+import mediHub_be.openai.repository.JournalRepository;
+import mediHub_be.openai.repository.JournalSearchRepository;
+import mediHub_be.user.entity.User;
+import mediHub_be.user.repository.UserRepository;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.jsoup.Jsoup;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Slf4j
 @Service
-public class OpenAiService {
+public class OpenAiService implements JournalService{
 
     @Value("${openai.model}")
     private String model;
 
-    @Value("${openai.api.key}")
-    private String openAiKey;
+    // 논문 가져오는 프롬포트
+    @Value("${pubmed.prompt}")
+    private String pubmedPrompt;
 
-    @Value("${openai.api.url}")
-    private String apiURL;
+    // 논문 초록 요약 프롬포트
+    @Value("${pubmed.info}")
+    private String pubmedInfo;
 
     // OpenAI용 webClient
     private final WebClient openAiWebClient;
 
-    // 일반 webClient
-    private final WebClient apiWebClient;
+    // 논문 repository
+    private final JournalRepository journalRepository;
 
-    public OpenAiService(@Qualifier(value = "openAiWebClient") WebClient webClient) {
+    // 회원 repository
+    private final UserRepository userRepository;
+
+    // 논문 조회 repository
+    private final JournalSearchRepository journalSearchRepository;
+
+    public OpenAiService(@Qualifier(value = "openAiWebClient") WebClient webClient,
+                         JournalRepository journalRepository,
+                         UserRepository userRepository,
+                         JournalSearchRepository journalSearchRepository) {
         this.openAiWebClient = webClient;
-        this.apiWebClient = WebClient.builder()
-                .baseUrl("https://eutils.ncbi.nlm.nih.gov/entrez/eutils")
-                .build();
+        this.journalRepository = journalRepository;
+        this.userRepository = userRepository;
+        this.journalSearchRepository = journalSearchRepository;
     }
 
     /**
@@ -51,18 +64,11 @@ public class OpenAiService {
      * @param naturalRequest
      * @return
      */
-    public List<ResponsePubmedDTO> changePubmedKeywords(String naturalRequest){
+    public List<ResponsePubmedDTO> getPubmedKeywords(String naturalRequest){
         Map<String, Object> requestBody = Map.of(
                 "model", model,
                 "messages", List.of(
-                        Map.of("role", "system", "content",
-                                "너는 자연어를 받아서 Pubmed API로 요청할 수 있게 키워드들을 뽑아주는 Pubmed용 자연어 처리 모델이야. " +
-                                        "그리고 키워드들을 추출한 뒤, 그 키워드들의 중요도와 결합 방식을 `(AND)`, `(OR)`, `(NOT)`을 통해 명시해줘. " +
-                                        "예시: '톱에 의해 손가락이 절단되었을 때에 관련된 논문을 찾아줘' -> 키워드: '톱, 손가락, 절단' " +
-                                        "그리고 중요도와 결합 방식은 '톱 (AND), 손가락 (AND), 절단 (AND)' 이런 형식으로 반환해줘. " +
-                                        "또한, 결과는 아래와 같은 형식으로 반환되어야 해:\n" +
-                                        "\"키워드 추출 결과:\nADHD, 발생, 이유, 나이\n\n중요도 및 결합 방식:\nADHD (AND), 발생 (AND), 이유 (AND), 나이 (NOT)\" " +
-                                        "이 형식에 맞춰서 반환해줘."),
+                        Map.of("role", "system", "content", pubmedPrompt),
                         Map.of("role", "user", "content", "들어온 자연어 요청: " + naturalRequest)
                 )
         );
@@ -83,220 +89,119 @@ public class OpenAiService {
             log.info("choices {}", choices);
             log.info("message {}", message);
 
-            // "content" 필드 반환
-            String pubmedKeyword = keywordsChangeForPubmed((String) message.get("content"));
 
-            log.info("pubmed keyword {}", pubmedKeyword);
-
-            List<String> pmids = searchPubmed(pubmedKeyword, 20);
-
-            log.info("pmids {}", pmids);
-
-            List<ResponsePubmedDTO> responsePubmedDTOS = fetchPubmedDetails(pmids);
-
-            log.info("responsePubmedDTOS {}", responsePubmedDTOS);
-
-            return responsePubmedDTOS;
+            return exchangeResponsePubmedDTO((String) message.get("content"));
 
         } catch (WebClientResponseException e){
-            throw new RuntimeException("OpenAI API 호출 오류: " + e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_OPENAI_ERROR);
         }
     }
 
     /**
-     * OpenAI의 반환값을 PubMed API에 맞는 형식으로 변환
-     * @param extractedKeywords OpenAI에서 반환된 키워드 및 중요도 텍스트
-     * @return PubMed API의 term 형식
+     * 논문 상세보기
      */
-    public String keywordsChangeForPubmed(String extractedKeywords) {
-        // 키워드 추출 결과와 중요도 정보를 파싱하는 정규식
-        Pattern keywordPattern = Pattern.compile("([\\w가-힣]+) \\((AND|OR|NOT)\\)");
-        Matcher matcher = keywordPattern.matcher(extractedKeywords);
-
-        // 각 키워드를 PubMed 형식으로 조합
-        String pubmedQuery = matcher.results()
-                .map(result -> {
-                    String keyword = result.group(1); // 키워드
-                    String operator = result.group(2); // 중요도 (AND, OR, NOT)
-
-                    // PubMed 형식으로 변환
-                    return operator.equals("NOT")
-                            ? String.format("NOT %s", keyword)
-                            : keyword;
-                })
-                .collect(Collectors.joining(" "));
-
-        return pubmedQuery;
-    }
-
-    /**
-     * pubmed 검색어로 PMID를 검색하는 pubmed api 호출 메서드 (esearch)
-     * @param query
-     * @param maxResults
-     * @return
-     */
-    public List<String> searchPubmed(String query, int maxResults){
-        String response = apiWebClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/esearch.fcgi")
-                        .queryParam("db", "pubmed")
-                        .queryParam("term", query)
-                        .queryParam("retmax", maxResults)
-                        .build())
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
-        return parsePubmedIdsFromXml(response);
-    }
-
-    /**
-     * response의 예시 XML
-     * <eSearchResult>
-     *   <Count>100</Count>
-     *   <RetMax>5</RetMax>
-     *   <RetStart>0</RetStart>
-     *   <IdList>
-     *     <Id>37165056</Id>
-     *     <Id>37165055</Id>
-     *     <Id>37165054</Id>
-     *     <Id>37165053</Id>
-     *     <Id>37165052</Id>
-     *   </IdList>
-     * </eSearchResult>
-     *
-     * 여기서 Id들만 뽑아온다
-     * @param xmlResponse
-     * @return Id 값들이 들어있는 List
-     */
-    private List<String> parsePubmedIdsFromXml(String xmlResponse) {
-        // XML 파싱하여 PMID 목록 반환
-        List<String> pubMedIds = new ArrayList<>();
-
-        // Jsoup을 사용하여 XML 파싱
-        Document doc = Jsoup.parse(xmlResponse, "", org.jsoup.parser.Parser.xmlParser());
-
-        // <IdList> 태그 내의 모든 <Id> 태그 찾기.
-        Elements idElements = doc.select("IdList Id");
-
-        for (Element idElement : idElements) {
-            pubMedIds.add(idElement.text()); // PubMed ID 추출
-        }
-
-        log.info("pubMedIds {}", pubMedIds);
-
-        return pubMedIds;
-    }
-
-    /**
-     * PMID로 논문들 가져오는 메서드
-     * @param pmids
-     * @return
-     */
-    public List<ResponsePubmedDTO> fetchPubmedDetails(List<String> pmids) {
-        String response = apiWebClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/esummary.fcgi")
-                        .queryParam("db", "pubmed")
-                        .queryParam("id", String.join(",", pmids))
-                        .build())
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
-        return parsePubmedDetailsFromXml(response);
-    }
-
-    /**
-     * 논문 XML 변환 메서드
-     * === 예시 데이터 ===
-     * <eSummaryResult>
-     *   <DocSum>
-     *     <Id>37165056</Id>
-     *     <Item Name="Title">Title of the paper</Item>
-     *     <Item Name="Source">Journal Name</Item>
-     *     <Item Name="SourceAbbrev">J. Name</Item>
-     *     <Item Name="SourceType">Journal</Item>
-     *     <Item Name="PubDate">2023 Dec 1</Item>
-     *     <Item Name="Volume">12</Item>
-     *     <Item Name="Issue">4</Item>
-     *     <Item Name="Pages">123-130</Item>
-     *     <Item Name="Authors">
-     *       <Item Name="Author">John Doe</Item>
-     *       <Item Name="Author">Jane Smith</Item>
-     *     </Item>
-     *     <Item Name="ISSN">1234-5678</Item>
-     *     <Item Name="PMID">37165056</Item>
-     *     <Item Name="DOI">10.1234/abcd.123456</Item>
-     *     <Item Name="PublicationStatus">Published</Item>
-     *     <Item Name="Language">English</Item>
-     *     <Item Name="ArticleType">Research Article</Item>
-     *     <Item Name="PubType">Research Support, N.I.H., Extramural</Item>
-     *   </DocSum>
-     * </eSummaryResult>
-     * pubmed 논문 데이터 여기서
-     * Title(제목), SourceAbbrev(논문이 게재된 저널의 약어), PubDate(발행일), Volume(저널의 권),
-     * Pages(논문이 실린 페이지 범위), Authors(저자목록), DOI(논문의 DOI)
-     * 만 가져온다.
-     *
-     * DTO에 담아서 반환한다.
-     * @param xmlResponse
-     * @return List<ResponsePubmedDTO>
-     */
-    private List<ResponsePubmedDTO> parsePubmedDetailsFromXml(String xmlResponse) {
-        // XML 파싱하여 논문 제목, 저자 등 반환
-        List<ResponsePubmedDTO> articles = new ArrayList<>();
+    public ResponseAbstractDTO summarizeAbstractByPmid(String userId, String journalPmid, ResponsePubmedDTO requestDTO) {
+        Map<String, Object> requestBody = Map.of(
+                "model", model,
+                "messages", List.of(
+                        Map.of("role", "system", "content", pubmedInfo),
+                        Map.of("role", "user", "content", "들어온 PMID: " + journalPmid)
+                )
+        );
 
         try {
-            Document doc = Jsoup.parse(xmlResponse, "", org.jsoup.parser.Parser.xmlParser());
-            Elements docSumElements = doc.select("DocSum");
+            Map<String, Object> response = openAiWebClient.post()
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                    .block();
 
-            for (Element docSum : docSumElements) {
-                String title = getElementText(docSum, "Item[Name=Title]");
-                String source = getElementText(docSum, "Item[Name=Source]");
-                String pubDate = getElementText(docSum, "Item[Name=PubDate]");
-                String volume = getElementText(docSum, "Item[Name=Volume]");
-                String pages = getElementText(docSum, "Item[Name=Pages]");
+            // orElseGet 사용해서 코드 간략화
+            Journal savedJournal = journalRepository.findByJournalPmid(journalPmid)
+                    .orElseGet(() -> journalRepository.save(requestDTO.toEntity()));
 
-                // Authors 추출
-                List<String> authors = new ArrayList<>();
-                Elements authorListElements = docSum.select("Item[Name=AuthorList]");
-                log.info("authorsList {}", authorListElements.text());
+            // user 조회
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
-                for (Element author : authorListElements) {
+            // 논문과 유저를 기반으로 조회이력 찾기 (있으면 updateDate 변경, 없으면 생성)
+            journalSearchRepository.findByUserAndJournal(user, savedJournal)
+                    .ifPresentOrElse(
+                            journalSearchRepository::save,
+                            () -> {
+                                journalSearchRepository.save(new JournalSearch(savedJournal, user));
+                            });
+            
+            // "choices" 가져오기
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+            Map<String, Object> firstChoice = choices.get(0); // 첫 번째 choice 가져오기
+            Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
 
-                    Elements authorElements = author.select("Item[Name=Author]");
-                    log.info("authors {}", authorElements.text());
+            log.info("choices {}", choices);
+            log.info("message {}", message);
 
-                    for (Element authorElement : authorElements) {
-                        
-                        log.info("authorElement {}", authorElement.text());
-                        authors.add(authorElement.text()); // 이름 + 이니셜로 추가
-                    }
+            // "content" 필드 반환 (초록 요약본)
+            String journalAbstract = (String) message.get("content");
 
-                }
+            // 반환하는 논문 초록 요약 담기
+            return new ResponseAbstractDTO(journalPmid, requestDTO, journalAbstract);
 
-                String doi = docSum.selectFirst("Item[Name=DOI]").text();
+        } catch (WebClientResponseException e){
+            throw new CustomException(ErrorCode.INTERNAL_OPENAI_ERROR);
+        }
+    }
 
-                // DTO 생성 및 리스트에 추가
-                ResponsePubmedDTO article = new ResponsePubmedDTO(title, source, pubDate, volume, pages, authors, doi);
-                articles.add(article);
+    /**
+     * 나온 논문 데이터들 잘라서 쓰기 DTO로 변환
+     */
+    private List<ResponsePubmedDTO> exchangeResponsePubmedDTO(String content){
+        // DTO를 담을 리스트
+        List<ResponsePubmedDTO> pubmedDTOS = new ArrayList<>();
+
+        // 논문 데이터들 \n\n으로 구분
+        String[] journals = content.split("\n\n");
+        log.info("journals {}", journals);
+        // 각 논문들 파싱
+        for (String journal : journals) {
+            log.info("journal {}", journal);
+            try {
+                // 데이터를 개별 필드로 나눔
+                String[] lines = journal.split("\n");
+
+                log.info("lines {}", lines);
+                log.info("lines.length {}", lines.length);
+
+                String title = getField(lines, "Title:");
+                String koreanTitle = getField(lines, "한글:");
+                String source = getField(lines, "저널:");
+                String pubDate = getField(lines, "발행일:");
+                String size = getField(lines, "사이즈:");
+                List<String> authors = Arrays.asList(getField(lines, "저자:").split(", "));
+                String doi = getField(lines, "DOI:");
+                String pmid = getField(lines, "PMID:");
+                // DTO 생성 후 리스트에 추가
+                pubmedDTOS.add(new ResponsePubmedDTO(title, koreanTitle, source, pubDate, size, authors, doi, pmid));
+            } catch (Exception e) {
+                System.err.println("Error journal: " + journal);
+                e.printStackTrace();
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            // 예외 처리 (필요에 따라 로깅이나 사용자 알림 추가)
         }
 
-        return articles;
+        return pubmedDTOS;
     }
 
-    // NULL 반환 대비 메서드
-    private String getElementText(Element element, String selector) {
-        Element selectedElement = element.selectFirst(selector);
-        return selectedElement != null ? selectedElement.text() : ""; // 태그가 없으면 빈 문자열 반환
+    /**
+     * 필드 값 추출 메서드
+     */
+    private String getField(String[] lines, String key){
+        for (String line : lines) {
+            if (line.startsWith(key)) {
+                log.info("line {}", line);
+                return line.substring(line.indexOf(key) + key.length()).trim();
+            }
+        }
+        return "";
     }
-
 
 
 }
