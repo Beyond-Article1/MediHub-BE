@@ -5,15 +5,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.response.ApiResponse;
+import mediHub_be.cp.dto.CpSearchDataDTO;
+import mediHub_be.cp.dto.RequestCpSearchData;
 import mediHub_be.cp.dto.ResponseCpSearchDataDTO;
 import mediHub_be.cp.service.CpSearchDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,11 +28,11 @@ public class CpSearchDataController {
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpSearchDataController"); // Logger
 
-    @GetMapping("/{cpVersionSeq}")
+    @GetMapping(value = "/{cpVersionSeq}")
     @Operation(summary = "CP 검색 데이터 조회",
             description = "주어진 CP 버전 시퀀스에 대한 CP 검색 데이터를 반환합니다.")
     public ResponseEntity<ApiResponse<List<ResponseCpSearchDataDTO>>> getCpSearchData(@PathVariable long cpVersionSeq) {
-        logger.info("CP 검색 데이터 조회 요청: cpVersionSeq={}", cpVersionSeq); // 요청 시작 로그 추가
+        logger.info("CP 검색 데이터 조회 요청: cpVersionSeq={}", cpVersionSeq);
 
         List<ResponseCpSearchDataDTO> dtoList = cpSearchDataService.getCpSearchDataListByCpVersionSeq(cpVersionSeq);
 
@@ -43,5 +42,30 @@ public class CpSearchDataController {
         }
 
         return ResponseEntity.ok(ApiResponse.ok(dtoList));
+    }
+
+    @PostMapping
+    @Operation(summary = "CP 검색 데이터 생성",
+            description = "주어진 정보를 기반으로 새로운 CP 검색 데이터를 생성합니다.")
+    public ResponseEntity<ApiResponse<CpSearchDataDTO>> createCpSearchData(@RequestBody RequestCpSearchData requestBody) {
+        logger.info("CP 검색 데이터 생성 요청: {}", requestBody);
+
+        CpSearchDataDTO dto = cpSearchDataService.createCpSearchData(requestBody);
+        logger.info("CP 검색 데이터 생성 성공: {}", dto);
+
+        return ResponseEntity.ok(ApiResponse.created(dto));
+    }
+
+    @DeleteMapping(value = "/{cpVersionSeq}/{cpSearchDataSeq}")
+    @Operation()
+    public ResponseEntity<ApiResponse<Void>> deleteCpSearchData(
+            @PathVariable long cpVersionSeq,
+            @PathVariable long cpSearchDataSeq) {
+        logger.info("{}번 CP 버전 전호에 {}번 CP 검색 데이터 번호에 대한 삭제를 요청했습니다.", cpVersionSeq, cpSearchDataSeq);
+
+        cpSearchDataService.deleteCpSearchData(cpSearchDataSeq);
+        logger.info("{}번 CP 버전 전호에 {}번 CP 검색 데이터 번호에 대한 삭제 하였습니다.", cpVersionSeq, cpSearchDataSeq);
+
+        return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }
