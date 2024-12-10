@@ -5,17 +5,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.chat.dto.ChatMessageDTO;
+import mediHub_be.chat.dto.ResponseChatMessageDTO;
 import mediHub_be.chat.service.ChatService;
 import mediHub_be.common.response.ApiResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -36,18 +35,27 @@ public class ChatController {
 
     @MessageMapping("/send/chat/{chatroomSeq}")
     @SendTo("/topic/chat/{chatroomSeq}")
-    public ChatMessageDTO sendMessage(@Payload ChatMessageDTO message, @DestinationVariable String chatroomSeq) {
+    public ResponseChatMessageDTO sendMessage(@Payload ChatMessageDTO message, @DestinationVariable Long chatroomSeq) {
+//        Long userSeq = SecurityUtil.getCurrentUserSeq();
+//        log.info("메시지 보낸 사람의 userSeq 확인 : {}", userSeq);
+        log.info("Message sent to room {}: {}", chatroomSeq, message);
         message.setChatroomSeq(chatroomSeq);
-        ChatMessageDTO savedMessage = chatService.saveMessage(message);
-        log.info("Message sent to room {}: {}", chatroomSeq, savedMessage);
-//        return savedMessage;
-        return message;
+        ResponseChatMessageDTO savedMessage = chatService.saveMessage(message);
+        log.info("SavedMessage: {}", savedMessage);
+        return savedMessage;
+    }
+
+    @Operation(summary = "채팅 메시지 삭제", description = "채팅 메시지 삭제")
+    @DeleteMapping("/{messageId}")
+    public ResponseEntity<ApiResponse<Void>> deleteMessage(@PathVariable String messageId) {
+        chatService.deleteMessage(messageId);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.ok(null));
     }
 
     @Operation(summary = "채팅 메시지 조회", description = "특정 채팅방 내 채팅 메시지 조회")
-    @GetMapping("/groups/{chatroomSeq}")
-    public ResponseEntity<ApiResponse<List<ChatMessageDTO>>> getMessagesByRoomSeq(@PathVariable String chatroomSeq) {
-        List<ChatMessageDTO> messages = chatService.getMessagesByRoomSeq(chatroomSeq);
+    @GetMapping("/room/{chatroomSeq}")
+    public ResponseEntity<ApiResponse<List<ResponseChatMessageDTO>>> getMessagesByRoomSeq(@PathVariable Long chatroomSeq) {
+        List<ResponseChatMessageDTO> messages = chatService.getMessagesByRoomSeq(chatroomSeq);
         return ResponseEntity.ok(ApiResponse.ok(messages));
     }
 

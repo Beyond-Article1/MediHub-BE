@@ -11,9 +11,11 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AnonymousBoardCommentListDTO {
+public class AnonymousBoardDTO {
 
+    private Long anonymousBoardSeq;
     private String userId;
-    private String commentContent;
+    private String anonymousBoardTitle;
+    private Long anonymousBoardViewCount;
     private LocalDateTime createdAt;
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
@@ -70,7 +71,7 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "JOIN User AS u ON cv.userSeq = u.userSeq " +
             "JOIN Part AS p ON u.part.partSeq = p.partSeq " +
             "WHERE cv.cpVersionSeq = :cpVersionSeq")
-    ResponseCpDTO findByCpVersionSeq(@Param("cpVersionSeq") long cpVersionSeq);
+    Optional<ResponseCpDTO> findByCpVersionSeq(@Param("cpVersionSeq") long cpVersionSeq);
 
     @Query("SELECT new mediHub_be.cp.dto.ResponseCpDTO(" +
             "cv.cpVersionSeq ," +

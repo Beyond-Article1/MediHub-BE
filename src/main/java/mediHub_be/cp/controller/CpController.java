@@ -2,16 +2,15 @@ package mediHub_be.cp.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.cp.dto.*;
-import mediHub_be.cp.service.CpOpinionLocationService;
-import mediHub_be.cp.service.CpOpinionService;
-import mediHub_be.cp.service.CpSearchCategoryService;
-import mediHub_be.cp.service.CpService;
+import mediHub_be.cp.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -32,8 +31,9 @@ public class CpController {
 
     // Service
     private final CpService cpService;
-    private final CpOpinionLocationService cpOpinionLocationService;
     private final CpOpinionService cpOpinionService;
+    private final CpOpinionLocationService cpOpinionLocationService;
+    private final CpOpinionVoteService cpOpinionVoteService;
     private final CpSearchCategoryService cpSearchCategoryService;
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpController"); // Logger
@@ -100,12 +100,15 @@ public class CpController {
     @GetMapping(value = "/{cpVersionSeq}")
     @Operation(summary = "CP 조회",
             description = "주어진 CP 버전 시퀀스를 사용하여 CP를 조회합니다.")
-    public ResponseEntity<ApiResponse<ResponseCpDTO>> getCpByCpVersionSeq(@PathVariable long cpVersionSeq) {
+    public ResponseEntity<ApiResponse<ResponseCpDTO>> getCpByCpVersionSeq(
+            @PathVariable long cpVersionSeq,
+            HttpServletRequest request,
+            HttpServletResponse response) {
         logger.info("버전 시퀀스: {}로 CP를 가져오는 요청을 받았습니다.", cpVersionSeq);
 
         try {
             // Cp 버전을 통하여 Cp 를 가져오는 서비스 호출
-            ResponseCpDTO cpList = cpService.getCpByCpVersionSeq(cpVersionSeq);
+            ResponseCpDTO cpList = cpService.getCpByCpVersionSeq(cpVersionSeq, request, response);
 
             if (cpList == null) {
                 logger.warn("버전 시퀀스 '{}'에 대한 CP 레코드가 없습니다.", cpVersionSeq);
@@ -134,7 +137,7 @@ public class CpController {
     @GetMapping(value = "/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}")
     @Operation(summary = "CP 의견 리스트 조회",
             description = "주어진 CP 버전 시퀀스와 CP 의견 위치 시퀀스를 기준으로 CP 의견 리스트를 조회합니다.")
-    public ResponseEntity<ApiResponse<List<ResponseCpOpinionDTO>>> getCpOpinionListByCpOpinionLocationSeq(
+    public ResponseEntity<ApiResponse<List<ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO>>> getCpOpinionListByCpOpinionLocationSeq(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
             @RequestParam(required = false, defaultValue = "false") boolean isDeleted) {
@@ -142,7 +145,7 @@ public class CpController {
 
         try {
             // CP 번호로 CP 의견을 가져오는 서비스 호출
-            List<ResponseCpOpinionDTO> cpOpinionList = cpOpinionService.findCpOpinionListByCpVersionSeq(cpVersionSeq, cpOpinionLocationSeq, isDeleted);
+            List<ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO> cpOpinionList = cpOpinionService.getCpOpinionListByCpVersionSeq(cpVersionSeq, cpOpinionLocationSeq, isDeleted);
 
             logger.info("CP 위치 번호로 CP 의견 리스트 조회 성공");
             logger.info("조회된 CP 의견 리스트의 크기: {}", cpOpinionList.size());
@@ -259,11 +262,72 @@ public class CpController {
             return ResponseEntity.ok(ApiResponse.ok(cpOpinionDTO));
         } catch (CustomException e) {
             logger.error("CP 의견 수정 중 오류 발생: {}", e.getMessage());
-            return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(ApiResponse.fail(e));
+            return ResponseEntity.status(e.getErrorCode().getHttpStatus())
+                    .body(ApiResponse.fail(e));
         } catch (Exception e) {
             logger.error("CP 의견 수정 중 예기치 않은 오류 발생: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
+    }
+
+    // CP 의견 투표
+    @PostMapping(value = "/{cpVersionSeq}/cpOpinionLocation/cpOpinionVote")
+    @Operation(summary = "CP 의견 투표 생성")
+    public ResponseEntity<ApiResponse<CpOpinionVoteDTO>> createCpOpinionVote(
+            @PathVariable long cpVersionSeq,
+            @RequestBody boolean cpOpinionVote) {
+
+        logger.info("CP 버전 번호: {}로 CP 의견 투표 요청을 받았습니다. 투표 여부: {}", cpVersionSeq, cpOpinionVote);
+
+        CpOpinionVoteDTO dto;
+
+        try {
+            dto = cpOpinionVoteService.create(cpVersionSeq, cpOpinionVote);
+            logger.info("CP 의견 투표가 성공적으로 생성되었습니다. 투표 ID: {}", dto.getCpOpinionVoteSeq());
+        } catch (CustomException e) {
+            logger.error("사용자 정의 예외 발생: {}", e.getMessage());
+            return ResponseEntity.ok(ApiResponse.fail(e));
+        } catch (DataAccessException e) {
+            logger.error("데이터베이스 접근 오류: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR)));
+        } catch (Exception e) {
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+
+        return ResponseEntity.ok(ApiResponse.created(dto));
+    }
+
+    // CP 의견 투표 취소
+    @PostMapping(value = "/{cpVersionSeq}/cpOpinionLocation/cpOpinionVote/{cpOpinionVoteSeq}")
+    @Operation(summary = "CP 의견 투표 취소")
+    public ResponseEntity<ApiResponse<Void>> deleteCpOpinionVote(
+            @PathVariable long cpVersionSeq,
+            @PathVariable long cpOpinionVoteSeq) {
+
+        logger.info("CP 의견 투표 취소 요청. CP 버전 ID: {}, 투표 ID: {}", cpVersionSeq, cpOpinionVoteSeq);
+
+        try {
+            // CP 의견 투표 삭제
+            cpOpinionVoteService.delete(cpOpinionVoteSeq);
+            logger.info("CP 의견 투표가 성공적으로 취소되었습니다. 투표 ID: {}", cpOpinionVoteSeq);
+        } catch (CustomException e) {
+            logger.error("사용자 정의 예외 발생: {}", e.getMessage());
+            return ResponseEntity.ok(ApiResponse.fail(e));
+        } catch (DataAccessException e) {
+            logger.error("데이터베이스 접근 오류: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR)));
+        } catch (Exception e) {
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        }
+
+        return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
     // CP 의견 위치 조회
@@ -611,5 +675,4 @@ public class CpController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
     }
-
 }

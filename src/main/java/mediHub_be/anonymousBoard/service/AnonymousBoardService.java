@@ -55,21 +55,21 @@ public class AnonymousBoardService {
 
     // 익명 게시글 목록 조회
     @Transactional(readOnly = true)
-    public List<AnonymousBoardListDTO> getAnonymousBoardList(String userId) {
+    public List<AnonymousBoardDTO> getAnonymousBoardList(String userId) {
 
-        userRepository.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+        userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
         // 모든 게시판 식별 목록 가져오기
-        List<FlagDTO> flagList = flagRepository.findAll().stream()
-                .map(flag -> FlagDTO.builder()
+        List<AnonymousBoardFlagDTO> anonymousBoardFlagDTOList = flagRepository.findAll().stream()
+                .map(flag -> AnonymousBoardFlagDTO.builder()
                         .flagSeq(flag.getFlagSeq())
                         .flagType(flag.getFlagType())
-                        .flagentitySeq(flag.getFlagEntitySeq())
+                        .flagEntitySeq(flag.getFlagEntitySeq())
                         .build())
                 .collect(Collectors.toList());
         // 모든 사진 목록 가져오기
-        List<PictureDTO> pictureList = pictureRepository.findAll().stream()
-                .map(picture -> PictureDTO.builder()
+        List<AnonymousBoardPictureDTO> anonymousBoardPictureDTOList = pictureRepository.findAll().stream()
+                .map(picture -> AnonymousBoardPictureDTO.builder()
                         .pictureSeq(picture.getPictureSeq())
                         .flagSeq(picture.getFlag().getFlagSeq())
                         .pictureName(picture.getPictureName())
@@ -82,23 +82,22 @@ public class AnonymousBoardService {
                         .build())
                 .collect(Collectors.toList());
         // 익명 게시글 목록 가져오기
-        List<AnonymousBoardListDTO> anonymousBoardListDTO = anonymousBoardRepository
+        List<AnonymousBoardDTO> anonymousBoardDTOList = anonymousBoardRepository
                 .findAllByAnonymousBoardIsDeletedFalse().stream()
                 .map(anonymousBoard -> {
                     // 현재 익명 게시글의 SEQ와 일치하는 게시판 식별 번호 목록 필터링
-                    List<FlagDTO> flagsForAnonymousBoard = flagList.stream()
+                    List<AnonymousBoardFlagDTO> flagsForAnonymousBoard = anonymousBoardFlagDTOList.stream()
                             .filter(flag -> flag.getFlagType().equals("ANONYMOUS_BOARD"))
-                            .filter(flag -> flag.getFlagentitySeq() == anonymousBoard.getAnonymousBoardSeq())
+                            .filter(flag -> flag.getFlagEntitySeq() == anonymousBoard.getAnonymousBoardSeq())
                             .collect(Collectors.toList());
                     // 현재 익명 게시글의 SEQ와 일치하는 사진 목록 필터링
-                    List<PictureDTO> imagesForFlag = pictureList.stream()
-                            // == 연산자로 비교
+                    List<AnonymousBoardPictureDTO> imagesForFlag = anonymousBoardPictureDTOList.stream()
                             .filter(picture -> flagsForAnonymousBoard.stream()
                                     .anyMatch(flag -> flag.getFlagSeq() == picture.getFlagSeq()))
                             .collect(Collectors.toList());
 
-                    // 익명 게시글 DTO를 생성하고 이미지 목록 추가
-                    return AnonymousBoardListDTO.builder()
+                    // 익명 게시글 DTO
+                    return AnonymousBoardDTO.builder()
                             .anonymousBoardSeq(anonymousBoard.getAnonymousBoardSeq())
                             .userId(anonymousBoard.getUser().getUserId())
                             .anonymousBoardTitle(anonymousBoard.getAnonymousBoardTitle())
@@ -108,37 +107,37 @@ public class AnonymousBoardService {
                 })
                 .collect(Collectors.toList());
 
-        return anonymousBoardListDTO;
+        return anonymousBoardDTOList;
     }
 
     // 익명 게시글 댓글 목록 조회
     @Transactional(readOnly = true)
-    public List<AnonymousBoardCommentListDTO> getAnonymousBoardCommentList(Long anonymousBoardSeq, String userId) {
+    public List<AnonymousBoardCommentDTO> getAnonymousBoardCommentList(Long anonymousBoardSeq, String userId) {
 
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
-        List<FlagDTO> flagDTOList = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq).stream()
-                .map(flag -> FlagDTO.builder()
+        List<AnonymousBoardFlagDTO> anonymousBoardFlagDTOList = flagRepository
+                .findAllByFlagEntitySeq(anonymousBoardSeq).stream()
+                .map(flag -> AnonymousBoardFlagDTO.builder()
                         .flagSeq(flag.getFlagSeq())
                         .flagType(flag.getFlagType())
-                        .flagentitySeq(flag.getFlagEntitySeq())
+                        .flagEntitySeq(flag.getFlagEntitySeq())
                         .build())
                 .collect(Collectors.toList());
-        FlagDTO flagDTO = flagDTOList.stream()
+        AnonymousBoardFlagDTO anonymousBoardFlagDTO = anonymousBoardFlagDTOList.stream()
                 .filter(flag -> flag.getFlagType().equals("ANONYMOUS_BOARD"))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("익명 게시글에 대한 플래그가 존재하지 않습니다."));
-        List<AnonymousBoardCommentListDTO> anonymousBoardCommentListDTO = commentRepository
-                .findByFlag_FlagSeqAndCommentIsDeletedFalse(flagDTO.getFlagSeq()).stream()
-                .map(comment -> AnonymousBoardCommentListDTO.builder()
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
+        List<AnonymousBoardCommentDTO> anonymousBoardCommentDTOList = commentRepository
+                .findByFlag_FlagSeqAndCommentIsDeletedFalse(anonymousBoardFlagDTO.getFlagSeq()).stream()
+                .map(comment -> AnonymousBoardCommentDTO.builder()
                         .userId(user.getUserId())
                         .commentContent(comment.getCommentContent())
                         .createdAt(comment.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
 
-        return anonymousBoardCommentListDTO;
+        return anonymousBoardCommentDTOList;
     }
 
     // 익명 게시글 조회
@@ -150,19 +149,19 @@ public class AnonymousBoardService {
             HttpServletResponse response
     ) {
 
-        userRepository.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+        userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
         AnonymousBoard anonymousBoard = anonymousBoardRepository.findById(anonymousBoardSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ANONYMOUS_BOARD));
 
         // 삭제된 익명 게시글인지 확인
-        if(anonymousBoard.getDeletedAt() != null) throw new IllegalArgumentException(
-                "삭제된 익명 게시글은 조회할 수 없습니다."
+        if(anonymousBoard.getDeletedAt() != null) throw new CustomException(
+                ErrorCode.CANNOT_DELETE_DATA_ANONYMOUS_BOARD
         );
 
         // 작성자 정보 조회
         User author = userRepository.findById(anonymousBoard.getUser().getUserSeq())
-                .orElseThrow(() -> new IllegalArgumentException("작성자 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
         boolean shouldIncrease = viewCountManager.shouldIncreaseViewCount(anonymousBoardSeq, request, response);
 
         if(shouldIncrease) {
@@ -172,20 +171,22 @@ public class AnonymousBoardService {
             anonymousBoardRepository.save(anonymousBoard);
         } else log.info("이미 조회한 적 있는 익명 게시글");
 
-        List<FlagDTO> flagDTOList = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq).stream()
-                .map(flag -> FlagDTO.builder()
+        List<AnonymousBoardFlagDTO> anonymousBoardFlagDTOList = flagRepository
+                .findAllByFlagEntitySeq(anonymousBoardSeq).stream()
+                .map(flag -> AnonymousBoardFlagDTO.builder()
                         .flagSeq(flag.getFlagSeq())
                         .flagType(flag.getFlagType())
-                        .flagentitySeq(flag.getFlagEntitySeq())
+                        .flagEntitySeq(flag.getFlagEntitySeq())
                         .build())
                 .collect(Collectors.toList());
-        FlagDTO flagDTO = flagDTOList.stream()
+        AnonymousBoardFlagDTO anonymousBoardFlagDTO = anonymousBoardFlagDTOList.stream()
                 .filter(flag -> flag.getFlagType().equals("ANONYMOUS_BOARD"))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("익명 게시글에 대한 플래그가 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
-        List<PictureDTO> pictureDTOList = pictureRepository.findAllByFlag_FlagSeq(flagDTO.getFlagSeq()).stream()
-                .map(picture -> PictureDTO.builder()
+        List<AnonymousBoardPictureDTO> anonymousBoardPictureDTOList = pictureRepository
+                .findAllByFlag_FlagSeq(anonymousBoardFlagDTO.getFlagSeq()).stream()
+                .map(picture -> AnonymousBoardPictureDTO.builder()
                         .pictureSeq(picture.getPictureSeq())
                         .flagSeq(picture.getFlag().getFlagSeq())
                         .pictureName(picture.getPictureName())
@@ -201,9 +202,10 @@ public class AnonymousBoardService {
         // 키워드 내역 반환
         List<Keyword> keywords = keywordRepository.findByFlagTypeAndEntitySeq(
                 "ANONYMOUS_BOARD",
-                anonymousBoardSeq);
+                anonymousBoardSeq
+        );
 
-        List<AnonymousBoardKeywordDTO> keywordDTOs = keywords.stream()
+        List<AnonymousBoardKeywordDTO> anonymousBoardKeywordDTOs = keywords.stream()
                 .map(keyword -> new AnonymousBoardKeywordDTO(
                         keyword.getKeywordSeq(),
                         keyword.getKeywordName()
@@ -217,30 +219,28 @@ public class AnonymousBoardService {
                 .anonymousBoardContent(anonymousBoard.getAnonymousBoardContent())
                 .anonymousBoardViewCount(anonymousBoard.getAnonymousBoardViewCount())
                 .createdAt(anonymousBoard.getCreatedAt())
-                .anonymousBoardPictureList(pictureDTOList)
-                .keywords(keywordDTOs)
+                .anonymousBoardPictureList(anonymousBoardPictureDTOList)
+                .keywords(anonymousBoardKeywordDTOs)
                 .build();
     }
 
     // 익명 게시글 생성
     @Transactional
     public Long createAnonymousBoard(
-            AnonymousBoardCreateRequestDTO requestDTO,
+            AnonymousBoardCreateRequestDTO anonymousBoardCreateRequestDTO,
             List<MultipartFile> imageList,
             String userId
     ) throws IOException {
 
-        // 1. DB (AnonymousBoard)에 데이터 저장
         // 여기서 userId를 SecurityUtil.getCurrentUserSeq()로 대체
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
-        if(imageList != null && !imageList.isEmpty()) requestDTO.setImageList(imageList);
+        if(imageList != null && !imageList.isEmpty()) anonymousBoardCreateRequestDTO.setImageList(imageList);
 
         AnonymousBoard anonymousBoard = AnonymousBoard.createNewAnonymousBoard(
                 user,
-                requestDTO.getAnonymousBoardTitle(),
-                requestDTO.getAnonymousBoardContent()
+                anonymousBoardCreateRequestDTO.getAnonymousBoardTitle(),
+                anonymousBoardCreateRequestDTO.getAnonymousBoardContent()
         );
 
         anonymousBoardRepository.save(anonymousBoard);
@@ -252,32 +252,34 @@ public class AnonymousBoardService {
 
         flagRepository.save(flag);
 
-        if(requestDTO.getImageList() != null && !requestDTO.getImageList().isEmpty()) {
-            for (MultipartFile image : requestDTO.getImageList()) {
-                // 2. Amazon S3 버킷에 이미지 저장
+        if(anonymousBoardCreateRequestDTO.getImageList() != null &&
+                !anonymousBoardCreateRequestDTO.getImageList().isEmpty()
+        ) {
+            for(MultipartFile image : anonymousBoardCreateRequestDTO.getImageList()) {
                 AmazonS3Service.MetaData metaData = amazonS3Service.upload(image);
 
-                // 3. DB (Picture)에 데이터 저장
-                RequestPicture requestPicture = new RequestPicture();
+                AnonymousBoardPictureRequestDTO anonymousBoardPictureRequestDTO = new AnonymousBoardPictureRequestDTO();
 
-                requestPicture.setFlagSeq(flag.getFlagSeq());
-                requestPicture.setPictureName(metaData.getOriginalFileName());
-                requestPicture.setPictureChangedName(metaData.getChangeFileName());
-                requestPicture.setPictureUrl(metaData.getUrl());
-                requestPicture.setPictureType(metaData.getType());
+                anonymousBoardPictureRequestDTO.setFlagSeq(flag.getFlagSeq());
+                anonymousBoardPictureRequestDTO.setPictureName(metaData.getOriginalFileName());
+                anonymousBoardPictureRequestDTO.setPictureChangedName(metaData.getChangeFileName());
+                anonymousBoardPictureRequestDTO.setPictureUrl(metaData.getUrl());
+                anonymousBoardPictureRequestDTO.setPictureType(metaData.getType());
 
                 Picture picture = new Picture();
 
-                picture.create(flag, requestPicture);
+                picture.create(flag, anonymousBoardPictureRequestDTO);
 
                 pictureRepository.save(picture);
             }
         }
 
         // 키워드 저장
-        if(requestDTO.getKeywords() != null && !requestDTO.getKeywords().isEmpty()) {
+        if(anonymousBoardCreateRequestDTO.getKeywords() != null &&
+                !anonymousBoardCreateRequestDTO.getKeywords().isEmpty()
+        ) {
             keywordService.saveKeywords(
-                    requestDTO.getKeywords(),
+                    anonymousBoardCreateRequestDTO.getKeywords(),
                     flag.getFlagSeq()
             );
         }
@@ -293,23 +295,24 @@ public class AnonymousBoardService {
             String userId
     ) {
 
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
-        List<FlagDTO> flagDTOList = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq).stream()
-                .map(flag -> FlagDTO.builder()
+        List<AnonymousBoardFlagDTO> anonymousBoardFlagDTOList = flagRepository
+                .findAllByFlagEntitySeq(anonymousBoardSeq).stream()
+                .map(flag -> AnonymousBoardFlagDTO.builder()
                         .flagSeq(flag.getFlagSeq())
                         .flagType(flag.getFlagType())
-                        .flagentitySeq(flag.getFlagEntitySeq())
+                        .flagEntitySeq(flag.getFlagEntitySeq())
                         .build())
                 .collect(Collectors.toList());
-        FlagDTO flagDTO = flagDTOList.stream()
+
+        AnonymousBoardFlagDTO anonymousBoardFlagDTO = anonymousBoardFlagDTOList.stream()
                 .filter(flag -> flag.getFlagType().equals("ANONYMOUS_BOARD"))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("익명 게시글에 대한 플래그가 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
-        Flag flag = flagRepository.findById(flagDTO.getFlagSeq())
-                .orElseThrow(() -> new IllegalArgumentException("게시판 식별을 찾을 수 없습니다."));
+        Flag flag = flagRepository.findById(anonymousBoardFlagDTO.getFlagSeq())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
         Comment comment = Comment.createNewComment(
                 user,
@@ -326,7 +329,7 @@ public class AnonymousBoardService {
     @Transactional
     public AnonymousBoard updateAnonymousBoard(
             Long anonymousBoardSeq,
-            AnonymousBoardUpdateRequestDTO requestDTO,
+            AnonymousBoardUpdateRequestDTO anonymousBoardUpdateRequestDTO,
             List<MultipartFile> imageList,
             String userId
     ) throws IOException {
@@ -334,23 +337,26 @@ public class AnonymousBoardService {
         AnonymousBoard existingAnonymousBoard = anonymousBoardRepository.findById(anonymousBoardSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ANONYMOUS_BOARD));
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
-        if(!existingAnonymousBoard.getUser().equals(user)) throw new IllegalArgumentException(
-                "작성자만 익명 게시글을 수정할 수 있습니다."
+        if(!existingAnonymousBoard.getUser().equals(user)) throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+
+        existingAnonymousBoard.update(
+                user,
+                anonymousBoardUpdateRequestDTO.getAnonymousBoardTitle(),
+                anonymousBoardUpdateRequestDTO.getAnonymousBoardContent()
         );
 
-        existingAnonymousBoard.update(user, requestDTO.getAnonymousBoardTitle(), requestDTO.getAnonymousBoardContent());
+        List<Flag> FlagList = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq);
 
-        List<Flag> optionalFlag = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq);
-
-        Flag flag = optionalFlag.stream()
+        Flag flag = FlagList.stream()
                 .filter(f -> f.getFlagType().equals("ANONYMOUS_BOARD"))
                 .findFirst()
                 .orElse(null);
 
-        List<PictureDTO> pictureDTOList = pictureRepository.findAllByFlag_FlagSeq(flag.getFlagSeq()).stream()
-                .map(picture -> PictureDTO.builder()
+        List<AnonymousBoardPictureDTO> anonymousBoardPictureDTOList = pictureRepository
+                .findAllByFlag_FlagSeq(flag.getFlagSeq()).stream()
+                .map(picture -> AnonymousBoardPictureDTO.builder()
                         .pictureSeq(picture.getPictureSeq())
                         .flagSeq(picture.getFlag().getFlagSeq())
                         .pictureName(picture.getPictureName())
@@ -364,48 +370,50 @@ public class AnonymousBoardService {
                 .collect(Collectors.toList());
 
         if(imageList != null && !imageList.isEmpty()) {
-            for (PictureDTO pictureDTO : pictureDTOList) {
-                String pictureUrl = pictureDTO.getPictureUrl();
+            for (AnonymousBoardPictureDTO anonymousBoardPictureDTO : anonymousBoardPictureDTOList) {
+                String pictureUrl = anonymousBoardPictureDTO.getPictureUrl();
 
                 amazonS3Service.deleteImageFromS3(pictureUrl);
 
-                Picture picture = pictureRepository.findById(pictureDTO.getPictureSeq())
-                        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ANONYMOUS_BOARD));
+                Picture picture = pictureRepository.findById(anonymousBoardPictureDTO.getPictureSeq())
+                        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_PICTURE));
 
                 picture.setDeleted();
 
                 pictureRepository.save(picture);
             }
 
-            requestDTO.setImageList(imageList);
+            anonymousBoardUpdateRequestDTO.setImageList(imageList);
         }
 
         AnonymousBoard result = anonymousBoardRepository.save(existingAnonymousBoard);
 
-        if(requestDTO.getImageList() != null && !requestDTO.getImageList().isEmpty()) {
-            for(MultipartFile image : requestDTO.getImageList()) {
+        if(anonymousBoardUpdateRequestDTO.getImageList() != null &&
+                !anonymousBoardUpdateRequestDTO.getImageList().isEmpty()
+        ) {
+            for(MultipartFile image : anonymousBoardUpdateRequestDTO.getImageList()) {
                 AmazonS3Service.MetaData metaData = amazonS3Service.upload(image);
 
                 log.info("업로드 성공");
 
-                RequestPicture requestPicture = new RequestPicture();
+                AnonymousBoardPictureRequestDTO anonymousBoardPictureRequestDTO = new AnonymousBoardPictureRequestDTO();
 
-                requestPicture.setFlagSeq(flag.getFlagSeq());
-                requestPicture.setPictureName(metaData.getOriginalFileName());
-                requestPicture.setPictureChangedName(metaData.getChangeFileName());
-                requestPicture.setPictureUrl(metaData.getUrl());
-                requestPicture.setPictureType(metaData.getType());
+                anonymousBoardPictureRequestDTO.setFlagSeq(flag.getFlagSeq());
+                anonymousBoardPictureRequestDTO.setPictureName(metaData.getOriginalFileName());
+                anonymousBoardPictureRequestDTO.setPictureChangedName(metaData.getChangeFileName());
+                anonymousBoardPictureRequestDTO.setPictureUrl(metaData.getUrl());
+                anonymousBoardPictureRequestDTO.setPictureType(metaData.getType());
 
                 Picture picture = new Picture();
 
-                picture.create(flag, requestPicture);
+                picture.create(flag, anonymousBoardPictureRequestDTO);
 
                 pictureRepository.save(picture);
             }
         }
 
-        if(requestDTO.getKeywords() != null) keywordService.updateKeywords(
-                requestDTO.getKeywords(),
+        if(anonymousBoardUpdateRequestDTO.getKeywords() != null) keywordService.updateKeywords(
+                anonymousBoardUpdateRequestDTO.getKeywords(),
                 "ANONYMOUS_BOARD",
                 anonymousBoardSeq
         );
@@ -423,17 +431,14 @@ public class AnonymousBoardService {
     ) {
 
         Comment existingComment = commentRepository.findById(commentSeq)
-                .orElseThrow(() -> new IllegalArgumentException("익명 게시글 댓글을 찾을 수 없습니다."));
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_COMMENT));
+        User user = userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
-        if(!existingComment.getUser().equals(user)) throw new IllegalArgumentException(
-                "작성자만 익명 게시글 댓글을 수정할 수 있습니다."
-        );
+        if(!existingComment.getUser().equals(user)) throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
 
-        List<Flag> optionalFlag = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq);
+        List<Flag> FlagList = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq);
 
-        Flag flag = optionalFlag.stream()
+        Flag flag = FlagList.stream()
                 .filter(f -> f.getFlagType().equals("ANONYMOUS_BOARD"))
                 .findFirst()
                 .orElse(null);
@@ -451,24 +456,25 @@ public class AnonymousBoardService {
 
         AnonymousBoard anonymousBoard = anonymousBoardRepository.findById(anonymousBoardSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_ANONYMOUS_BOARD));
-        // 1. 작성자 여부 확인
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
-        // 작성자가 아닌 경우
+        // 작성자 여부 확인
         if(!Objects.equals(user.getUserId(), SecurityUtil.getCurrentUserId())) {
-            return false;
+            // 관리자가 아닌 경우
+            if(!SecurityUtil.getCurrentUserAuthorities().equals("ADMIN")) {
+
+                return false;
+            }
         }
-        // 관리자가 아닌 경우
-        else if(SecurityUtil.getCurrentUserAuthorities().equals("USER")) return false;
 
-        if(anonymousBoard.getDeletedAt() != null) throw new IllegalArgumentException("이미 삭제된 익명 게시글입니다.");
+        if(anonymousBoard.getDeletedAt() != null) throw new CustomException(
+                ErrorCode.CANNOT_DELETE_DATA_ANONYMOUS_BOARD
+        );
 
-        // 2. DB (AnonymousBoard)에 해당 익명 게시글 삭제 상태 등록
         anonymousBoard.setDeleted();
         anonymousBoardRepository.save(anonymousBoard);
 
-        // 3. DB (PICTURE)에 해당 익명 게시글 번호로 된 모든 데이터 삭제 상태 등록
         List<Flag> flagList = flagRepository.findAllByFlagEntitySeq(anonymousBoardSeq);
 
         Flag flag = flagList.stream()
@@ -478,19 +484,15 @@ public class AnonymousBoardService {
 
         List<Picture> pictureList = pictureRepository.findAllByFlag_FlagSeq(flag.getFlagSeq());
 
-        // 각 Picture 객체 삭제 상태 등록
         for(Picture picture : pictureList) {
             picture.setDeleted();
-
             pictureRepository.save(picture);
         }
 
-        // 4. DB (COMMENT)에 해당 댓글 모두 삭제 상태 등록
         List<Comment> commentList = commentRepository.findAllByFlag_FlagSeq(flag.getFlagSeq());
 
         for(Comment comment : commentList) {
             comment.setDeleted();
-
             commentRepository.save(comment);
         }
 
@@ -502,21 +504,21 @@ public class AnonymousBoardService {
     public boolean deleteAnonymousBoardComment(Long anonymousBoardSeq, Long commentSeq, String userId) {
 
         Comment comment = commentRepository.findById(commentSeq)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 익명 게시글 댓글입니다."));
-        // 1. 작성자 여부 확인
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_COMMENT));
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
-        // 작성자가 아닌 경우
         if(!Objects.equals(user.getUserId(), SecurityUtil.getCurrentUserId())) {
-            return false;
+            if(!SecurityUtil.getCurrentUserAuthorities().equals("ADMIN")) {
+
+                return false;
+            }
         }
-        // 관리자가 아닌 경우
-        else if(SecurityUtil.getCurrentUserAuthorities().equals("USER")) return false;
 
-        if(comment.getDeletedAt() != null) throw new IllegalArgumentException("이미 삭제된 익명 게시글 댓글입니다.");
+        if(comment.getDeletedAt() != null) throw new CustomException(
+                ErrorCode.CANNOT_DELETE_DATA_COMMENT
+        );
 
-        // 2. DB (COMMENT)에 해당 익명 게시글 댓글 삭제 상태 등록
         comment.setDeleted();
         commentRepository.save(comment);
 

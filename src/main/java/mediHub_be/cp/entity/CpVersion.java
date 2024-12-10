@@ -39,11 +39,5 @@ public class CpVersion extends CreateTimeEntity {
             String cpVersion,
             String cpVersionDescription,
             String cpUrl) {
-        this.cpVersionSeq = cpVersionSeq;
-        this.cpSeq = cpSeq;
-        this.userSeq = userSeq;
-        this.cpVersion = cpVersion;
-        this.cpVersionDescription = cpVersionDescription;
-        this.cpUrl = cpUrl;
     }
 }

@@ -14,13 +14,24 @@ public class FlagService {
 
     private final FlagRepository flagRepository;
 
-    // flagType
-    public static final String CP_OPINION_BOARD_FLAG = "cp_opinion";
+    // FlagType
+    public static final String CP_OPINION_BOARD_FLAG = "CP_OPINION";
 
     // Flag 조회 (존재하지 않으면 빈 Optional 반환)
     @Transactional(readOnly = true)
     public Optional<Flag> findFlag(String flagType, Long entitySeq) {
         return flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq);
+    }
+
+    // 게시판 식별 생성 or 있는 식별 반환
+    @Transactional
+    public Flag createFlag(String flagType, Long entitySeq) {
+
+        return flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq)
+                .orElseGet(() -> flagRepository.save(Flag.builder()
+                        .flagType(flagType)
+                        .flagEntitySeq(entitySeq)
+                        .build()));
     }
 
     public void deleteFlag(Long flagSeq) {

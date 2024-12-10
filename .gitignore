@@ -47,3 +47,6 @@ src/main/resources/Application-KEY.properties
 
 ### .env ###
 .env
+
+### yml ###
+/src/main/resources/prompt.yml

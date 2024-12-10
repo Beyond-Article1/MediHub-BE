@@ -13,12 +13,10 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ChatMessageDTO {
-    private String messageSeq;
-    private String chatroomSeq;
-    private String senderName;
+    private Long chatroomSeq;
+    private Long senderUserSeq;
     private String type;                // 메시지 타입(text, file, image 등)
     private String message;
     private LocalDateTime createdAt;
-    private boolean isDeleted;          // 메시지 삭제 여부
     private List<String> attachments;   // 첨부파일 url
 }
