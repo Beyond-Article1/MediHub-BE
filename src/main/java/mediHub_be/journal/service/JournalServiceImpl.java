@@ -1,9 +1,13 @@
 package mediHub_be.journal.service;
 
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.entity.Flag;
+import mediHub_be.board.service.BookmarkService;
+import mediHub_be.board.service.FlagService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.journal.dto.ResponseAbstractDTO;
+import mediHub_be.journal.dto.ResponseJournalLogDTO;
 import mediHub_be.journal.dto.ResponseJournalSearchDTO;
 import mediHub_be.journal.dto.ResponsePubmedDTO;
 import mediHub_be.journal.entity.Journal;
@@ -22,10 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -54,18 +55,31 @@ public class JournalServiceImpl implements JournalService{
     // 논문 조회 repository
     private final JournalSearchRepository journalSearchRepository;
 
+    // 논문 식별 서비스
+    private final FlagService flagService;
+
+    // 북마크 서비스
+    private final BookmarkService bookmarkService;
+    
+    // 저널 북마크 이름
+    private static String journalFlagName = "JOURNAL";
+
     public JournalServiceImpl(@Qualifier(value = "openAiWebClient") WebClient webClient,
                          JournalRepository journalRepository,
                          UserRepository userRepository,
-                         JournalSearchRepository journalSearchRepository) {
+                         JournalSearchRepository journalSearchRepository,
+                              FlagService flagService,
+                              BookmarkService bookmarkService) {
         this.openAiWebClient = webClient;
         this.journalRepository = journalRepository;
         this.userRepository = userRepository;
         this.journalSearchRepository = journalSearchRepository;
+        this.flagService = flagService;
+        this.bookmarkService = bookmarkService;
     }
 
     /**
-     * 자연어에서의 키워드 추출 모델
+     * 자연어로 논문 검색
      * @param naturalRequest
      * @return
      */
@@ -211,6 +225,63 @@ public class JournalServiceImpl implements JournalService{
         }
 
         return pubmedDTOS;
+    }
+
+    /**
+     * 논문 북마크
+     */
+    public boolean journalBookmark(String userId, Long journalSeq){
+
+        // User 확인
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+
+        // 게시판 식별
+        Flag flag = flagService.createFlag(journalFlagName, journalSeq);
+
+        // true (북마크), false (북마크 해제)
+        return bookmarkService.toggleBookmark(journalFlagName, journalSeq, userId);
+    }
+
+    /**
+     * 내가 조회한 논문
+     */
+    public List<ResponseJournalLogDTO> getMySearchJournal(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+
+        return journalSearchRepository.findJournalLogs(user);
+    }
+
+    /**
+     * 내가 북마크한 논문
+     */
+    public List<ResponseJournalLogDTO> getMyBookmarkJournal(String userId){
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+
+        return bookmarkService.findByUserAndFlagType(user, journalFlagName)
+                .stream()
+                .map(bookmarkDTO -> {
+                    try {
+                        // Journal 조회
+                        Journal journal = journalRepository.findById(bookmarkDTO.getFlag().getFlagEntitySeq())
+                                .orElseThrow(() -> {
+                                    log.warn("Flag 없음: {}", bookmarkDTO.getFlag().getFlagEntitySeq());
+                                    return new CustomException(ErrorCode.NOT_FOUND_JOURNAL);
+                                });
+
+                        log.info("Flag 있음: {}", bookmarkDTO.getBookmarkSeq());
+
+                        // ResponseJournalLogDTO 생성
+                        return new ResponseJournalLogDTO(journal, bookmarkDTO.getCreateAt());
+                    } catch (CustomException e) {
+                        log.error("북마크 처리 실패 - bookmarkSeq: {}, 이유: {}", bookmarkDTO.getBookmarkSeq(), e.getMessage());
+                        return null; // 실패한 항목은 null 반환
+                    }
+                })
+                .filter(Objects::nonNull) // null인 항목 제외
+                .toList();
     }
 
     /**
