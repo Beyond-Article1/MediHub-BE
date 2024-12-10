@@ -2,6 +2,7 @@ package mediHub_be.notify.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.entity.Flag;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.notify.dto.NotifyDTO;
@@ -84,11 +85,11 @@ public class NotifyServiceImlp implements NotifyService{
     // 받는 사람이 한명인 경우 (ex. 게시글에 대한 댓글 발생 -> 게시글 작성자에게만 알림 생성)
     @Override
     @Transactional
-    public void send(User sender, User receiver, NotiType notiType, String url) {
+    public void send(User sender, User receiver, Flag flag, NotiType notiType, String url) {
 
         log.debug("receiver 확인 {}", receiver);
 
-        Notify notification = notifyRepository.save(createNotification(receiver, notiType, notiType.getMessage(), url, sender.getUserId(), sender.getPart().getPartName()));
+        Notify notification = notifyRepository.save(createNotification(receiver, flag, notiType, notiType.getMessage(), url, sender.getUserId(), sender.getPart().getPartName()));
 
         String receiverUserId = receiver.getUserId();
         String eventId = receiverUserId + "_" + System.currentTimeMillis();
@@ -104,12 +105,12 @@ public class NotifyServiceImlp implements NotifyService{
     // 받는 사람이 여러명인 경우 (ex. 게시글 또는 케이스공유 작성시 팔로워들한테 알림 발생)
     @Override
     @Transactional
-    public void send(User sender, List<User> receivers, NotiType notiType, String url) {
+    public void send(User sender, List<User> receivers, Flag flag, NotiType notiType, String url) {
 
         log.debug("sender 확인 {}", sender);
 
         for (User receiver : receivers) {
-            Notify notification = notifyRepository.save(createNotification(receiver, notiType, notiType.getMessage(), url, sender.getUserId(), sender.getPart().getPartName()));
+            Notify notification = notifyRepository.save(createNotification(receiver, flag, notiType, notiType.getMessage(), url, sender.getUserId(), sender.getPart().getPartName()));
 
             String receiverUserId = receiver.getUserId();
             String eventId = receiverUserId + "_" + System.currentTimeMillis();
@@ -125,11 +126,11 @@ public class NotifyServiceImlp implements NotifyService{
     }
 
     // 알림 생성 로직
-    private Notify createNotification(User receiver, NotiType notificationType, String content, String url, String senderUserName, String senderUserPart) {
-//    private Notify createNotification(User receiver, Flag flag, NotiType notificationType, String content, String url, String senderUserId, String senderUserPart) {
+//    private Notify createNotification(User receiver, NotiType notificationType, String content, String url, String senderUserName, String senderUserPart) {
+    private Notify createNotification(User receiver, Flag flag, NotiType notificationType, String content, String url, String senderUserName, String senderUserPart) {
         return Notify.builder()
                 .receiver(receiver)
-//                .flag(flag)
+                .flag(flag)
                 .notiType(notificationType)
                 .notiContent(content)
                 .notiUrl(url)

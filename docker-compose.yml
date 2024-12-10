@@ -6,7 +6,7 @@ services:
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_DATABASE: ${DB_DATABASE}
       MARIADB_USER: ${DB_USER}
       MARIADB_PASSWORD: ${DB_PASSWORD}
     ports:

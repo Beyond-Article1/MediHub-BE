@@ -1,6 +1,7 @@
 package mediHub_be.board.service;
 
 import lombok.RequiredArgsConstructor;
+import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.entity.Bookmark;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.repository.BookmarkRepository;
@@ -10,6 +11,7 @@ import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -55,5 +57,11 @@ public class BookmarkService {
 
         // 북마크 존재 여부 반환
         return bookmarkRepository.existsByUserAndFlag(user, flag);
+    }
+
+    // 게시판 식별과 유저로 본인이 북마크한 해당 게시판 종류의 북마크들 찾기
+    public List<BookmarkDTO> findByUserAndFlagType(User user, String flagType) {
+
+        return bookmarkRepository.findByUserAndFlagType(user, flagType);
     }
 }

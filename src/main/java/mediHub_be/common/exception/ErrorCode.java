@@ -27,6 +27,8 @@ public enum ErrorCode {
     CANNOT_DELETE_DATA_ANONYMOUS_BOARD(40005,HttpStatus.CONFLICT, "이미 삭제된 익명 게시글입니다."),
     CANNOT_DELETE_DATA_COMMENT(40006,HttpStatus.CONFLICT, "이미 삭제된 댓글입니다."),
 
+    // 입력 오류
+    BAD_REQUEST_INPUT(40907, HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
     /**
      * == 401 UNAUTHORIZED ==
      */
@@ -80,6 +82,8 @@ public enum ErrorCode {
 
     // 사진 (picture)
     NOT_FOUND_PICTURE(40417, HttpStatus.NOT_FOUND, "사진을 찾을 수 없습니다."),
+    // 논문
+    NOT_FOUND_JOURNAL(40418, HttpStatus.NOT_FOUND, "해당 논문이 존재하지 않습니다."),
 
     /**
      * == 409 CONFLICT ==
