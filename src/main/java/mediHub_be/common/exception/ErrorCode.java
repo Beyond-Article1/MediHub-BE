@@ -23,7 +23,7 @@ public enum ErrorCode {
     REQUIRED_FIELD_MISSING(40003, HttpStatus.BAD_REQUEST, "필수 입력값이 누락되었습니다. 모든 필드를 확인해 주세요."),
 
     // 삭제 불가 데이터 요청
-    CANNOT_DELETE_DATA(40903,HttpStatus.CONFLICT, "데이터 제약 조건으로 인해 삭제가 불가능합니다."),
+    CANNOT_DELETE_DATA(40904,HttpStatus.CONFLICT, "데이터 제약 조건으로 인해 삭제가 불가능합니다."),
     /**
      * == 401 UNAUTHORIZED ==
      */
@@ -54,13 +54,13 @@ public enum ErrorCode {
     NOT_FOUND_CP_SEARCH_CATEGORY_DATA(40406, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
 
     // 알림 (notify)
-    NOT_FOUND_NOTIFY(40404, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
+    NOT_FOUND_NOTIFY(40407, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
 
     // 채팅 (chat)
-    NOT_FOUND_CHATROOM(40405, HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
+    NOT_FOUND_CHATROOM(40408, HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
 
     // 익명 게시판 (anonymous_board)
-    NOT_FOUND_ANONYMOUS_BOARD(40406, HttpStatus.NOT_FOUND, "익명 게시글을 찾을 수 없습니다."),
+    NOT_FOUND_ANONYMOUS_BOARD(40409, HttpStatus.NOT_FOUND, "익명 게시글을 찾을 수 없습니다."),
 
     /**
      * == 409 CONFLICT ==
@@ -72,8 +72,8 @@ public enum ErrorCode {
     DUPLICATE_NICKNAME(40901, HttpStatus.CONFLICT, "이미 존재하는 닉네임입니다."),
 
     // CP 검색 카테고리 중복
-    DUPLICATE_CP_SEARCH_CATEGORY_NAME(40901, HttpStatus.CONFLICT, "이미 존재하는 CP 검색 카테고리 입니다."),
-    DUPLICATE_CP_SEARCH_CATEGORY_DATA_NAME(40902, HttpStatus.CONFLICT, "이미 존재하는 CP 검색 카테고리 데이터 입니다."),
+    DUPLICATE_CP_SEARCH_CATEGORY_NAME(40902, HttpStatus.CONFLICT, "이미 존재하는 CP 검색 카테고리 입니다."),
+    DUPLICATE_CP_SEARCH_CATEGORY_DATA_NAME(40903, HttpStatus.CONFLICT, "이미 존재하는 CP 검색 카테고리 데이터 입니다."),
 
     /**
      * == 500 INTERNAL_SERVER_ERROR ==
@@ -83,7 +83,8 @@ public enum ErrorCode {
     INTERNAL_SERVER_IO_UPLOAD_ERROR(50001, HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
     INTERNAL_DATABASE_ERROR(50002, HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 업로드 오류입니다."),
     INTERNAL_SERVER_IO_DELETE_ERROR(50003, HttpStatus.INTERNAL_SERVER_ERROR, "파일 삭제에 실패했습니다."),
-    INTERNAL_DATA_ACCESS_ERROR(50003, HttpStatus.INTERNAL_SERVER_ERROR, "데이터 접근 오류입니다.");
+    INTERNAL_DATA_ACCESS_ERROR(50004, HttpStatus.INTERNAL_SERVER_ERROR, "데이터 접근 오류입니다."),
+    INTERNAL_OPENAI_ERROR(50005, HttpStatus.INTERNAL_SERVER_ERROR, "OpenAi 생성 오류입니다.");
 
     private final Integer code;
     private final HttpStatus httpStatus;

@@ -39,15 +39,15 @@ public class Notify extends CreateTimeEntity {
     @Column(name = "noti_url", nullable = false)
     private String notiUrl;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_seq")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User receiver;
 
-    @Column(name = "noti_sender_user_name")
+    @Column(name = "noti_sender_user_name", nullable = false)
     private String notiSenderUserName;
 
-    @Column(name = "noti_sender_user_part")
+    @Column(name = "noti_sender_user_part", nullable = false)
     private String notiSenderUserPart;
 
     @Builder
