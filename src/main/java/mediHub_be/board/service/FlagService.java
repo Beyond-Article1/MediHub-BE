@@ -14,8 +14,8 @@ public class FlagService {
 
     private final FlagRepository flagRepository;
 
-    // flagType
-    public static final String CP_OPINION_BOARD_FLAG = "cp_opinion";
+    // FlagType
+    public static final String CP_OPINION_BOARD_FLAG = "CP_OPINION";
 
     // Flag 조회 (존재하지 않으면 빈 Optional 반환)
     @Transactional(readOnly = true)

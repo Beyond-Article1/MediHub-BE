@@ -50,6 +50,7 @@ public enum ErrorCode {
     NOT_FOUND_CP_VERSION(40402, HttpStatus.NOT_FOUND, "CP 버전을 찾을 수 없습니다."),
     NOT_FOUND_CP_OPINION(40403, HttpStatus.NOT_FOUND, "CP 의견을 찾을 수 없습니다."),
     NOT_FOUND_CP_OPINION_LOCATION(40404, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
+    NOT_FOUND_CP_OPINION_VOTE(40404, HttpStatus.NOT_FOUND, "CP 의견 투표를 찾을 수 없습니다."),
     NOT_FOUND_CP_SEARCH_CATEGORY(40405, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
     NOT_FOUND_CP_SEARCH_CATEGORY_DATA(40406, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
 
