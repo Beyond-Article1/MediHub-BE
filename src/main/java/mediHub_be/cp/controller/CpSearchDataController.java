@@ -28,7 +28,7 @@ public class CpSearchDataController {
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpSearchDataController"); // Logger
 
-    @GetMapping(value = "/{cpVersionSeq}")
+    @GetMapping
     @Operation(summary = "CP 검색 데이터 조회",
             description = "주어진 CP 버전 시퀀스에 대한 CP 검색 데이터를 반환합니다.")
     public ResponseEntity<ApiResponse<List<ResponseCpSearchDataDTO>>> getCpSearchData(@PathVariable long cpVersionSeq) {
@@ -56,7 +56,7 @@ public class CpSearchDataController {
         return ResponseEntity.ok(ApiResponse.created(dto));
     }
 
-    @DeleteMapping(value = "/{cpVersionSeq}/{cpSearchDataSeq}")
+    @DeleteMapping(value = "/{cpSearchDataSeq}")
     @Operation(
             summary = "CP 검색 데이터 삭제",
             description = "주어진 CP 버전 시퀀스와 CP 검색 데이터 시퀀스를 사용하여 해당 CP 검색 데이터를 삭제합니다.")
