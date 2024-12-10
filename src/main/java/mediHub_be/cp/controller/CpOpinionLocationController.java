@@ -26,7 +26,7 @@ public class CpOpinionLocationController {
     // Service
     private final CpOpinionLocationService cpOpinionLocationService;
 
-    private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpController"); // Logger
+    private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpOpinionLocationController"); // Logger
 
     // CP 의견 위치 조회
     @GetMapping
