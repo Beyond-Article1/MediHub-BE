@@ -20,6 +20,6 @@ public class AnonymousBoardDetailDTO {
     private String anonymousBoardContent;
     private Long anonymousBoardViewCount;
     private LocalDateTime createdAt;
-    private List<PictureDTO> anonymousBoardPictureList;
+    private List<AnonymousBoardPictureDTO> anonymousBoardPictureList;
     private List<AnonymousBoardKeywordDTO> keywords;
 }

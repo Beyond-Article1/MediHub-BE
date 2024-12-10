@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class PictureDTO {
+public class AnonymousBoardPictureDTO {
 
     private Long pictureSeq;
     private Long flagSeq;
