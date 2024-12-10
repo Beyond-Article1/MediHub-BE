@@ -86,10 +86,10 @@ public class CpOpinionService {
             return dtoList;
         } catch (DataAccessException e) {
             logger.error("데이터베이스 접근 오류: {}", e.getMessage());
-            throw new RuntimeException("데이터베이스 접근 오류가 발생했습니다.", e);
+            throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
         } catch (Exception e) {
             logger.error("예기치 못한 오류 발생: {}", e.getMessage());
-            throw new RuntimeException("예기치 못한 오류가 발생했습니다.", e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -315,6 +315,9 @@ public class CpOpinionService {
             // 데이터베이스 관련 예외 처리
             logger.error("데이터베이스 저장 중 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        } catch (Exception e) {
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
+            throw new RuntimeException("예기치 않은 오류가 발생했습니다.", e);
         }
 
         // Entity -> DTO 변환
@@ -341,11 +344,7 @@ public class CpOpinionService {
             } catch (DataAccessException e) {
                 // 데이터 접근 오류 처리
                 logger.error("데이터베이스 접근 오류: {}", e.getMessage());
-                throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
-            } catch (CustomException e) {
-                // 사용자 정의 예외 처리
-                logger.error("사용자 정의 예외 발생: {}", e.getMessage());
-                throw e; // 사용자 정의 예외는 그대로 던짐
+                throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
             } catch (Exception e) {
                 // 일반 예외 처리
                 logger.error("예기치 못한 오류 발생: {}", e.getMessage());
@@ -475,7 +474,7 @@ public class CpOpinionService {
             logger.error("데이터베이스 업데이트 중 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+            throw new RuntimeException("예기치 않은 오류가 발생했습니다.", e);
         }
 
         // Entity -> DTO 변환
