@@ -53,32 +53,33 @@ public enum ErrorCode {
     NOT_FOUND_CP_VERSION(40403, HttpStatus.NOT_FOUND, "CP 버전을 찾을 수 없습니다."),
     NOT_FOUND_CP_OPINION(40404, HttpStatus.NOT_FOUND, "CP 의견을 찾을 수 없습니다."),
     NOT_FOUND_CP_OPINION_LOCATION(40405, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
-    NOT_FOUND_CP_SEARCH_CATEGORY(40406, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
-    NOT_FOUND_CP_SEARCH_CATEGORY_DATA(40407, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
+    NOT_FOUND_CP_OPINION_VOTE(40406, HttpStatus.NOT_FOUND, "CP 의견 투표를 찾을 수 없습니다."),
+    NOT_FOUND_CP_SEARCH_CATEGORY(40407, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
+    NOT_FOUND_CP_SEARCH_CATEGORY_DATA(40408, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
 
     // 알림 (notify)
-    NOT_FOUND_NOTIFY(40408, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
+    NOT_FOUND_NOTIFY(40409, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
 
     // 채팅 (chat)
-    NOT_FOUND_CHATROOM(40409, HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
-    NOT_FOUND_CHATMESSAGE(40410, HttpStatus.NOT_FOUND, "채팅 메시지를 찾을 수 없습니다."),
+    NOT_FOUND_CHATROOM(40410, HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
+    NOT_FOUND_CHATMESSAGE(40411, HttpStatus.NOT_FOUND, "채팅 메시지를 찾을 수 없습니다."),
 
     // 익명 게시판 (anonymous_board)
-    NOT_FOUND_ANONYMOUS_BOARD(40411, HttpStatus.NOT_FOUND, "익명 게시글을 찾을 수 없습니다."),
+    NOT_FOUND_ANONYMOUS_BOARD(40412, HttpStatus.NOT_FOUND, "익명 게시글을 찾을 수 없습니다."),
 
     // 사용자 부서 및 랭킹
-    NOT_FOUND_PART(40412, HttpStatus.NOT_FOUND, "존재하지 않는 부서 입니다."),
+    NOT_FOUND_PART(40413, HttpStatus.NOT_FOUND, "존재하지 않는 부서 입니다."),
 
-    NOT_FOUND_RANKING(40413,HttpStatus.NOT_FOUND, "존재하지 않는 직급 입니다."),
+    NOT_FOUND_RANKING(40414,HttpStatus.NOT_FOUND, "존재하지 않는 직급 입니다."),
 
     // 플레그 없음
-    NOT_FOUND_FLAG(40414,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
+    NOT_FOUND_FLAG(40415,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
 
     // 댓글 (comment)
-    NOT_FOUND_COMMENT(40415, HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
+    NOT_FOUND_COMMENT(40416, HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
 
     // 사진 (picture)
-    NOT_FOUND_PICTURE(40416, HttpStatus.NOT_FOUND, "사진을 찾을 수 없습니다."),
+    NOT_FOUND_PICTURE(40417, HttpStatus.NOT_FOUND, "사진을 찾을 수 없습니다."),
 
     /**
      * == 409 CONFLICT ==
