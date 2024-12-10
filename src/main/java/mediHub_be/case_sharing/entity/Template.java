@@ -31,6 +31,7 @@ public class Template extends BaseFullEntity {
     private String templateContent;
 
     @Enumerated(EnumType.STRING)
+    @Column(name="template_open_scope")
     private OpenScope openScope;
 
     @Builder
