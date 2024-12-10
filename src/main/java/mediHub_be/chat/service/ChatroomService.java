@@ -1,22 +1,31 @@
 package mediHub_be.chat.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mediHub_be.chat.dto.ChatroomDTO;
-import mediHub_be.chat.dto.ChatroomInfoDTO;
+import mediHub_be.chat.dto.ResponseChatUserDTO;
+import mediHub_be.chat.dto.ResponseChatroomDTO;
 import mediHub_be.chat.dto.UpdateChatroomDTO;
 import mediHub_be.chat.entity.Chat;
+import mediHub_be.chat.entity.ChatMessage;
 import mediHub_be.chat.entity.Chatroom;
+import mediHub_be.chat.repository.ChatMessageRepository;
 import mediHub_be.chat.repository.ChatRepository;
 import mediHub_be.chat.repository.ChatroomRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.part.entity.Part;
+import mediHub_be.ranking.entity.Ranking;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatroomService {
@@ -24,6 +33,7 @@ public class ChatroomService {
     private final UserRepository userRepository;
     private final ChatroomRepository chatroomRepository;
     private final ChatRepository chatRepository;
+    private final ChatMessageRepository chatMessageRepository;
 
     /* 채팅방 생성 */
     @Transactional
@@ -127,13 +137,71 @@ public class ChatroomService {
     }
 
     /* 사용자별 채팅 목록 조회 */
-    public List<ChatroomInfoDTO> getChatroomListByUserSeq(Long userSeq) {
-        return null;
+    @Transactional(readOnly = true)
+    public List<ResponseChatroomDTO> getChatroomListByUserSeq(Long userSeq) {
+        List<Chat> chats = chatRepository.findByUser_UserSeq(userSeq);
+        log.info("사용자 {}의 채팅방 조회 - {}개 채팅방 반환", userSeq, chats.size());
+
+        // 각 채팅방에 대한 정보를 DTO로 매핑
+        return chats.stream()
+                .map(chat -> {
+                    // 채팅방 정보 가져오기
+                    Chatroom chatroom = chat.getChatroom();
+                    // 해당 채팅방에 참여한 사용자 수
+                    Long chatroomUsersCount = chatRepository.countByChatroom_ChatroomSeq(chatroom.getChatroomSeq());
+
+                    // 마지막 메시지 조회 (최근 메시지 1개만 가져오기)
+                    ChatMessage lastMessage = chatMessageRepository.findTopByChatroomSeqAndIsDeletedFalseOrderByCreatedAtDesc(chatroom.getChatroomSeq());
+                    String lastMessageText = (lastMessage != null) ? lastMessage.getMessage() : "No messages yet";
+                    LocalDateTime lastMessageTime = (lastMessage != null) ? lastMessage.getCreatedAt() : null;
+
+                    // ResponseChatroomDTO로 변환
+                    return ResponseChatroomDTO.builder()
+                            .chatroomSeq(chatroom.getChatroomSeq())                 // 채팅방 Seq
+                            .chatroomDefaultName(chatroom.getChatroomDefaultName()) // 채팅방 기본 이름
+                            .chatroomCustomName(chat.getChatroomCustomName())       // 사용자별 채팅방 설정 이름
+                            .chatroomUsersCount(chatroomUsersCount)                 // 채팅방 사용자 수
+                            .lastMessage(lastMessageText)                           // 마지막 메시지
+                            .lastMessageTime(lastMessageTime.minusHours(9))
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     /* 채팅방 정보 조회 */
-    public ChatroomInfoDTO getChatroomInfoBySeq(Long chatroomSeq) {
-        return null;
+    @Transactional(readOnly = true)
+    public ResponseChatroomDTO getChatroomInfoBySeq(Long userSeq, Long chatroomSeq) {
+        Chat chat = chatRepository.findByUser_UserSeqAndChatroom_ChatroomSeq(userSeq, chatroomSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CHATROOM));
+        Chatroom chatroom = chat.getChatroom();
+        Long chatroomUsersCount = chatRepository.countByChatroom_ChatroomSeq(chatroom.getChatroomSeq());
+
+        return ResponseChatroomDTO.builder()
+                .chatroomSeq(chatroom.getChatroomSeq())
+                .chatroomDefaultName(chatroom.getChatroomDefaultName())
+                .chatroomCustomName(chat.getChatroomCustomName())
+                .chatroomUsersCount(chatroomUsersCount)
+                .build();
     }
 
+    /* 특정 채팅방 참여자 조회 */
+    @Transactional(readOnly = true)
+    public List<ResponseChatUserDTO> getChatUsers(Long chatroomSeq) {
+        List<Chat> chats = chatRepository.findByChatroom_ChatroomSeq(chatroomSeq);
+
+        return chats.stream()
+                .map(chat -> {
+                    User user = chat.getUser();
+                    Part part = user.getPart();
+                    Ranking ranking = user.getRanking();
+
+                    return ResponseChatUserDTO.builder()
+                            .userSeq(user.getUserSeq())
+                            .userName(user.getUserName())
+                            .partName(part != null ? part.getPartName() : "N/A")
+                            .rankingName(ranking != null ? ranking.getRankingName() : "N/A")
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
 }
