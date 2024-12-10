@@ -79,7 +79,7 @@ CREATE TABLE journal_search (
                                 journal_seq	bigint	NOT NULL,
                                 user_seq	bigint	NOT NULL,
                                 created_at	datetime	NOT NULL	DEFAULT NOW(),
-                                updated_at	datetime	NOT NULL	DEFAULT NOW(),
+                                updated_at  datetime NOT NULL,
                                 PRIMARY KEY (journal_search_seq)
 );
 

@@ -69,6 +69,12 @@ dependencies {
     // redis
 //    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    // WebClient를 위한 의존성 (webFlux)
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // XML 파싱 Jsoup
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.18.3'
+
     // AWS S3 의존성 설정
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 }
