@@ -66,6 +66,9 @@ public enum ErrorCode {
 
     NOT_FOUND_RANKING(40408,HttpStatus.NOT_FOUND, "존재하지 않는 직급 입니다."),
 
+    // 플레그 없음
+    NOT_FOUND_FLAG(40409,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
+
 
     /**
      * == 409 CONFLICT ==

@@ -12,4 +12,5 @@ public interface FlagRepository extends JpaRepository<Flag, Long> {
 
     Optional<Flag> findByFlagTypeAndFlagEntitySeq(String flagType, Long entitySeq);
     List<Flag> findAllByFlagEntitySeq(Long flagEntitySeq);
+
 }

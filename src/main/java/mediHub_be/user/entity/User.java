@@ -64,24 +64,21 @@ public class User extends BaseFullEntity {
         this.userStatus = userStatus != null ? userStatus : UserStatus.ACTIVE;
     }
 
-    public void updateUser(
-            String userEmail,
-            String userPhone,
-            Part part,
-            Ranking ranking,
-            UserAuth userAuth,
-            UserStatus userStatus
-    ) {
-        this.userEmail = userEmail;
-        this.userPhone = userPhone;
-        this.part = part;
-        this.ranking = ranking;
-        this.userAuth = userAuth;
-        this.userStatus = userStatus;
-    }
-
     public void initializePassword(String encodedPassword) {
         this.userPassword = encodedPassword;
+    }
+
+    public void updateUserDetails(String email, String phone, Part part, Ranking ranking, UserAuth auth, UserStatus status) {
+        this.userEmail = email;
+        this.userPhone = phone;
+        this.part = part;
+        this.ranking = ranking;
+        this.userAuth = auth;
+        this.userStatus = status;
+    }
+
+    public void markAsDeleted() {
+        this.userStatus = UserStatus.DELETE;
     }
 }
 
