@@ -1,19 +1,22 @@
-package mediHub_be.openai.service;
+package mediHub_be.journal.service;
 
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
-import mediHub_be.openai.dto.ResponseAbstractDTO;
-import mediHub_be.openai.dto.ResponsePubmedDTO;
-import mediHub_be.openai.entity.Journal;
-import mediHub_be.openai.entity.JournalSearch;
-import mediHub_be.openai.repository.JournalRepository;
-import mediHub_be.openai.repository.JournalSearchRepository;
+import mediHub_be.journal.dto.ResponseAbstractDTO;
+import mediHub_be.journal.dto.ResponseJournalSearchDTO;
+import mediHub_be.journal.dto.ResponsePubmedDTO;
+import mediHub_be.journal.entity.Journal;
+import mediHub_be.journal.entity.JournalSearch;
+import mediHub_be.journal.repository.JournalRepository;
+import mediHub_be.journal.repository.JournalSearchRepository;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -151,6 +154,23 @@ public class JournalServiceImpl implements JournalService{
 
         } catch (WebClientResponseException e){
             throw new CustomException(ErrorCode.INTERNAL_OPENAI_ERROR);
+        }
+    }
+
+    /**
+     * 조회 (조회순, 북마크순)
+     */
+    @Override
+    public List<ResponseJournalSearchDTO> getJournalTop100(String sortBy) {
+
+        Pageable top100 = PageRequest.of(0, 100); // 상위 100개
+        if (sortBy.equals("select")){
+            return journalSearchRepository.findTopJournalsWithSearchCount(top100).getContent();
+
+        } else if (sortBy.equals("bookmark")){
+            return null;
+        } else {
+            return null;
         }
     }
 

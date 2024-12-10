@@ -1,9 +1,10 @@
-package mediHub_be.openai.controller;
+package mediHub_be.journal.controller;
 
 import lombok.RequiredArgsConstructor;
 import mediHub_be.common.response.ApiResponse;
-import mediHub_be.openai.dto.ResponsePubmedDTO;
-import mediHub_be.openai.service.JournalServiceImpl;
+import mediHub_be.journal.dto.ResponseJournalSearchDTO;
+import mediHub_be.journal.dto.ResponsePubmedDTO;
+import mediHub_be.journal.service.JournalServiceImpl;
 import mediHub_be.security.util.SecurityUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,4 +38,14 @@ public class JournalController {
                 ApiResponse.ok(journalService.summarizeAbstractByPmid(currentUserId, journalPmid, requestDTO))
         );
     }
+
+    // 등록된 논문 조회 sortBy = select or bookmark(조회순 100개, 북마크순 100개)
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<ResponseJournalSearchDTO>>> getJournal(@RequestParam(name = "sortBy") String sortBy){
+
+        return ResponseEntity.ok(
+                ApiResponse.ok(journalService.getJournalTop100(sortBy))
+        );
+    }
+
 }
