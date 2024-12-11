@@ -52,25 +52,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok(updatedUser.getUserSeq()));
     }
 
-
-//    @Operation(summary = "내 정보 수정", description = "로그인된 사용자가 자신의 정보를 수정합니다.")
-//    @PutMapping(value = "/userInfo", consumes = "multipart/form-data")
-//    public ResponseEntity<ApiResponse<Long>> updateMyInfo(
-//            @RequestParam(value = "userEmail", required = false) String userEmail,
-//            @RequestParam(value = "userPhone", required = false) String userPhone,
-//            @RequestParam(value = "userPassword", required = false) String userPassword,
-//            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage
-//    ) throws IOException {
-//
-//        Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
-//
-//        // 사용자 정보 수정 서비스 호출
-//        User updatedUser = userService.updateUser(currentUserSeq, userEmail, userPhone, userPassword, profileImage);
-//
-//        // 응답으로 수정된 사용자 ID 반환
-//        return ResponseEntity.ok(ApiResponse.ok(updatedUser.getUserSeq()));
-//    }
-
+    
     // 회원 전체 조회
     @Operation(summary = "전체 회원 조회", description = "모든 회원 정보를 조회합니다.")
     @GetMapping(value = "/allUser")
