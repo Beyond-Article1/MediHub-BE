@@ -103,13 +103,13 @@ public class CaseSharingCommentService {
     private CaseSharingComment findComment(Long commentSeq) {
         return commentRepository.findById(commentSeq)
                 .filter(c -> c.getDeletedAt() == null) // 삭제된 댓글은 조회 불가
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 삭제된 댓글입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_COMMENT));
 
     }
 
     private void validateAuthor(CaseSharingComment caseSharingComment, User user) {
         if (!caseSharingComment.getUser().equals(user)) {
-            throw new IllegalArgumentException("댓글 작성자만 해당 작업을 수행할 수 있습니다.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
     }
 

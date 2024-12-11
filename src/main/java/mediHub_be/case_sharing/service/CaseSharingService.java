@@ -349,8 +349,6 @@ public class CaseSharingService {
         return bookmarkService.isBookmarked(CASE_SHARING_FLAG, caseSharingSeq, userId);
     }
 
-    //예외 메소드
-
     private void updateContentWithImages(CaseSharing caseSharing, List<MultipartFile> images, String content) {
         if (images != null && !images.isEmpty()) {
             String updatedContent = pictureService.replacePlaceHolderWithUrls(
@@ -372,27 +370,27 @@ public class CaseSharingService {
 
     private void validateAuthor(CaseSharing caseSharing, User user) {
         if (!caseSharing.getUser().equals(user)) {
-            throw new IllegalArgumentException("작성자만 해당 작업을 수행할 수 있습니다.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
     }
 
     private void validateDoctor(User user) {
         if (!"진료과".equals(user.getPart().getDept().getDeptName())) {
-            throw new IllegalArgumentException("케이스 공유글은 의사만 작성할 수 있습니다.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
     }
 
     @Transactional
     public CaseSharing findCaseSharing(Long caseSharingSeq) {
         return caseSharingRepository.findById(caseSharingSeq)
-                .filter(c -> c.getDeletedAt() == null) // 삭제된 댓글은 조회 불가
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 삭제된 케이스 공유글입니다."));
+                .filter(c -> c.getDeletedAt() == null) // 삭제된 글은 조회 불가
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CASE));
 
     }
 
     private CaseSharing findDraft(Long caseSharingSeq) {
         return caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrue(caseSharingSeq)
-                .orElseThrow(() -> new IllegalArgumentException("임시 저장 글을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CASE));
     }
 
     private void saveKeywordsAndFlag(List<String> keywords, Long entitySeq) {

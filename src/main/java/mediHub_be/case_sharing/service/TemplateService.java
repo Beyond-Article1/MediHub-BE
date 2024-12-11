@@ -11,6 +11,8 @@ import mediHub_be.case_sharing.dto.TemplateRequestDTO;
 import mediHub_be.case_sharing.entity.OpenScope;
 import mediHub_be.case_sharing.entity.Template;
 import mediHub_be.case_sharing.repository.TemplateRepository;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.part.entity.Part;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
@@ -183,24 +185,24 @@ public class TemplateService {
 
     private User getUser(String userId) {
         return userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
 
     @Transactional
     public Template getTemplate(Long templateSeq) {
         return templateRepository.findByTemplateSeqAndDeletedAtIsNull(templateSeq)
-                .orElseThrow(() -> new IllegalArgumentException("템플릿을 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TEMPLATE));
     }
 
     private void validateUserPart(User user) {
         if (user.getPart() == null) {
-            throw new IllegalArgumentException("회원의 부서 정보가 없습니다.");
+            throw new CustomException(ErrorCode.NOT_FOUND_PART);
         }
     }
 
     private void validateTemplateOwnership(Template template, User user) {
         if (!template.getUser().equals(user)) {
-            throw new IllegalArgumentException("본인이 작성한 템플릿만 수정할 수 있습니다.");
+            throw new  CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
     }
 
