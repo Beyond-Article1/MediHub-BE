@@ -29,7 +29,7 @@ public interface PictureRepository extends JpaRepository<Picture, Long> {
     @Query("SELECT p " +
             "FROM Picture AS p " +
             "JOIN Flag AS f ON f.flagSeq = p.flag.flagSeq " +
-            "WHERE f.flagEntitySeq = :entitySeq " +
+            "WHERE f.flagEntitySeq = :userSeq " +
             "ORDER BY p.createdAt DESC " +
             "LIMIT 1")
     Optional<Picture> findUserProfile(@Param("userSeq") long userSeq);
