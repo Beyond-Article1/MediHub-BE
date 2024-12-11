@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.chat.dto.ChatMessageDTO;
 import mediHub_be.chat.dto.ResponseChatMessageDTO;
 import mediHub_be.chat.service.ChatService;
+import mediHub_be.chat.service.KafkaProducerService;
 import mediHub_be.common.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,21 +27,28 @@ import java.util.List;
 public class ChatController {
 
     private final ChatService chatService;
+    private final KafkaProducerService kafkaProducerService;
 
-    @MessageMapping("/hello")       // 클라이언트가 "/app/hello"로 보낸 메시지를 처리
-    @SendTo("/topic/greetings")     // 클라이언트가 메시지를 보내면 "/topic/greetings"로 응답
+    @MessageMapping("/hello")       // 클라이언트가 "/publish/hello"로 보낸 메시지를 처리
+    @SendTo("/subscribe/greetings")     // 클라이언트가 메시지를 보내면 "/subscribe/greetings"로 응답
     public String greeting(String message) {
         return "Hello " + message;
     }
 
-    @MessageMapping("/send/chat/{chatroomSeq}")
-    @SendTo("/topic/chat/{chatroomSeq}")
+    @MessageMapping("/{chatroomSeq}")
+    @SendTo("/subscribe/{chatroomSeq}")
     public ResponseChatMessageDTO sendMessage(@Payload ChatMessageDTO message, @DestinationVariable Long chatroomSeq) {
 //        Long userSeq = SecurityUtil.getCurrentUserSeq();
 //        log.info("메시지 보낸 사람의 userSeq 확인 : {}", userSeq);
         log.info("Message sent to room {}: {}", chatroomSeq, message);
+
+        // Kafka로 메시지 전송
+        kafkaProducerService.sendMessageToKafka(message);
+
+        // 메시지 저장
         message.setChatroomSeq(chatroomSeq);
         ResponseChatMessageDTO savedMessage = chatService.saveMessage(message);
+
         log.info("SavedMessage: {}", savedMessage);
         return savedMessage;
     }
