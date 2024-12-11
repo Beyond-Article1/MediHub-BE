@@ -15,7 +15,7 @@ import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.part.entity.Part;
 import mediHub_be.user.entity.User;
-import mediHub_be.user.repository.UserRepository;
+import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 public class TemplateService {
 
     private final TemplateRepository templateRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final PictureService pictureService;
     private final FlagService flagService;
 
@@ -39,7 +39,7 @@ public class TemplateService {
     // 회원이 볼 수 있는 템플릿 전체 조회
     @Transactional(readOnly = true)
     public List<TemplateListDTO> getAllTemplates(String userId) {
-        User user = getUser(userId);
+        User user = userService.findByUserId(userId);
 
         return templateRepository.findByDeletedAtIsNull().stream()
                 .filter(template -> isTemplateAccessible(template, user))
@@ -50,7 +50,7 @@ public class TemplateService {
     // 조건별 템플릿 조회
     @Transactional(readOnly = true)
     public List<TemplateListDTO> getTemplatesByFilter(String userId, String filter) {
-        User user = getUser(userId);
+        User user = userService.findByUserId(userId);
 
         List<Template> filteredTemplates = switch (filter.toLowerCase()) {
             case "my" -> templateRepository.findByUser_UserSeqAndDeletedAtIsNull(user.getUserSeq());
@@ -83,7 +83,7 @@ public class TemplateService {
     // 템플릿 등록
     @Transactional
     public Long createTemplate(String userId, List<MultipartFile> images, MultipartFile previewImage, TemplateRequestDTO requestDTO) {
-        User user = getUser(userId);
+        User user = userService.findByUserId(userId);
         validateUserPart(user);
 
         Template template = Template.builder()
@@ -121,7 +121,7 @@ public class TemplateService {
     // 템플릿 수정
     @Transactional
     public void updateTemplate(String userId, Long templateSeq, MultipartFile previewImage, List<MultipartFile> contentImages, TemplateRequestDTO requestDTO) {
-        User user = getUser(userId);
+        User user = userService.findByUserId(userId);
         Template template = getTemplate(templateSeq);
         validateTemplateOwnership(template, user);
 
@@ -139,7 +139,7 @@ public class TemplateService {
     // 템플릿 삭제
     @Transactional
     public void deleteTemplate(String userId, Long templateSeq) {
-        User user = getUser(userId);
+        User user = userService.findByUserId(userId);
         Template template = getTemplate(templateSeq);
         validateTemplateOwnership(template, user);
 
@@ -181,11 +181,6 @@ public class TemplateService {
 
             template.updateTemplate(requestDTO.getTemplateTitle(), updatedContent, OpenScope.valueOf(requestDTO.getOpenScope()));
         }
-    }
-
-    private User getUser(String userId) {
-        return userRepository.findByUserId(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
 
     @Transactional

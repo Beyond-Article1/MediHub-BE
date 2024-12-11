@@ -2,7 +2,6 @@ package mediHub_be.case_sharing.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.board.entity.Comment;
 import mediHub_be.case_sharing.dto.CaseSharingCommentDetailDTO;
 import mediHub_be.case_sharing.dto.CaseSharingCommentListDTO;
 import mediHub_be.case_sharing.dto.CaseSharingCommentRequestDTO;
@@ -13,6 +12,7 @@ import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
+import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,11 +24,11 @@ import java.util.List;
 public class CaseSharingCommentService {
 
     private final CaseSharingService caseSharingService;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final CaseSharingCommentRepository commentRepository;
 
     public List<CaseSharingCommentListDTO> getCommentList(String userId, Long caseSharingSeq) {
-        findUser(userId);
+        userService.findByUserId(userId);
         List<CaseSharingComment> comments = commentRepository.findByCaseSharing_CaseSharingSeqAndDeletedAtIsNull(caseSharingSeq);
         return comments.stream()
                 .map(comment -> CaseSharingCommentListDTO.builder()
@@ -39,7 +39,7 @@ public class CaseSharingCommentService {
     }
 
     public CaseSharingCommentDetailDTO getCommentDetail(String userId, Long commentSeq) {
-        User user = findUser(userId);
+        User user = userService.findByUserId(userId);
         CaseSharingComment comment = findComment(commentSeq);
         // 댓글 작성자 정보 조회
         validateAuthor(comment, user);
@@ -57,7 +57,7 @@ public class CaseSharingCommentService {
 
     @Transactional
     public Long createCaseSharingComment(String userId, CaseSharingCommentRequestDTO requestDTO) {
-        User user = findUser(userId);
+        User user = userService.findByUserId(userId);
         CaseSharing caseSharing = caseSharingService.findCaseSharing(requestDTO.getCaseSharingSeq());
 
         CaseSharingComment comment = CaseSharingComment.builder()
@@ -75,7 +75,7 @@ public class CaseSharingCommentService {
     // 댓글 수정
     @Transactional
     public void updateCaseSharingComment(String userId, Long commentSeq, CaseSharingCommentRequestDTO requestDTO) {
-        User user = findUser(userId);
+        User user = userService.findByUserId(userId);
         CaseSharingComment comment = findComment(commentSeq);
         validateAuthor(comment, user);
 
@@ -86,18 +86,13 @@ public class CaseSharingCommentService {
     // 댓글 삭제
     @Transactional
     public void deleteCaseSharingComment(String userId, Long commentSeq) {
-        User user = findUser(userId);
+        User user = userService.findByUserId(userId);
 
         CaseSharingComment comment = findComment(commentSeq);
         validateAuthor(comment, user);
 
         comment.markAsDeleted();
         commentRepository.save(comment);
-    }
-
-    private User findUser(String userId) {
-        return userRepository.findByUserId(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
 
     private CaseSharingComment findComment(Long commentSeq) {
