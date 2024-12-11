@@ -13,5 +13,4 @@ public class TemplateRequestDTO {
     private String templateTitle;
     private String templateContent;
     private String openScope;
-    private String previewImageUrl;
 }

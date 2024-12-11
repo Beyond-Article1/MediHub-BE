@@ -13,6 +13,10 @@ public interface PictureRepository extends JpaRepository<Picture, Long> {
     List<Picture> findAllByFlag_FlagSeq(Long flagSeq);
     void deleteByFlag(Flag flag);
 
+    Optional<Picture> findByPictureUrl(String url);
+    List<Picture> findByFlagFlagTypeAndFlagFlagEntitySeq(String flagType, Long flagEntitySeq);
+
+
     Optional<Picture> findByFlag_FlagSeqAndDeletedAtIsNull(Long flagSeq); // deleted_at이 null인 조건 추가
     List<Picture> findAllByFlag_FlagSeqAndDeletedAtIsNull(Long flagSeq);
 }

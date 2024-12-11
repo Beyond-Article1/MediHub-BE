@@ -2,10 +2,12 @@ package mediHub_be.case_sharing.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.amazonS3.service.AmazonS3Service;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
 import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.PictureRepository;
+import mediHub_be.board.service.PictureService;
 import mediHub_be.case_sharing.dto.TemplateDetailDTO;
 import mediHub_be.case_sharing.dto.TemplateListDTO;
 import mediHub_be.case_sharing.dto.TemplateRequestDTO;
@@ -17,9 +19,9 @@ import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,60 +33,45 @@ public class TemplateService {
     private final PictureRepository pictureRepository;
     private final UserRepository userRepository;
     private final FlagRepository flagRepository;
+    private final PictureService pictureService;
+    private final AmazonS3Service amazonS3Service;
 
+    private static final String TEMPLATE_FLAG = "template";
+    private static final String TEMPLATE_PREVIEW_FLAG = "template_preview";
+
+    // 회원이 볼 수 있는 템플릿 전체 조회
     @Transactional(readOnly = true)
     public List<TemplateListDTO> getAllTemplates(String userId) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+        User user = getUser(userId);
 
-        return templateRepository.findByDeletedAtIsNull().stream() // 삭제되지 않은 템플릿만 조회
-                .filter(template -> {
-                    // 공개 범위에 따른 필터링
-                    return switch (template.getOpenScope()) {
-                        case PRIVATE ->
-                            // PRIVATE 템플릿은 작성자 본인만 조회 가능
-                                template.getUser().equals(user);
-                        case CLASS_OPEN ->
-                            // CLASS_OPEN 템플릿은 같은 부서(dept)의 회원만 조회 가능
-                                template.getPart() != null
-                                        && user.getPart() != null
-                                        && template.getPart().equals(user.getPart());
-                        case PUBLIC ->
-                            // PUBLIC 템플릿은 모두 조회 가능
-                                true;
-                        default -> false;
-                    };
-                })
-                .map(template -> {
-                    // Flag 조회
-                    Optional<Flag> flagOptional = flagRepository.findByFlagTypeAndFlagEntitySeq("template_preview", template.getTemplateSeq());
-                    String previewImageUrl = null;
-
-                    if (flagOptional.isPresent()) {
-                        // Picture 조회
-                        Optional<Picture> pictureOptional = pictureRepository.findByFlag_FlagSeq(flagOptional.get().getFlagSeq());
-                        if (pictureOptional.isPresent()) {
-                            previewImageUrl = pictureOptional.get().getPictureUrl();
-                        }
-                    }
-
-                    // TemplateListDTO 생성
-                    return TemplateListDTO.builder()
-                            .templateSeq(template.getTemplateSeq())
-                            .templateTitle(template.getTemplateTitle())
-                            .previewImageUrl(previewImageUrl) // 미리보기 이미지 URL
-                            .build();
-                })
+        return templateRepository.findByDeletedAtIsNull().stream()
+                .filter(template -> isTemplateAccessible(template, user))
+                .map(this::toTemplateListDTO)
                 .collect(Collectors.toList());
     }
 
+    // 조건별 템플릿 조회
+    @Transactional(readOnly = true)
+    public List<TemplateListDTO> getTemplatesByFilter(String userId, String filter) {
+        User user = getUser(userId);
 
+        List<Template> filteredTemplates = switch (filter.toLowerCase()) {
+            case "my" -> templateRepository.findByUser_UserSeqAndDeletedAtIsNull(user.getUserSeq());
+            case "shared" -> templateRepository.findByPart_PartSeqAndOpenScopeAndDeletedAtIsNull(
+                    user.getPart().getPartSeq(), OpenScope.CLASS_OPEN);
+            case "public" -> templateRepository.findByOpenScopeAndDeletedAtIsNull(OpenScope.PUBLIC);
+            default -> throw new IllegalArgumentException("잘못된 필터 값입니다. (my, shared, public 중 선택)");
+        };
 
+        return filteredTemplates.stream()
+                .map(this::toTemplateListDTO)
+                .collect(Collectors.toList());
+    }
+
+    // 특정 템플릿 상세 조회
     @Transactional(readOnly = true)
     public TemplateDetailDTO getTemplateDetail(Long templateSeq) {
-        Template template = templateRepository.findByTemplateSeqAndDeletedAtIsNull(templateSeq) // 삭제되지 않은 템플릿만 조회
-                .orElseThrow(() -> new IllegalArgumentException("템플릿을 찾을 수 없습니다."));
-
+        Template template = getTemplate(templateSeq);
         Part part = template.getPart();
 
         return TemplateDetailDTO.builder()
@@ -96,148 +83,158 @@ public class TemplateService {
                 .build();
     }
 
-
-    @Transactional(readOnly = true)
-    public List<TemplateListDTO> getTemplatesByFilter(String userId, String filter) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
-
-        List<Template> filteredTemplates = switch (filter.toLowerCase()) {
-            case "my" -> // 내가 작성한 템플릿
-                    templateRepository.findByUser_UserSeqAndDeletedAtIsNull(user.getUserSeq());
-            case "shared" -> // 과에서 공유된 템플릿
-                    templateRepository.findByPart_PartSeqAndOpenScopeAndDeletedAtIsNull(user.getPart().getPartSeq(), OpenScope.CLASS_OPEN);
-            case "public" -> // 전체 공개 템플릿
-                    templateRepository.findByOpenScopeAndDeletedAtIsNull(OpenScope.PUBLIC);
-            default -> throw new IllegalArgumentException("잘못된 필터 값입니다. (my, shared, public 중 선택)");
-        };
-
-        // TemplateListDTO 변환
-        return filteredTemplates.stream()
-                .map(template -> {
-                    // Flag 조회
-                    Optional<Flag> flagOptional = flagRepository.findByFlagTypeAndFlagEntitySeq("template_preview", template.getTemplateSeq());
-                    String previewImageUrl = null;
-
-                    if (flagOptional.isPresent()) {
-                        // Picture 조회
-                        Optional<Picture> pictureOptional = pictureRepository.findByFlag_FlagSeq(flagOptional.get().getFlagSeq());
-                        if (pictureOptional.isPresent()) {
-                            previewImageUrl = pictureOptional.get().getPictureUrl();
-                        }
-                    }
-                    return TemplateListDTO.builder()
-                            .templateSeq(template.getTemplateSeq())
-                            .templateTitle(template.getTemplateTitle())
-                            .previewImageUrl(previewImageUrl) // 미리보기 이미지 URL 포함
-                            .build();
-                })
-                .collect(Collectors.toList());
-    }
-
-
+    // 템플릿 등록
     @Transactional
-    public Long createTemplate(String userId, TemplateRequestDTO requestDTO) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
-
-        Part part = user.getPart();
-        if (part == null) {
-            throw new IllegalArgumentException("회원의 부서 정보가 없습니다.");
-        }
+    public Long createTemplate(String userId, List<MultipartFile> images, MultipartFile previewImage, TemplateRequestDTO requestDTO) {
+        User user = getUser(userId);
+        validateUserPart(user);
 
         Template template = Template.builder()
                 .user(user)
                 .part(user.getPart())
                 .templateTitle(requestDTO.getTemplateTitle())
                 .templateContent(requestDTO.getTemplateContent())
-                .openScope(OpenScope.valueOf(requestDTO.getOpenScope().toUpperCase()))
+                .openScope(OpenScope.valueOf(requestDTO.getOpenScope()))
                 .build();
 
         templateRepository.save(template);
 
-        // Flag와 Picture 저장 (미리보기 이미지)
-        if (requestDTO.getPreviewImageUrl() != null) {
-            Flag flag = Flag.builder()
-                    .flagType("template_preview")
-                    .flagEntitySeq(template.getTemplateSeq())
-                    .build();
+        // 미리보기 이미지 저장
+        if (previewImage != null) {
+            Flag previewFlag = saveFlag(template.getTemplateSeq(), TEMPLATE_PREVIEW_FLAG);
+            pictureService.uploadPicture(previewImage, previewFlag);
+        }
 
-            flagRepository.save(flag);
-
-            Picture picture = Picture.builder()
-                    .flag(flag)
-                    .pictureName(template.getTemplateTitle() + "_preview")
-                    .pictureUrl(requestDTO.getPreviewImageUrl())
-                    .build();
-
-            pictureRepository.save(picture);
+        // 본문 이미지 저장 및 내용 치환
+        if (images != null && !images.isEmpty()) {
+            saveFlag(template.getTemplateSeq(), TEMPLATE_FLAG);
+            String updatedContent = pictureService.replacePlaceHolderWithUrls(
+                    requestDTO.getTemplateContent(),
+                    images,
+                    TEMPLATE_FLAG,
+                    template.getTemplateSeq()
+            );
+            template.updateTemplate(requestDTO.getTemplateTitle(), updatedContent, OpenScope.valueOf(requestDTO.getOpenScope()));
+            templateRepository.save(template);
         }
 
         return template.getTemplateSeq();
     }
 
+    // 템플릿 수정
     @Transactional
-    public void updateTemplate(String userId, Long templateSeq, TemplateRequestDTO requestDTO) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+    public void updateTemplate(String userId, Long templateSeq, MultipartFile previewImage, List<MultipartFile> contentImages, TemplateRequestDTO requestDTO) {
+        User user = getUser(userId);
+        Template template = getTemplate(templateSeq);
+        validateTemplateOwnership(template, user);
 
-        Template template = templateRepository.findById(templateSeq)
-                .orElseThrow(() -> new IllegalArgumentException("템플릿을 찾을 수 없습니다."));
+        // 미리보기 이미지 업데이트
+        updatePreviewImage(templateSeq, previewImage);
 
-        if (!template.getUser().equals(user)) {
-            throw new IllegalArgumentException("본인이 작성한 템플릿만 수정할 수 있습니다.");
-        }
+        // 본문 내 이미지 업데이트
+        updateContentImages(template, contentImages, requestDTO);
 
-        template.updateTemplate(requestDTO.getTemplateTitle(),
-                requestDTO.getTemplateContent(),
-                OpenScope.valueOf(requestDTO.getOpenScope().toUpperCase()));
-        if (requestDTO.getPreviewImageUrl() != null) {
-            // 5.1 기존 Flag 조회
-            Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq("template_preview", templateSeq)
-                    .orElseThrow(() -> new IllegalArgumentException("해당 템플릿에 연결된 Flag가 없습니다."));
-
-            // 5.2 기존 Picture 삭제
-            pictureRepository.deleteByFlag(flag);
-
-            // 5.3 새 Picture 생성 및 저장
-            Picture newPicture = Picture.builder()
-                    .flag(flag)
-                    .pictureName(template.getTemplateTitle() + "_preview")
-                    .pictureUrl(requestDTO.getPreviewImageUrl())
-                    .build();
-            pictureRepository.save(newPicture);
-        }
+        // 템플릿 정보 업데이트
+        template.updateTemplate(requestDTO.getTemplateTitle(), requestDTO.getTemplateContent(), OpenScope.valueOf(requestDTO.getOpenScope()));
+        templateRepository.save(template);
     }
 
+    // 템플릿 삭제
     @Transactional
     public void deleteTemplate(String userId, Long templateSeq) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+        User user = getUser(userId);
+        Template template = getTemplate(templateSeq);
+        validateTemplateOwnership(template, user);
 
-        Template template = templateRepository.findById(templateSeq)
-                .orElseThrow(() -> new IllegalArgumentException("템플릿을 찾을 수 없습니다."));
-
-        if (!template.getUser().equals(user)) {
-            throw new IllegalArgumentException("본인이 작성한 템플릿만 삭제할 수 있습니다.");
-        }
+        deleteImagesByFlagType(templateSeq, TEMPLATE_FLAG);
+        deleteImagesByFlagType(templateSeq, TEMPLATE_PREVIEW_FLAG);
 
         template.markAsDeleted();
         templateRepository.save(template);
+    }
 
-        // Flag 조회
-        Optional<Flag> flagOptional = flagRepository.findByFlagTypeAndFlagEntitySeq("template_preview", template.getTemplateSeq());
+    // 공통 로직
+    private void updatePreviewImage(Long templateSeq, MultipartFile previewImage) {
+        if (previewImage != null && !previewImage.isEmpty()) {
+            Flag previewFlag = flagRepository.findByFlagTypeAndFlagEntitySeq(TEMPLATE_PREVIEW_FLAG, templateSeq)
+                    .orElseGet(() -> saveFlag(templateSeq, TEMPLATE_PREVIEW_FLAG));
 
-        // Flag가 존재하면 연결된 Picture 조회 및 삭제 처리
-        flagOptional.ifPresent(flag -> {
-            Optional<Picture> pictureOptional = pictureRepository.findByFlag_FlagSeq(flag.getFlagSeq());
+            deleteImagesByFlagType(templateSeq, TEMPLATE_PREVIEW_FLAG);
+            pictureService.uploadPicture(previewImage, previewFlag);
+        }
+    }
 
-            // Picture 존재 시 삭제 처리
-            pictureOptional.ifPresent(picture -> {
-                picture.markAsDeleted();
-                pictureRepository.save(picture);
-            });
+    private void updateContentImages(Template template, List<MultipartFile> contentImages, TemplateRequestDTO requestDTO) {
+        if (contentImages != null && !contentImages.isEmpty()) {
+            deleteImagesByFlagType(template.getTemplateSeq(), TEMPLATE_FLAG);
+
+            String updatedContent = pictureService.replacePlaceHolderWithUrls(
+                    requestDTO.getTemplateContent(),
+                    contentImages,
+                    TEMPLATE_FLAG,
+                    template.getTemplateSeq()
+            );
+
+            template.updateTemplate(requestDTO.getTemplateTitle(), updatedContent, OpenScope.valueOf(requestDTO.getOpenScope()));
+        }
+    }
+
+    private void deleteImagesByFlagType(Long entitySeq, String flagType) {
+        List<Picture> pictures = pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeq(flagType, entitySeq);
+        pictures.forEach(picture -> {
+            amazonS3Service.deleteImageFromS3(picture.getPictureUrl());
+            pictureRepository.delete(picture);
         });
     }
-}
 
+    private Flag saveFlag(Long entitySeq, String flagType) {
+        Flag flag = Flag.builder()
+                .flagType(flagType)
+                .flagEntitySeq(entitySeq)
+                .build();
+        flagRepository.save(flag);
+        return flag;
+    }
+
+    private User getUser(String userId) {
+        return userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+    }
+
+    private Template getTemplate(Long templateSeq) {
+        return templateRepository.findByTemplateSeqAndDeletedAtIsNull(templateSeq)
+                .orElseThrow(() -> new IllegalArgumentException("템플릿을 찾을 수 없습니다."));
+    }
+
+    private void validateUserPart(User user) {
+        if (user.getPart() == null) {
+            throw new IllegalArgumentException("회원의 부서 정보가 없습니다.");
+        }
+    }
+
+    private void validateTemplateOwnership(Template template, User user) {
+        if (!template.getUser().equals(user)) {
+            throw new IllegalArgumentException("본인이 작성한 템플릿만 수정할 수 있습니다.");
+        }
+    }
+
+    private boolean isTemplateAccessible(Template template, User user) {
+        return switch (template.getOpenScope()) {
+            case PRIVATE -> template.getUser().equals(user);
+            case CLASS_OPEN -> user.getPart() != null && user.getPart().equals(template.getPart());
+            case PUBLIC -> true;
+        };
+    }
+
+    private TemplateListDTO toTemplateListDTO(Template template) {
+        String previewImageUrl = flagRepository.findByFlagTypeAndFlagEntitySeq(TEMPLATE_PREVIEW_FLAG, template.getTemplateSeq())
+                .flatMap(flag -> pictureRepository.findByFlag_FlagSeq(flag.getFlagSeq()))
+                .map(Picture::getPictureUrl)
+                .orElse(null);
+
+        return TemplateListDTO.builder()
+                .templateSeq(template.getTemplateSeq())
+                .templateTitle(template.getTemplateTitle())
+                .build();
+    }
+}

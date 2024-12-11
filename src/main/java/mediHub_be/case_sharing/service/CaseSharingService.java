@@ -4,19 +4,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.amazonS3.service.AmazonS3Service;
 import mediHub_be.board.Util.ViewCountManager;
 import mediHub_be.board.entity.Flag;
-import mediHub_be.board.repository.BookmarkRepository;
+import mediHub_be.board.entity.Picture;
 import mediHub_be.board.repository.FlagRepository;
+import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.board.service.BookmarkService;
+import mediHub_be.board.service.FlagService;
 import mediHub_be.board.service.KeywordService;
+import mediHub_be.board.service.PictureService;
 import mediHub_be.case_sharing.dto.*;
 import mediHub_be.case_sharing.entity.CaseSharing;
-import mediHub_be.case_sharing.entity.CaseSharingComment;
-import mediHub_be.board.entity.Keyword;
 import mediHub_be.case_sharing.entity.Template;
 import mediHub_be.case_sharing.entity.CaseSharingGroup;
-import mediHub_be.case_sharing.repository.CaseSharingCommentRepository;
 import mediHub_be.case_sharing.repository.CaseSharingRepository;
 import mediHub_be.board.repository.KeywordRepository;
 import mediHub_be.case_sharing.repository.TemplateRepository;
@@ -25,9 +26,9 @@ import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,12 +38,15 @@ public class CaseSharingService {
     private final CaseSharingRepository caseSharingRepository;
     private final CaseSharingGroupRepository caseSharingGroupRepository;
     private final UserRepository userRepository;
-    private final KeywordRepository keywordRepository;
+    private final PictureRepository pictureRepository;
+    private final PictureService pictureService;
     private final TemplateRepository templateRepository;
     private final KeywordService keywordService;
     private final ViewCountManager viewCountManager;
     private final FlagRepository flagRepository;
     private final BookmarkService bookmarkService;
+    private final AmazonS3Service amazonS3Service;
+    private final FlagService flagService;
 
     private static final String CASE_SHARING_FLAG = "case_sharing";
 
@@ -55,7 +59,6 @@ public class CaseSharingService {
                 .map(this::toListDTO)
                 .collect(Collectors.toList());
     }
-
 
     //2. 케이스 공유 상세 조회
     @Transactional
@@ -95,7 +98,7 @@ public class CaseSharingService {
 
     //3. 케이스 공유 등록
     @Transactional
-    public Long createCaseSharing(CaseSharingCreateRequestDTO requestDTO, String userId) {
+    public Long createCaseSharing(CaseSharingCreateRequestDTO requestDTO, List<MultipartFile> images,String userId) {
 
         User user = findUser(userId);
         validateDoctor(user);
@@ -119,12 +122,16 @@ public class CaseSharingService {
         );
         caseSharingRepository.save(caseSharing);
         saveKeywordsAndFlag(requestDTO.getKeywords(), caseSharing.getCaseSharingSeq());
+
+        // 이미지 업로드 및 본문 변환 처리
+        updateContentWithImages(caseSharing, images, requestDTO.getContent());
+
         return caseSharing.getCaseSharingSeq();
     }
 
     //4. 케이스 공유 수정
     @Transactional
-    public Long createNewVersion(Long caseSharingSeq, CaseSharingUpdateRequestDTO requestDTO, String userId) {
+    public Long createNewVersion(Long caseSharingSeq, CaseSharingUpdateRequestDTO requestDTO, List<MultipartFile> images, String userId) {
 
         User user = findUser(userId);
         CaseSharing existingCaseSharing = findCaseSharing(caseSharingSeq);
@@ -150,6 +157,9 @@ public class CaseSharingService {
         caseSharingRepository.save(newCaseSharing);
 
         saveKeywordsAndFlag(requestDTO.getKeywords(), newCaseSharing.getCaseSharingSeq());
+
+        // 이미지 업로드 및 본문 변환 처리
+        updateContentWithImages(newCaseSharing, images, requestDTO.getContent());
 
         return newCaseSharing.getCaseSharingSeq();
     }
@@ -182,6 +192,10 @@ public class CaseSharingService {
                 caseSharingRepository.save(previousVersion);
             }
         }
+        keywordService.deleteKeywords(CASE_SHARING_FLAG, caseSharing.getCaseSharingSeq());
+
+        deletePictures(caseSharing.getCaseSharingSeq());
+
         caseSharing.markAsDeleted();
         caseSharingRepository.save(caseSharing);
     }
@@ -229,7 +243,7 @@ public class CaseSharingService {
 
     //8. 케이스 공유 임시 저장 등록
     @Transactional
-    public Long saveDraft(CaseSharingCreateRequestDTO requestDTO, String userId) {
+    public Long saveDraft(CaseSharingCreateRequestDTO requestDTO, List<MultipartFile> images, String userId) {
         User user = findUser(userId);
         Template template = findTemplate(requestDTO.getTemplateSeq());
 
@@ -247,6 +261,7 @@ public class CaseSharingService {
         );
         caseSharingRepository.save(draftCaseSharing);
         saveKeywordsAndFlag(requestDTO.getKeywords(), draftCaseSharing.getCaseSharingSeq());
+        updateContentWithImages(draftCaseSharing, images, requestDTO.getContent());
         return draftCaseSharing.getCaseSharingSeq();
     }
 
@@ -285,17 +300,28 @@ public class CaseSharingService {
 
     // 11. 임시 저장된 케이스 공유 수정.
     @Transactional
-    public Long updateDraft(Long caseSharingSeq, String userId, CaseSharingDraftUpdateDTO requestDTO) {
+    public Long updateDraft(Long caseSharingSeq, String userId, List<MultipartFile> newImages, CaseSharingDraftUpdateDTO requestDTO) {
         User user = findUser(userId);
         CaseSharing draft = findDraft(caseSharingSeq);
         validateAuthor(draft, user);
 
-        // 3. 제목 및 내용 업데이트
+        // 제목 및 내용 업데이트
         draft.updateContent(requestDTO.getCaseSharingTitle(), requestDTO.getCaseSharingContent());
         caseSharingRepository.save(draft);
+        // 키워드 수정
+        Flag flag = flagService.findFlag(CASE_SHARING_FLAG, draft.getCaseSharingSeq())
+                .orElseThrow(() -> new IllegalArgumentException("해당 Flag가 존재하지 않습니다."));
 
-        // 4. 키워드 수정
-        keywordService.deleteKeywords(CASE_SHARING_FLAG, draft.getCaseSharingSeq());
+        deletePictures(draft.getCaseSharingSeq());
+
+        // 4. 새로운 사진 업로드 및 저장
+        if (newImages != null && !newImages.isEmpty()) {
+            String updatedContent = pictureService.replacePlaceHolderWithUrls(requestDTO.getCaseSharingContent(), newImages, flag.getFlagType(), flag.getFlagEntitySeq());
+            draft.updateContent(requestDTO.getCaseSharingTitle(), updatedContent);
+            caseSharingRepository.save(draft);
+        }
+
+        keywordService.updateKeywords(requestDTO.getKeywords(),CASE_SHARING_FLAG, draft.getCaseSharingSeq());
         return draft.getCaseSharingSeq();
     }
 
@@ -308,6 +334,13 @@ public class CaseSharingService {
         validateAuthor(draft, user);
 
         keywordService.deleteKeywords(CASE_SHARING_FLAG, caseSharingSeq);
+
+        List<Picture> existingPictures = pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeq(CASE_SHARING_FLAG, caseSharingSeq);
+        for (Picture picture : existingPictures) {
+            amazonS3Service.deleteImageFromS3(picture.getPictureUrl()); // S3에서 삭제
+            pictureRepository.delete(picture); // 엔티티 삭제
+        }
+
         caseSharingRepository.delete(draft);
     }
 
@@ -324,6 +357,27 @@ public class CaseSharingService {
     }
 
     //예외 메소드
+
+    private void updateContentWithImages(CaseSharing caseSharing, List<MultipartFile> images, String content) {
+        if (images != null && !images.isEmpty()) {
+            String updatedContent = pictureService.replacePlaceHolderWithUrls(
+                    content,
+                    images,
+                    CASE_SHARING_FLAG,
+                    caseSharing.getCaseSharingSeq()
+            );
+            caseSharing.updateContent(caseSharing.getCaseSharingTitle(), updatedContent);
+            caseSharingRepository.save(caseSharing);
+        }
+    }
+
+    private void deletePictures(Long entitySeq) {
+        List<Picture> pictures = pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeq(CASE_SHARING_FLAG, entitySeq);
+        pictures.forEach(picture -> {
+            amazonS3Service.deleteImageFromS3(picture.getPictureUrl());
+            pictureRepository.delete(picture);
+        });
+    }
 
     private User findUser(String userId) {
         return userRepository.findByUserId(userId)
@@ -388,5 +442,4 @@ public class CaseSharingService {
                 caseSharing.getCaseSharingViewCount()
         );
     }
-
 }

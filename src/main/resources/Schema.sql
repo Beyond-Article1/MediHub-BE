@@ -174,7 +174,7 @@ CREATE TABLE case_sharing (
                               template_seq	bigint	NOT NULL,
                               case_sharing_group_seq	bigint	NOT NULL,
                               case_sharing_title	varchar(255)	NOT NULL,
-                              case_sharing_content	text	NOT NULL,
+                              case_sharing_content	longtext	NOT NULL,
                               case_sharing_is_draft	boolean	NOT NULL,
                               case_sharing_is_latest	boolean	NULL,
                               created_at	datetime	NOT NULL	DEFAULT NOW(),

@@ -8,8 +8,11 @@ import mediHub_be.case_sharing.dto.*;
 import mediHub_be.case_sharing.service.TemplateService;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.security.util.SecurityUtil;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -36,6 +39,7 @@ public class TemplateController {
         return ResponseEntity.ok(ApiResponse.ok(templateService.getTemplatesByFilter(userId, filter)));
     }
 
+
     @Operation(summary = "템플릿 상세 조회", description = "특정 템플릿의 상세 내용을 조회합니다.")
     @GetMapping("/{templateSeq}")
     public ResponseEntity<ApiResponse<TemplateDetailDTO>> getTemplateDetail(@PathVariable("templateSeq") Long templateSeq) {
@@ -44,18 +48,27 @@ public class TemplateController {
     }
 
     @Operation(summary = "템플릿 등록", description = "새로운 케이스 공유 템플릿 등록")
-    @PostMapping
-    public ResponseEntity<ApiResponse<Long>> createTemplate(@RequestBody TemplateRequestDTO requestDTO) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<Long>> createTemplate(
+            @RequestPart("data") TemplateRequestDTO requestDTO,
+            @RequestPart(value = "previewImage", required = false) MultipartFile previewImage, // 미리보기 사진
+            @RequestPart(value = "images", required = false) List<MultipartFile> pictures // 이미지 파일
+            )
+    {
         String userId = SecurityUtil.getCurrentUserId();
-        return ResponseEntity.ok(ApiResponse.ok(templateService.createTemplate(userId, requestDTO)));
+        return ResponseEntity.ok(ApiResponse.ok(templateService.createTemplate(userId, pictures, previewImage, requestDTO)));
     }
 
     @Operation(summary = "템플릿 수정", description = "기존 템플릿을 수정합니다.")
-    @PutMapping("/{templateSeq}")
-    public ResponseEntity<ApiResponse<Void>> updateTemplate(@PathVariable("templateSeq") Long templateSeq,
-                                                            @RequestBody TemplateRequestDTO requestDTO) {
+    @PutMapping(value = "/{templateSeq}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<Void>> updateTemplate(
+            @PathVariable("templateSeq") Long templateSeq,
+            @RequestPart TemplateRequestDTO requestDTO,
+            @RequestPart(value = "previewImage", required = false) MultipartFile previewImage, // 미리보기 사진
+            @RequestPart(value = "images", required = false) List<MultipartFile> pictures)
+    {
         String userId = SecurityUtil.getCurrentUserId();
-        templateService.updateTemplate(userId, templateSeq, requestDTO );
+        templateService.updateTemplate(userId, templateSeq,   previewImage, pictures, requestDTO);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
