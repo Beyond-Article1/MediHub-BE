@@ -1,18 +1,14 @@
 package mediHub_be.cp.repository;
 
-import mediHub_be.cp.dto.ResponseCpDTO;
 import mediHub_be.cp.dto.ResponseCpOpinionDTO;
 import mediHub_be.cp.entity.CpOpinion;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-@Repository
 public interface CpOpinionRepository extends JpaRepository<CpOpinion, Long> {
 
     // 활성 상태의 CP 의견을 조회하는 메서드
