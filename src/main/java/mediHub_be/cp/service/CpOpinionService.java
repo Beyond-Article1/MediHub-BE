@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Keyword;
-import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.KeywordRepository;
 import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.FlagService;
@@ -45,7 +44,6 @@ public class CpOpinionService {
 
     // Repository
     private final CpOpinionRepository cpOpinionRepository;
-    private final FlagRepository flagRepository;
     private final KeywordRepository keywordRepository;
     private final CpOpinionVoteRepository cpOpinionVoteRepository;
 
@@ -411,6 +409,7 @@ public class CpOpinionService {
 
             // 2. 사진 삭제
             pictureService.deletePictures(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
+            logger.info("{}번 CP 의견에 해당하는 사진을 삭제하였습니다.", entity.getCpOpinionSeq());
 
             // 3. 북마크 삭제
             deleteBookmark(entity);
@@ -463,7 +462,7 @@ public class CpOpinionService {
             // 1. 작성자가 삭제하는 경우
             if (bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId())) {
                 // 북마크가 된 경우
-                bookmarkService.toggleBookmark(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId());
+                bookmarkService.deleteBookmarkByFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
                 logger.info("{}번 CP 의견의 북마크를 삭제했습니다.", entity.getCpOpinionSeq());
             }
         } else {
@@ -565,18 +564,21 @@ public class CpOpinionService {
 
     /**
      * CP 의견 요청 본문의 유효성을 검사합니다.
+     * <p>
+     * 이 메서드는 CP 의견 요청 본문(`requestBody`)의 유효성을 검사하며,
+     * 다음 조건을 확인합니다:
+     * 1. `requestBody`가 null인지 확인합니다.
+     * 2. `cpOpinionContent`가 null인지 확인합니다.
+     * 3. `cpOpinionContent`는 비어 있지 않아야 하며,
+     * 공백만으로 이루어진 문자열은 허용되지 않습니다.
+     * 4. `cpOpinionContent`의 길이는 1자 이상 65,535자 이하이어야 합니다.
+     * (MariaDB의 TEXT 타입에 맞춰 설정)
      *
      * @param requestBody 검사할 CP 의견 요청 본문
-     * @throws CustomException 유효성 검사 실패 시 예외를 발생시킵니다.
+     * @throws CustomException 유효성 검사 실패 시 발생하며,
+     *                         필수 필드가 누락된 경우에 해당합니다.
      */
     private void validateRequestCpOpinion(RequestCpOpinionDTO requestBody) {
-        // 입력값 유효성 검사
-        // 1. requestBody가 null인지 확인합니다.
-        // 2. cpOpinionContent가 null인지 확인합니다.
-        // 3. cpOpinionContent는 비어 있지 않아야 하며,
-        //    공백만으로 이루어진 문자열은 허용되지 않습니다.
-        // 4. cpOpinionContent의 길이는 1자 이상 65,535자 이하이어야 합니다.
-        //    (MariaDB의 TEXT 타입에 맞춰 설정)
         if (requestBody == null || requestBody.getCpOpinionContent() == null ||
                 !requestBody.getCpOpinionContent().matches("^(?!\\s*$).{1,65535}$")) {
             logger.warn("입력값 유효성 검사 실패: requestBody = {}, cpOpinionContent = {}", requestBody, requestBody != null ? requestBody.getCpOpinionContent() : "null");
