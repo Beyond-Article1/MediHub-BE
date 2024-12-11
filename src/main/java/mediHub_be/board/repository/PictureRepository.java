@@ -26,6 +26,7 @@ public interface PictureRepository extends JpaRepository<Picture, Long> {
 
     List<Picture> findAllByFlag_FlagSeqAndDeletedAtIsNull(Long flagSeq);
 
+
     @Query("SELECT p " +
             "FROM Picture AS p " +
             "JOIN Flag AS f ON f.flagSeq = p.flag.flagSeq " +
