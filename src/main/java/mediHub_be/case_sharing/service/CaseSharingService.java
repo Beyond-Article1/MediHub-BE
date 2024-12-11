@@ -118,7 +118,7 @@ public class CaseSharingService {
 
         // 이미지 업로드 및 본문 변환 처리
         updateContentWithImages(caseSharing, images, requestDTO.getContent());
-
+        
         return caseSharing.getCaseSharingSeq();
     }
 
