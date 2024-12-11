@@ -66,16 +66,16 @@ public class UserService {
 
     // 회원 자기 정보 수정
     @Transactional
-    public User updateUser(Long userSeq, String userEmail, String userPhone, String userPassword, MultipartFile profileImage) throws IOException {
+    public User updateUser(Long userSeq, UserUpdateRequestDTO userUpdateRequestDTO, MultipartFile profileImage) throws IOException {
         // 사용자 정보 조회
         User user = userRepository.findById(userSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
-        // 수정 가능한 정보 업데이트
-        String updatedEmail = userEmail != null && !userEmail.isEmpty() ? userEmail : user.getUserEmail();
-        String updatedPhone = userPhone != null && !userPhone.isEmpty() ? userPhone : user.getUserPhone();
-        String updatedPassword = userPassword != null && !userPassword.isEmpty()
-                ? passwordEncoder.encode(userPassword)
+        // 이메일, 전화번호, 비밀번호 수정
+        String updatedEmail = userUpdateRequestDTO.getUserEmail() != null ? userUpdateRequestDTO.getUserEmail() : user.getUserEmail();
+        String updatedPhone = userUpdateRequestDTO.getUserPhone() != null ? userUpdateRequestDTO.getUserPhone() : user.getUserPhone();
+        String updatedPassword = userUpdateRequestDTO.getUserPassword() != null
+                ? passwordEncoder.encode(userUpdateRequestDTO.getUserPassword())
                 : user.getUserPassword();
 
         user.updateUserinfo(updatedEmail, updatedPhone, updatedPassword);
@@ -88,13 +88,9 @@ public class UserService {
             // 기존 사진 삭제
             List<Picture> pictures = pictureRepository.findAllByFlag_FlagSeq(flag.getFlagSeq());
             for (Picture picture : pictures) {
-                try {
-                    amazonS3Service.deleteImageFromS3(picture.getPictureUrl());
-                    picture.setDeleted();
-                    pictureRepository.save(picture);
-                } catch (Exception e) {
-                    throw new CustomException(ErrorCode.FILE_DELETE_FAILED);
-                }
+                amazonS3Service.deleteImageFromS3(picture.getPictureUrl());
+                picture.setDeleted();
+                pictureRepository.save(picture);
             }
 
             // 새 사진 업로드
@@ -111,7 +107,6 @@ public class UserService {
 
         return user;
     }
-
 
     // 전체 회원 조회
     @Transactional(readOnly = true)
