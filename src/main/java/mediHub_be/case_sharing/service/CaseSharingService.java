@@ -51,7 +51,7 @@ public class CaseSharingService {
     @Transactional(readOnly = true)
     public List<CaseSharingListDTO> getCaseList(String userId) {
         userService.findByUserId(userId);
-        return caseSharingRepository.findAllLatestVersionsNotDraft()
+        return caseSharingRepository.findAllLatestVersionsNotDraftAndDeletedAtIsNull()
                 .stream()
                 .map(this::toListDTO)
                 .collect(Collectors.toList());
@@ -118,7 +118,6 @@ public class CaseSharingService {
 
         // 이미지 업로드 및 본문 변환 처리
         updateContentWithImages(caseSharing, images, requestDTO.getContent());
-
         return caseSharing.getCaseSharingSeq();
     }
 
@@ -261,7 +260,7 @@ public class CaseSharingService {
     @Transactional
     public List<CaseSharingDraftListDTO> getDraftsByUser(String userId) {
         User user = userService.findByUserId(userId);
-        List<CaseSharing> drafts = caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftTrue(user.getUserSeq());
+        List<CaseSharing> drafts = caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftTrueAndDeletedAtIsNull(user.getUserSeq());
         return drafts.stream()
                 .map(draft -> new CaseSharingDraftListDTO(
                         draft.getCaseSharingSeq(),
@@ -324,7 +323,7 @@ public class CaseSharingService {
         validateAuthor(draft, user);
 
         keywordService.deleteKeywords(CASE_SHARING_FLAG, caseSharingSeq);
-        List<Picture> existingPictures = pictureService.getPicturesByFlagTypeAndEntitySeq(CASE_SHARING_FLAG, draft.getCaseSharingSeq());
+        List<Picture> existingPictures = pictureService.getPicturesByFlagTypeAndEntitySeqAndIsDeletedIsNotNull(CASE_SHARING_FLAG, draft.getCaseSharingSeq());
 
         Flag flag = flagService.findFlag(CASE_SHARING_FLAG, caseSharingSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
@@ -385,7 +384,7 @@ public class CaseSharingService {
     }
 
     private CaseSharing findDraft(Long caseSharingSeq) {
-        return caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrue(caseSharingSeq)
+        return caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrueAndDeletedAtIsNull(caseSharingSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CASE));
     }
 

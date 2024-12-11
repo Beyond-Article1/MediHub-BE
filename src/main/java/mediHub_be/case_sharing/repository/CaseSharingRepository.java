@@ -13,11 +13,7 @@ import java.util.Optional;
 public interface CaseSharingRepository extends JpaRepository<CaseSharing, Long> {
     // 최신 버전의 케이스 공유 목록만 조회
     @Query("SELECT c FROM CaseSharing c WHERE c.caseSharingIsLatest = true AND c.caseSharingIsDraft = false AND c.deletedAt IS NULL")
-    List<CaseSharing> findAllLatestVersionsNotDraft();
-
-    // 삭제되지 않은 게시글만 조회
-    @Query("SELECT cs FROM CaseSharing cs WHERE cs.deletedAt IS NULL")
-    List<CaseSharing> findAllActive();
+    List<CaseSharing> findAllLatestVersionsNotDraftAndDeletedAtIsNull();
 
     // 최신 이전 버전을 찾는 메서드
     @Query("SELECT c FROM CaseSharing c WHERE c.caseSharingGroup.caseSharingGroupSeq = :caseSharingGroupSeq " +
@@ -36,8 +32,8 @@ public interface CaseSharingRepository extends JpaRepository<CaseSharing, Long> 
     @Query("SELECT c FROM CaseSharing c WHERE c.caseSharingGroup.caseSharingGroupSeq = :caseSharingGroupSeq AND c.caseSharingIsDraft = false AND c.deletedAt IS NULL")
     List<CaseSharing> findByCaseSharingGroupAndIsDraftFalseAndDeletedAtIsNull(Long caseSharingGroupSeq);
 
-    List<CaseSharing> findByUserUserSeqAndCaseSharingIsDraftTrue(Long userSeq);
+    List<CaseSharing> findByUserUserSeqAndCaseSharingIsDraftTrueAndDeletedAtIsNull(Long userSeq);
 
-    Optional<CaseSharing> findByCaseSharingSeqAndCaseSharingIsDraftTrue(Long caseSharingSeq);
+    Optional<CaseSharing> findByCaseSharingSeqAndCaseSharingIsDraftTrueAndDeletedAtIsNull(Long caseSharingSeq);
 
 }

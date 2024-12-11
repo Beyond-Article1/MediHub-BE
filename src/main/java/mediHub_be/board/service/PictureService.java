@@ -102,10 +102,10 @@ public class PictureService {
         });
     }
 
-    @Transactional
-    public List<Picture> getPicturesByFlagTypeAndEntitySeq(String flagType, Long entitySeq) {
-        return pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeq(flagType, entitySeq);
 
+    @Transactional
+    public List<Picture> getPicturesByFlagTypeAndEntitySeqAndIsDeletedIsNotNull(String flagType, Long entitySeq) {
+        return pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeqAndPictureIsDeletedIsNotNull(flagType, entitySeq);
     }
 
     private void cleanupUploadedFiles(List<String> uploadedUrls) {
