@@ -2,6 +2,7 @@ package mediHub_be.src.test.cp.controller;
 
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.cp.dto.ResponseCpDTO;
+import mediHub_be.cp.dto.ResponseCpDetailDTO;
 import mediHub_be.cp.service.CpService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -134,7 +135,7 @@ class CpControllerTest {
     @DisplayName("CP 버전 번호를 입력하여 CP 조회 테스트")
     public void getCpByCpVersionSeqTest() throws Exception {
         // Given
-        ApiResponse<ResponseCpDTO> responseApi = ApiResponse.ok(cp1);
+        ApiResponse<ResponseCpDetailDTO> responseApi = ApiResponse.ok(ResponseCpDetailDTO.toDto(cp1, "https://test.png"));
         long inputCpVersionSeq = 12L;
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();

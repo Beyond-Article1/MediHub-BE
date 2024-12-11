@@ -7,6 +7,7 @@ import mediHub_be.board.entity.Picture;
 import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -84,7 +85,18 @@ public class PictureService {
     @Transactional
     public List<Picture> getPicturesByFlagTypeAndEntitySeq(String flagType, Long entitySeq) {
         return pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeq(flagType, entitySeq);
+    }
 
+    @Transactional(readOnly = true)
+    public String getUserProfileUrl(long userSeq) {
+
+        Picture profile = pictureRepository.findUserProfile(userSeq).orElse(null);
+
+        if (profile != null) {
+            return profile.getPictureUrl();
+        } else {
+            return UserService.DEFAULT_PROFILE_URL;
+        }
     }
 
     @Transactional

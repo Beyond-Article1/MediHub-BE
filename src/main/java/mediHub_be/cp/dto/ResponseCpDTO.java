@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
-@Builder
 public class ResponseCpDTO {
 
     private long cpVersionSeq;                  // cp 버전 번호
@@ -20,6 +19,21 @@ public class ResponseCpDTO {
     private String userName;                    // 작성자명
     private String userId;                      // 작성자 아이디
     private String partName;                    // 작성자 과명(ex: 외과/내과/안과 ...)
+    private boolean isBookmarked;               // 북마크여부
+
+    @Builder
+    public ResponseCpDTO(
+            long cpVersionSeq,
+            String cpName,
+            String cpDescription,
+            long cpViewCount,
+            String cpVersion,
+            String cpVersionDescription,
+            LocalDateTime createdAt,
+            String userName,
+            String userId,
+            String partName) {
+    }
 
     // 변환 메소드
     public static ResponseCpDTO toDto(Map<String, Object> map) {
