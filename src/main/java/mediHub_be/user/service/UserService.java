@@ -13,6 +13,7 @@ import mediHub_be.user.dto.UserResponseDTO;
 import mediHub_be.user.dto.UserSearchDTO;
 import mediHub_be.user.dto.UserUpdateRequestDTO;
 import mediHub_be.user.entity.User;
+import mediHub_be.user.entity.UserAuth;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -156,6 +157,10 @@ public class UserService {
     public User findByUserId(String userId) {
         return userRepository.findByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+    }
+
+    public boolean validateAdmin(User user){
+        return user.getUserAuth().equals(UserAuth.ADMIN);
     }
 
 }
