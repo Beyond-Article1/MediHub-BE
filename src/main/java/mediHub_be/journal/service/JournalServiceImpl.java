@@ -16,6 +16,7 @@ import mediHub_be.journal.repository.JournalRepository;
 import mediHub_be.journal.repository.JournalSearchRepository;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
+import mediHub_be.user.service.UserService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -49,8 +50,8 @@ public class JournalServiceImpl implements JournalService{
     // 논문 repository
     private final JournalRepository journalRepository;
 
-    // 회원 repository
-    private final UserRepository userRepository;
+    // 회원 서비스
+    private final UserService userService;
 
     // 논문 조회 repository
     private final JournalSearchRepository journalSearchRepository;
@@ -66,13 +67,13 @@ public class JournalServiceImpl implements JournalService{
 
     public JournalServiceImpl(@Qualifier(value = "openAiWebClient") WebClient webClient,
                          JournalRepository journalRepository,
-                         UserRepository userRepository,
+                         UserService userService,
                          JournalSearchRepository journalSearchRepository,
                               FlagService flagService,
                               BookmarkService bookmarkService) {
         this.openAiWebClient = webClient;
         this.journalRepository = journalRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.journalSearchRepository = journalSearchRepository;
         this.flagService = flagService;
         this.bookmarkService = bookmarkService;
@@ -120,7 +121,7 @@ public class JournalServiceImpl implements JournalService{
      * 논문 상세보기
      */
     @Transactional
-    public ResponseAbstractDTO summarizeAbstractByPmid(String userId, String journalPmid, ResponsePubmedDTO requestDTO) {
+    public ResponseAbstractDTO summarizeAbstractByPmid(Long userSeq, String journalPmid, ResponsePubmedDTO requestDTO) {
         Map<String, Object> requestBody = Map.of(
                 "model", model,
                 "messages", List.of(
@@ -141,8 +142,7 @@ public class JournalServiceImpl implements JournalService{
                     .orElseGet(() -> journalRepository.save(requestDTO.toEntity()));
 
             // user 조회
-            User user = userRepository.findByUserId(userId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+            User user = userService.findUser(userSeq);
 
             // 논문과 유저를 기반으로 조회이력 찾기 (있으면 updateDate 변경, 없으면 생성)
             journalSearchRepository.findByUserAndJournal(user, savedJournal)
@@ -230,25 +230,23 @@ public class JournalServiceImpl implements JournalService{
     /**
      * 논문 북마크
      */
-    public boolean journalBookmark(String userId, Long journalSeq){
+    public boolean journalBookmark(Long userSeq, Long journalSeq){
 
         // User 확인
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+        User user = userService.findUser(userSeq);
 
-        // 게시판 식별
-        Flag flag = flagService.createFlag(journalFlagName, journalSeq);
+        // 게시판 식별 (있으면 조회 없으면 생성)
+        flagService.createFlag(journalFlagName, journalSeq);
 
         // true (북마크), false (북마크 해제)
-        return bookmarkService.toggleBookmark(journalFlagName, journalSeq, userId);
+        return bookmarkService.toggleBookmark(journalFlagName, journalSeq, user.getUserId());
     }
 
     /**
      * 내가 조회한 논문
      */
-    public List<ResponseJournalLogDTO> getMySearchJournal(String userId) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+    public List<ResponseJournalLogDTO> getMySearchJournal(Long userSeq) {
+        User user = userService.findUser(userSeq);
 
         return journalSearchRepository.findJournalLogs(user);
     }
@@ -256,9 +254,8 @@ public class JournalServiceImpl implements JournalService{
     /**
      * 내가 북마크한 논문
      */
-    public List<ResponseJournalLogDTO> getMyBookmarkJournal(String userId){
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+    public List<ResponseJournalLogDTO> getMyBookmarkJournal(Long userSeq){
+        User user = userService.findUser(userSeq);
 
         return bookmarkService.findByUserAndFlagType(user, journalFlagName)
                 .stream()
