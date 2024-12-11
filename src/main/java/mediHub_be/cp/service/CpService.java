@@ -5,7 +5,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.Util.ViewCountManager;
-import mediHub_be.board.entity.Picture;
 import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
@@ -16,7 +15,6 @@ import mediHub_be.cp.entity.Cp;
 import mediHub_be.cp.repository.CpRepository;
 import mediHub_be.cp.repository.CpVersionRepository;
 import mediHub_be.security.util.SecurityUtil;
-import mediHub_be.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -34,7 +32,6 @@ public class CpService {
     // Service
     private final BookmarkService bookmarkService;
     private final PictureService pictureService;
-
 
     // Repository
     private final CpRepository cpRepository;
@@ -187,16 +184,7 @@ public class CpService {
 
         checkBookmark(dto);
 
-        List<Picture> pictures = pictureService.getPicturesByFlagTypeAndEntitySeq("USER", SecurityUtil.getCurrentUserSeq());
-
-        String profileUrl = null;
-        if (pictures != null && !pictures.isEmpty()) {
-            // 리스트가 비어 있지 않은 경우 마지막 요소의 URL을 가져옵니다.
-            profileUrl = pictures.get(pictures.size() - 1).getPictureUrl();
-        } else {
-            // 필요한 경우 기본 URL이나 null을 설정합니다.
-            profileUrl = UserService.DEFAULT_PROFILE_URL;
-        }
+        String profileUrl = pictureService.getUserProfileUrl(entity.getUserSeq());
 
         return ResponseCpDetailDTO.toDto(dto, profileUrl);
     }
