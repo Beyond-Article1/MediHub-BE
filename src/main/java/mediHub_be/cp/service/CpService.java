@@ -133,7 +133,7 @@ public class CpService {
             // Map을 ResponseCpDTO로 변환
             List<ResponseCpDTO> dtoList = entityList.stream()
                     .map(ResponseCpDTO::toDto)
-                    .toList();
+                    .collect(Collectors.toList());
 
             checkBookmark(dtoList);
 
