@@ -6,6 +6,8 @@ import mediHub_be.board.entity.Bookmark;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.repository.BookmarkRepository;
 import mediHub_be.board.repository.FlagRepository;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class BookmarkService {
     private final BookmarkRepository bookmarkRepository;
     private final FlagRepository flagRepository;
     private final UserRepository userRepository;
+    private final FlagService flagService;
 
     @Transactional
     public boolean toggleBookmark(String flagType, Long entitySeq, String userId) {
@@ -68,5 +71,15 @@ public class BookmarkService {
     // 게시판이 삭제되었을 때 해당 게시판과 연결된 북마크 삭제.
     public void deleteBookmarkByFlag(Flag flag) {
         bookmarkRepository.deleteAllByFlagSeq(flag.getFlagSeq());
+    }
+
+    public void deleteBookmarkByFlag(String flagType, long entitySeq) {
+        // 1. flag 조회
+        Flag flag = flagService.findFlag(flagType, entitySeq).orElseThrow(() -> {
+            return new CustomException(ErrorCode.NOT_FOUND_FLAG);
+        });
+
+        // 2. flag 북마크 삭제
+        deleteBookmarkByFlag(flag);
     }
 }
