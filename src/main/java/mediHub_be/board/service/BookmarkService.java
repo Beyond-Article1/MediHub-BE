@@ -69,7 +69,4 @@ public class BookmarkService {
     public void deleteBookmarkByFlag(Flag flag) {
         bookmarkRepository.deleteAllByFlagSeq(flag.getFlagSeq());
     }
-
-
-
 }
