@@ -21,7 +21,7 @@ public class User extends BaseFullEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_seq")
-    private long userSeq;
+    private Long userSeq;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "part_seq", nullable = false)

@@ -31,61 +31,61 @@ public class AdminUserController {
 
     private final AdminUserService adminUserService;
 
-    @Operation(summary = "회원 등록", description = "회원의 정보를 입력 받아 새 회원을 등록합니다.")
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<Long>> registerUser(
-            @RequestPart("userCreateDTO") UserCreateDTO userCreateDTO,
-            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
-    ) throws IOException {
-
-        // 현재 사용자 ID 가져오기
-        String currentUserId = SecurityUtil.getCurrentUserId();
-
-
-        User createdUser = adminUserService.registerUser(userCreateDTO, profileImage, currentUserId);
-
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.created(createdUser.getUserSeq()));
-    }
-
-//    @Operation(summary = "회원 등록", description = "회원의 정보를 입력 받아 새 회원을 등록")
-//    @PostMapping(consumes = "multipart/form-data")
+//    @Operation(summary = "회원 등록", description = "회원의 정보를 입력 받아 새 회원을 등록합니다.")
+//    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    public ResponseEntity<ApiResponse<Long>> registerUser(
-//            @RequestParam("partSeq") Long partSeq,
-//            @RequestParam("rankingSeq") Long rankingSeq,
-//            @RequestParam("userName") String userName,
-//            @RequestParam("userId") String userId,
-//            @RequestParam("userPassword") String userPassword,
-//            @RequestParam("userEmail") String userEmail,
-//            @RequestParam("userPhone") String userPhone,
-//            @RequestParam(value = "userAuth", required = false) UserAuth userAuth,
-//            @RequestParam(value = "userStatus", required = false) UserStatus userStatus,
-//            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage
+//            @RequestPart @Valid UserCreateDTO userCreateDTO,
+//            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
 //    ) throws IOException {
 //
 //        // 현재 사용자 ID 가져오기
 //        String currentUserId = SecurityUtil.getCurrentUserId();
 //
-//        // DTO 생성 및 데이터 설정
-//        UserCreateDTO userCreateDTO = new UserCreateDTO();
-//        userCreateDTO.setPartSeq(partSeq);
-//        userCreateDTO.setRankingSeq(rankingSeq);
-//        userCreateDTO.setUserName(userName);
-//        userCreateDTO.setUserId(userId);
-//        userCreateDTO.setUserPassword(userPassword);
-//        userCreateDTO.setUserEmail(userEmail);
-//        userCreateDTO.setUserPhone(userPhone);
-//        userCreateDTO.setUserAuth(userAuth != null ? userAuth : UserAuth.USER);
-//        userCreateDTO.setUserStatus(userStatus != null ? userStatus : UserStatus.ACTIVE);
 //
-//        // 서비스 호출
 //        User createdUser = adminUserService.registerUser(userCreateDTO, profileImage, currentUserId);
 //
-//        // 응답 반환
+//
 //        return ResponseEntity.status(HttpStatus.CREATED)
 //                .body(ApiResponse.created(createdUser.getUserSeq()));
 //    }
+
+    @Operation(summary = "회원 등록", description = "회원의 정보를 입력 받아 새 회원을 등록")
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<ApiResponse<Long>> registerUser(
+            @RequestParam("partSeq") Long partSeq,
+            @RequestParam("rankingSeq") Long rankingSeq,
+            @RequestParam("userName") String userName,
+            @RequestParam("userId") String userId,
+            @RequestParam("userPassword") String userPassword,
+            @RequestParam("userEmail") String userEmail,
+            @RequestParam("userPhone") String userPhone,
+            @RequestParam(value = "userAuth", required = false) UserAuth userAuth,
+            @RequestParam(value = "userStatus", required = false) UserStatus userStatus,
+            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage
+    ) throws IOException {
+
+        // 현재 사용자 ID 가져오기
+        String currentUserId = SecurityUtil.getCurrentUserId();
+
+        // DTO 생성 및 데이터 설정
+        UserCreateDTO userCreateDTO = new UserCreateDTO();
+        userCreateDTO.setPartSeq(partSeq);
+        userCreateDTO.setRankingSeq(rankingSeq);
+        userCreateDTO.setUserName(userName);
+        userCreateDTO.setUserId(userId);
+        userCreateDTO.setUserPassword(userPassword);
+        userCreateDTO.setUserEmail(userEmail);
+        userCreateDTO.setUserPhone(userPhone);
+        userCreateDTO.setUserAuth(userAuth != null ? userAuth : UserAuth.USER);
+        userCreateDTO.setUserStatus(userStatus != null ? userStatus : UserStatus.ACTIVE);
+
+        // 서비스 호출
+        User createdUser = adminUserService.registerUser(userCreateDTO, profileImage, currentUserId);
+
+        // 응답 반환
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.created(createdUser.getUserSeq()));
+    }
 
     // 비밀번호 초기화
     @Operation(summary = "비밀번호 초기화", description = "비밀번호를 초기화 합니다.")

@@ -17,6 +17,7 @@ import mediHub_be.user.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -65,26 +66,22 @@ public class UserService {
 
     // 회원 자기 정보 수정
     @Transactional
-    public User updateUser(Long userSeq, UserUpdateRequestDTO userUpdateRequestDTO) throws IOException {
+    public User updateUser(Long userSeq, String userEmail, String userPhone, String userPassword, MultipartFile profileImage) throws IOException {
         // 사용자 정보 조회
         User user = userRepository.findById(userSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
         // 수정 가능한 정보 업데이트
-        String updatedEmail = userUpdateRequestDTO.getUserEmail() != null && !userUpdateRequestDTO.getUserEmail().isEmpty()
-                ? userUpdateRequestDTO.getUserEmail()
-                : user.getUserEmail();
-        String updatedPhone = userUpdateRequestDTO.getUserPhone() != null && !userUpdateRequestDTO.getUserPhone().isEmpty()
-                ? userUpdateRequestDTO.getUserPhone()
-                : user.getUserPhone();
-        String updatedPassword = userUpdateRequestDTO.getUserPassword() != null && !userUpdateRequestDTO.getUserPassword().isEmpty()
-                ? passwordEncoder.encode(userUpdateRequestDTO.getUserPassword())
+        String updatedEmail = userEmail != null && !userEmail.isEmpty() ? userEmail : user.getUserEmail();
+        String updatedPhone = userPhone != null && !userPhone.isEmpty() ? userPhone : user.getUserPhone();
+        String updatedPassword = userPassword != null && !userPassword.isEmpty()
+                ? passwordEncoder.encode(userPassword)
                 : user.getUserPassword();
 
         user.updateUserinfo(updatedEmail, updatedPhone, updatedPassword);
 
         // 프로필 이미지 처리
-        if (userUpdateRequestDTO.getProfileImage() != null && !userUpdateRequestDTO.getProfileImage().isEmpty()) {
+        if (profileImage != null && !profileImage.isEmpty()) {
             Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq("USER", userSeq)
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
@@ -101,7 +98,7 @@ public class UserService {
             }
 
             // 새 사진 업로드
-            AmazonS3Service.MetaData metaData = amazonS3Service.upload(userUpdateRequestDTO.getProfileImage());
+            AmazonS3Service.MetaData metaData = amazonS3Service.upload(profileImage);
             Picture newPicture = Picture.builder()
                     .flag(flag)
                     .pictureName(metaData.getOriginalFileName())
@@ -114,6 +111,7 @@ public class UserService {
 
         return user;
     }
+
 
     // 전체 회원 조회
     @Transactional(readOnly = true)
