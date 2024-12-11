@@ -76,7 +76,7 @@ public class CaseSharingController {
     @PostMapping(value = "/{caseSharingSeq}/versions", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Long>> createNewVersion(
             @PathVariable Long caseSharingSeq,
-            @RequestBody CaseSharingUpdateRequestDTO requestDTO,
+            @RequestPart CaseSharingUpdateRequestDTO requestDTO,
             @RequestPart(value = "images", required = false) List<MultipartFile> pictures // 이미지 파일
     ) {
         String userId = SecurityUtil.getCurrentUserId();
