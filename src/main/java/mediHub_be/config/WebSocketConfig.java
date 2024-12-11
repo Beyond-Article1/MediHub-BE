@@ -33,8 +33,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override   /* STOMP에서 사용하는 MessageBroker 설정*/
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/queue", "/topic");   // 메시지 구독 접두사
-        registry.setApplicationDestinationPrefixes("/app");                 // 메시지 전송 접두사
+        registry.enableSimpleBroker("/subscribe");  // "/subscribe/{chatroomSeq}"로 주제 구독 가능
+        registry.setApplicationDestinationPrefixes("/publish");       // "/publish/message"로 메시지 전송 컨트롤러 라우팅 가능
     }
 
     @Override
