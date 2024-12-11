@@ -49,4 +49,4 @@ src/main/resources/Application-KEY.properties
 .env
 
 ### yml ###
-/src/main/resources/prompt.yml
+src/main/resources/prompt.yml

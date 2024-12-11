@@ -8,12 +8,13 @@ import mediHub_be.board.entity.Picture;
 import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
-import mediHub_be.common.exception.ErrorCode;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class PictureService {
 
     // 본문 내 placeholder -> S3 url로 치환
     @Transactional
-    public String replacePlaceHolderWithUrls(String content, List<MultipartFile> images, String flagType, Long entitySeq){
+    public String replacePlaceHolderWithUrls(String content, List<MultipartFile> images, String flagType, Long entitySeq) {
         List<String> urls = uploadPictureWithFlag(flagType, entitySeq, images);
 
         // 태그와 URL 매핑
@@ -107,6 +108,9 @@ public class PictureService {
     public List<Picture> getPicturesByFlagTypeAndEntitySeqAndIsDeletedIsNotNull(String flagType, Long entitySeq) {
         return pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeqAndPictureIsDeletedIsNotNull(flagType, entitySeq);
     }
+    public List<Picture> getPicturesByFlagTypeAndEntitySeq(String flagType, Long entitySeq) {
+        return pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeq(flagType, entitySeq);
+    }
 
     private void cleanupUploadedFiles(List<String> uploadedUrls) {
         uploadedUrls.forEach(url -> {
@@ -132,6 +136,20 @@ public class PictureService {
             });
         }
     }
+    @Transactional(readOnly = true)
+    public String getUserProfileUrl(long userSeq) {
 
+        Picture profile = pictureRepository.findUserProfile(userSeq).orElse(null);
 
+        if (profile != null) {
+            return profile.getPictureUrl();
+        } else {
+            return UserService.DEFAULT_PROFILE_URL;
+        }
+    }
+
+    @Transactional
+    public void deletePictures(String flagType, Long entitySeq) {
+        flagService.findFlag(flagType, entitySeq).ifPresent(this::deletePictures);
+    }
 }
