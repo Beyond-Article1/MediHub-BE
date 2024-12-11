@@ -96,7 +96,9 @@ public class CaseSharingService {
     public Long createCaseSharing(CaseSharingCreateRequestDTO requestDTO, List<MultipartFile> images,String userId) {
 
         User user = userService.findByUserId(userId);
-        validateDoctor(user);
+        if(!userService.validateAdmin(user)) {
+            validateDoctor(user);
+        }
 
         // 템플릿 조회
         Template template = templateService.getTemplate(requestDTO.getTemplateSeq());
@@ -128,7 +130,10 @@ public class CaseSharingService {
 
         User user = userService.findByUserId(userId);
         CaseSharing existingCaseSharing = findCaseSharing(caseSharingSeq);
-        validateAuthor(existingCaseSharing,user);
+
+        if(!userService.validateAdmin(user)) {
+            validateAuthor(existingCaseSharing,user);
+        }
 
         // 기존 최신 버전 비활성화
         existingCaseSharing.markAsNotLatest();
@@ -161,7 +166,10 @@ public class CaseSharingService {
     public void deleteCaseSharing(Long caseSharingSeq, String userId) {
         User user = userService.findByUserId(userId);
         CaseSharing caseSharing = findCaseSharing(caseSharingSeq);
-        validateAuthor(caseSharing,user);
+
+        if(!userService.validateAdmin(user)) {
+            validateAuthor(caseSharing,user);
+        }
 
         CaseSharingGroup caseSharingGroup = caseSharing.getCaseSharingGroup();
 
@@ -276,6 +284,7 @@ public class CaseSharingService {
     public CaseSharingDraftDetailDTO getDraftDetail(Long caseSharingSeq, String userId) {
         User user = userService.findByUserId(userId);
         CaseSharing draft = findDraft(caseSharingSeq);
+
         validateAuthor(draft,user);
 
         List<CaseSharingKeywordDTO> keywordDTOs = keywordService.getKeywords(CASE_SHARING_FLAG, draft.getCaseSharingSeq());
