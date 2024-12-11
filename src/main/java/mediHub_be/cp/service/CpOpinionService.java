@@ -527,16 +527,16 @@ public class CpOpinionService {
      * @throws CustomException 유효성 검사 실패, 의견이 존재하지 않거나 데이터베이스 오류가 발생할 경우
      */
     @Transactional
-    public CpOpinionDTO updateCpOpinionByCpOpinionSeq(long cpOpinionSeq, RequestCpOpinionDTO requestBody) {
+    public CpOpinionDTO updateCpOpinionByCpOpinionSeq(long cpOpinionSeq, RequestCpOpinionDTO requestBody, List<MultipartFile> imageList) {
 
         validateRequestCpOpinion(requestBody); // requestBody 유효성 검사
 
         // DB에서 현재 CP 의견 조회 및 작성자 확인
-        CpOpinion cpOpinion = getCpOpinionAndCheckUnauthorizedAccess(cpOpinionSeq);
+        CpOpinion entity = getCpOpinionAndCheckUnauthorizedAccess(cpOpinionSeq);
 
         // 요청 본문으로부터 CP 의견 내용 업데이트
         if (requestBody.getCpOpinionContent() != null) {
-            cpOpinion.updateCpOpinionContent(requestBody.getCpOpinionContent()); // 의견 내용을 업데이트
+            entity.updateCpOpinionContent(requestBody.getCpOpinionContent()); // 의견 내용을 업데이트
         }
 
         // 키워드 업데이트
@@ -544,12 +544,27 @@ public class CpOpinionService {
             keywordService.updateKeywords(
                     requestBody.getKeywordList(),
                     CP_OPINION_BOARD_FLAG,
-                    cpOpinion.getCpOpinionSeq());
+                    entity.getCpOpinionSeq());
         }
+
+        // 본문 1차 업데이트
+        entity.updateCpOpinionContent(requestBody.getCpOpinionContent());
+        cpOpinionRepository.save(entity);
+        logger.info("{}번 CP 의견 수정 과정 중, 본문 1차 업데이트 성공", entity.getCpOpinionSeq());
+
+        // 기존 사진 제거
+        Flag flag = flagService.findFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
+        pictureService.deletePictures(flag);
+        logger.info("{}번 CP 의견 수정 과정 중, 기존 사진 정보 제거", entity.getCpOpinionSeq());
+
+        // 사진 업데이트 -> 본문 2차 업데이트
+        updateCpOpinionContentWithImage(entity, imageList, requestBody.getCpOpinionContent());
+        logger.info("{}번 CP 의견 수정 과정 중, 본문 2차 업데이트 성공", entity.getCpOpinionSeq());
 
         try {
             // 업데이트된 의견을 DB에 저장
-            cpOpinion = cpOpinionRepository.save(cpOpinion);
+            entity = cpOpinionRepository.save(entity);
             logger.info("CP 의견이 성공적으로 업데이트되었습니다. cpOpinionSeq: {}", cpOpinionSeq);
         } catch (DataAccessException e) {
             logger.error("데이터베이스 업데이트 중 오류 발생: {}", e.getMessage());
@@ -559,7 +574,7 @@ public class CpOpinionService {
         }
 
         // Entity -> DTO 변환
-        return CpOpinionDTO.toDto(cpOpinion); // 업데이트된 CP 의견의 DTO를 반환
+        return CpOpinionDTO.toDto(entity); // 업데이트된 CP 의견의 DTO를 반환
     }
 
     /**

@@ -110,11 +110,12 @@ public class CpOpinionController {
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
             @PathVariable long cpOpinionSeq,
-            @RequestBody RequestCpOpinionDTO requestBody) {
+            @RequestBody RequestCpOpinionDTO requestBody,
+            @RequestPart(value = "images", required = false) List<MultipartFile> imageList) {
 
-        logger.info("CP 의견 수정 요청: cpOpinionSeq = {}, requestBody = {}", cpOpinionSeq, requestBody);
+        logger.info("CP 의견 수정 요청: cpOpinionSeq = {}, requestBody = {}, imageList = {}", cpOpinionSeq, requestBody, imageList);
 
-        CpOpinionDTO cpOpinionDTO = cpOpinionService.updateCpOpinionByCpOpinionSeq(cpOpinionSeq, requestBody);
+        CpOpinionDTO cpOpinionDTO = cpOpinionService.updateCpOpinionByCpOpinionSeq(cpOpinionSeq, requestBody, imageList);
 
         logger.info("CP 의견이 성공적으로 수정되었습니다: {}", cpOpinionDTO);
         return ResponseEntity.ok(ApiResponse.ok(cpOpinionDTO));
