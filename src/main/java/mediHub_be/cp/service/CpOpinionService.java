@@ -18,8 +18,8 @@ import mediHub_be.cp.entity.CpOpinionVote;
 import mediHub_be.cp.repository.CpOpinionRepository;
 import mediHub_be.cp.repository.CpOpinionVoteRepository;
 import mediHub_be.security.util.SecurityUtil;
-import mediHub_be.user.entity.User;
 import mediHub_be.user.entity.UserAuth;
+import mediHub_be.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -36,9 +36,12 @@ import java.util.List;
 public class CpOpinionService {
 
     // Service
+    private final CpOpinionVoteService cpOpinionVoteService;
     private final FlagService flagService;
     private final KeywordService keywordService;
     private final PictureService pictureService;
+    private final BookmarkService bookmarkService;
+    private final UserService userService;
 
     // Repository
     private final CpOpinionRepository cpOpinionRepository;
@@ -50,7 +53,6 @@ public class CpOpinionService {
 
     // FlagType
     public static final String CP_OPINION_BOARD_FLAG = "CP_OPINION";
-    private final BookmarkService bookmarkService;
 
 
     /**
@@ -411,9 +413,12 @@ public class CpOpinionService {
             pictureService.deletePictures(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
 
             // 3. 북마크 삭제
-            deleteBookmark();
+            deleteBookmark(entity);
 
-            // 4. CP 의견 삭제 처리
+            // 4. CP 의견 투표 삭제
+            deleteCpOpinionVote(entity);
+
+            // 5. CP 의견 삭제 처리
             entity.delete();
             // 저장
             cpOpinionRepository.save(entity);
@@ -427,6 +432,29 @@ public class CpOpinionService {
         }
     }
 
+    /**
+     * 주어진 CP 의견에 대한 모든 투표를 삭제합니다.
+     *
+     * @param entity 삭제할 투표가 있는 CP 의견 엔티티
+     * @throws CustomException 데이터베이스 접근 중 오류가 발생한 경우
+     */
+    @Transactional
+    public void deleteCpOpinionVote(CpOpinion entity) {
+        List<Long> seqList = cpOpinionVoteService.getCpOpinionVoteSeqByCpOpinionSeq(entity.getCpOpinionSeq());
+
+        for (long seq : seqList) {
+            cpOpinionVoteService.deleteCpOpinionVote(seq);
+        }
+    }
+
+    /**
+     * 현재 사용자의 권한에 따라 주어진 CP 의견에 대해 북마크를 삭제합니다.
+     * <p>
+     * 이 메서드는 작성자가 자신의 CP 의견의 북마크를 삭제하거나,
+     * 어드민이 다른 사용자의 CP 의견의 북마크를 삭제할 수 있도록 합니다.
+     *
+     * @param entity 삭제할 북마크가 있는 CP 의견 엔티티
+     */
     private void deleteBookmark(CpOpinion entity) {
 
         String currentUserAuthorities = SecurityUtil.getCurrentUserAuthorities();
@@ -441,16 +469,14 @@ public class CpOpinionService {
         } else {
             // 2. 어드민이 삭제하는 경우
             // 작성자 정보 호출
-            String userId = userService.findUser(entity.getUserSeq()).getUserId();
+            String entityUserId = userService.findUser(entity.getUserSeq()).getUserId();
 
-            if (bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), userId())) {
+            if (bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), entityUserId)) {
                 // 북마크가 된 경우
                 bookmarkService.toggleBookmark(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId());
                 logger.info("{}번 CP 의견의 북마크를 삭제했습니다.", entity.getCpOpinionSeq());
             }
         }
-
-
     }
 
     /**
