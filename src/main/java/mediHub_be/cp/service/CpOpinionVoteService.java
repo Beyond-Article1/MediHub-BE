@@ -11,8 +11,10 @@ import mediHub_be.security.util.SecurityUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +34,7 @@ public class CpOpinionVoteService {
      * @return 생성된 CP 의견 투표의 DTO
      * @throws CustomException 데이터베이스 처리 중 오류가 발생한 경우
      */
+    @Transactional
     public CpOpinionVoteDTO createCpOpinionVote(long cpVersionSeq, boolean cpOpinionVote) {
         logger.info("CP 버전 번호: {}로 CP 의견 투표를 생성합니다. 투표 여부: {}", cpVersionSeq, cpOpinionVote);
 
@@ -61,6 +64,7 @@ public class CpOpinionVoteService {
      * @param cpOpinionVoteSeq 삭제할 CP 의견 투표의 ID
      * @throws CustomException 데이터베이스 접근 중 오류가 발생한 경우
      */
+    @Transactional
     public void deleteCpOpinionVote(long cpOpinionVoteSeq) {
         logger.info("CP 의견 투표 삭제 요청. 투표 ID: {}", cpOpinionVoteSeq);
 
@@ -74,6 +78,27 @@ public class CpOpinionVoteService {
         } catch (Exception e) {
             logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
             throw new RuntimeException("예기치 않은 오류가 발생했습니다. 투표 ID: " + cpOpinionVoteSeq, e);
+        }
+    }
+
+    /**
+     * 주어진 CP 의견 시퀀스에 대한 투표 스퀀스 리스트를 가져옵니다.
+     *
+     * @param cpOpinionSeq CP 의견 시퀀스
+     * @return 해당 CP 의견에 대한 투표 시퀀스 리스트
+     * @throws CustomException 데이터베이스 접근 중 오류가 발생한 경우
+     */
+    @Transactional(readOnly = true)
+    public List<Long> getCpOpinionVoteSeqByCpOpinionSeq(long cpOpinionSeq) {
+        try {
+            List<CpOpinionVote> entityList = cpOpinionVoteRepository.findByCpOpinionSeq(cpOpinionSeq);
+
+            return entityList.stream()
+                    .map(CpOpinionVote::getCpOpinionSeq)
+                    .toList();
+        } catch (DataAccessException e) {
+            logger.error("CP 의견 투표 정보를 가져오는 중 오류 발생: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
         }
     }
 }

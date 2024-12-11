@@ -4,13 +4,12 @@ import lombok.RequiredArgsConstructor;
 import mediHub_be.amazonS3.service.AmazonS3Service;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
-import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import mediHub_be.common.exception.ErrorCode;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,7 +38,7 @@ public class PictureService {
 
     // 본문 내 placeholder -> S3 url로 치환
     @Transactional
-    public String replacePlaceHolderWithUrls(String content, List<MultipartFile> images, String flagType, Long entitySeq){
+    public String replacePlaceHolderWithUrls(String content, List<MultipartFile> images, String flagType, Long entitySeq) {
         List<String> urls = uploadPictureWithFlag(flagType, entitySeq, images);
 
         // 태그와 URL 매핑
@@ -88,5 +87,8 @@ public class PictureService {
 
     }
 
-
+    @Transactional
+    public void deletePictures(String flagType, Long entitySeq) {
+        flagService.findFlag(flagType, entitySeq).ifPresent(this::deletePictures);
+    }
 }
