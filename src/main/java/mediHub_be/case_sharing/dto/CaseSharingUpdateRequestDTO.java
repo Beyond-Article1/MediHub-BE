@@ -13,7 +13,6 @@ import java.util.List;
 @Builder
 public class CaseSharingUpdateRequestDTO {
 
-    private Long userSeq; // 작성자 ID
     private String title; // 새로운 제목
     private String content; // 새로운 본문 내용
     private List<String> keywords; // 새로운 키워드 리스트

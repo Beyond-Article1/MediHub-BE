@@ -21,7 +21,6 @@ import mediHub_be.case_sharing.repository.CaseSharingGroupRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.user.entity.User;
-import mediHub_be.user.repository.UserRepository;
 import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +35,7 @@ import java.util.stream.Collectors;
 public class CaseSharingService {
     private final CaseSharingRepository caseSharingRepository;
     private final CaseSharingGroupRepository caseSharingGroupRepository;
+
     private final UserService userService;
     private final PictureService pictureService;
     private final KeywordService keywordService;
@@ -43,15 +43,16 @@ public class CaseSharingService {
     private final BookmarkService bookmarkService;
     private final AmazonS3Service amazonS3Service;
     private final FlagService flagService;
+    private final TemplateService templateService;
 
     private static final String CASE_SHARING_FLAG = "case_sharing";
-    private final TemplateService templateService;
+
 
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
     public List<CaseSharingListDTO> getCaseList(String userId) {
         userService.findByUserId(userId);
-        return caseSharingRepository.findAllLatestVersionsNotDraft()
+        return caseSharingRepository.findAllLatestVersionsNotDraftAndDeletedAtIsNull()
                 .stream()
                 .map(this::toListDTO)
                 .collect(Collectors.toList());
@@ -118,7 +119,6 @@ public class CaseSharingService {
 
         // 이미지 업로드 및 본문 변환 처리
         updateContentWithImages(caseSharing, images, requestDTO.getContent());
-
         return caseSharing.getCaseSharingSeq();
     }
 
@@ -237,7 +237,7 @@ public class CaseSharingService {
     @Transactional
     public Long saveDraft(CaseSharingCreateRequestDTO requestDTO, List<MultipartFile> images, String userId) {
         User user = userService.findByUserId(userId);
-        Template template = templateService.getTemplate(requestDTO.getTemplateSeq());;
+        Template template = templateService.getTemplate(requestDTO.getTemplateSeq());
 
         CaseSharingGroup group = CaseSharingGroup.createNewGroup();
         caseSharingGroupRepository.save(group);
@@ -261,7 +261,7 @@ public class CaseSharingService {
     @Transactional
     public List<CaseSharingDraftListDTO> getDraftsByUser(String userId) {
         User user = userService.findByUserId(userId);
-        List<CaseSharing> drafts = caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftTrue(user.getUserSeq());
+        List<CaseSharing> drafts = caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftTrueAndDeletedAtIsNull(user.getUserSeq());
         return drafts.stream()
                 .map(draft -> new CaseSharingDraftListDTO(
                         draft.getCaseSharingSeq(),
@@ -324,7 +324,7 @@ public class CaseSharingService {
         validateAuthor(draft, user);
 
         keywordService.deleteKeywords(CASE_SHARING_FLAG, caseSharingSeq);
-        List<Picture> existingPictures = pictureService.getPicturesByFlagTypeAndEntitySeq(CASE_SHARING_FLAG, draft.getCaseSharingSeq());
+        List<Picture> existingPictures = pictureService.getPicturesByFlagTypeAndEntitySeqAndIsDeletedIsNotNull(CASE_SHARING_FLAG, draft.getCaseSharingSeq());
 
         Flag flag = flagService.findFlag(CASE_SHARING_FLAG, caseSharingSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
@@ -385,7 +385,7 @@ public class CaseSharingService {
     }
 
     private CaseSharing findDraft(Long caseSharingSeq) {
-        return caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrue(caseSharingSeq)
+        return caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrueAndDeletedAtIsNull(caseSharingSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CASE));
     }
 
