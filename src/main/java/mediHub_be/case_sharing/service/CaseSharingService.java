@@ -22,6 +22,7 @@ import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
+import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
 public class CaseSharingService {
     private final CaseSharingRepository caseSharingRepository;
     private final CaseSharingGroupRepository caseSharingGroupRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final PictureService pictureService;
     private final KeywordService keywordService;
     private final ViewCountManager viewCountManager;
@@ -49,7 +50,7 @@ public class CaseSharingService {
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
     public List<CaseSharingListDTO> getCaseList(String userId) {
-        findUser(userId);
+        userService.findByUserId(userId);
         return caseSharingRepository.findAllLatestVersionsNotDraft()
                 .stream()
                 .map(this::toListDTO)
@@ -59,10 +60,9 @@ public class CaseSharingService {
     //2. 케이스 공유 상세 조회
     @Transactional
     public CaseSharingDetailDTO getCaseSharingDetail(Long caseSharingSeq, String userId, HttpServletRequest request, HttpServletResponse response) {
-        findUser(userId);
+        userService.findByUserId(userId);
         // 게시글 정보 조회
-        CaseSharing caseSharing = caseSharingRepository.findById(caseSharingSeq)
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+        CaseSharing caseSharing = findCaseSharing(caseSharingSeq);
 
         boolean shouldIncrease = viewCountManager.shouldIncreaseViewCount(caseSharingSeq, request, response);
         if (shouldIncrease) {
@@ -94,14 +94,13 @@ public class CaseSharingService {
     @Transactional
     public Long createCaseSharing(CaseSharingCreateRequestDTO requestDTO, List<MultipartFile> images,String userId) {
 
-        User user = findUser(userId);
+        User user = userService.findByUserId(userId);
         validateDoctor(user);
 
         // 템플릿 조회
         Template template = templateService.getTemplate(requestDTO.getTemplateSeq());
         // 그룹 생성 및 저장
         CaseSharingGroup group = CaseSharingGroup.createNewGroup();
-
         caseSharingGroupRepository.save(group);
 
         // 케이스 공유 생성
@@ -127,7 +126,7 @@ public class CaseSharingService {
     @Transactional
     public Long createNewVersion(Long caseSharingSeq, CaseSharingUpdateRequestDTO requestDTO, List<MultipartFile> images, String userId) {
 
-        User user = findUser(userId);
+        User user = userService.findByUserId(userId);
         CaseSharing existingCaseSharing = findCaseSharing(caseSharingSeq);
         validateAuthor(existingCaseSharing,user);
 
@@ -160,7 +159,7 @@ public class CaseSharingService {
     //5. 케이스 공유 소프트 삭제
     @Transactional
     public void deleteCaseSharing(Long caseSharingSeq, String userId) {
-        User user = findUser(userId);
+        User user = userService.findByUserId(userId);
         CaseSharing caseSharing = findCaseSharing(caseSharingSeq);
         validateAuthor(caseSharing,user);
 
@@ -185,9 +184,10 @@ public class CaseSharingService {
             }
         }
         Flag flag = flagService.findFlag(CASE_SHARING_FLAG, caseSharing.getCaseSharingSeq())
-                .orElseThrow(() -> new IllegalArgumentException("해당 Flag가 존재하지 않습니다."));
-        pictureService.deletePictures(flag);
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
+        pictureService.deletePictures(flag);
+        bookmarkService.deleteBookmarkByFlag(flag);
         caseSharing.markAsDeleted();
         caseSharingRepository.save(caseSharing);
     }
@@ -196,7 +196,7 @@ public class CaseSharingService {
     // 6. 케이스 공유 파트별 조회
     @Transactional(readOnly = true)
     public List<CaseSharingListDTO> getCasesByPart(Long partSeq,String userId) {
-        findUser(userId);
+        userService.findByUserId(userId);
 
         List<CaseSharing> caseSharings = caseSharingRepository.findByPartPartSeqAndCaseSharingIsLatestTrueAndIsDraftFalseAndDeletedAtIsNull(partSeq);
 
@@ -217,7 +217,7 @@ public class CaseSharingService {
     //7. 케이스 공유 버전 조회
     @Transactional(readOnly = true)
     public List<CaseSharingVersionListDTO> getCaseVersionList(Long caseSharingSeq, String userId) {
-        findUser(userId);
+        userService.findByUserId(userId);
         CaseSharing caseSharing = findCaseSharing(caseSharingSeq);
         List<CaseSharing> caseSharings = caseSharingRepository.findByCaseSharingGroupAndIsDraftFalseAndDeletedAtIsNull(
                 caseSharing.getCaseSharingGroup().getCaseSharingGroupSeq()
@@ -236,7 +236,7 @@ public class CaseSharingService {
     //8. 케이스 공유 임시 저장 등록
     @Transactional
     public Long saveDraft(CaseSharingCreateRequestDTO requestDTO, List<MultipartFile> images, String userId) {
-        User user = findUser(userId);
+        User user = userService.findByUserId(userId);
         Template template = templateService.getTemplate(requestDTO.getTemplateSeq());;
 
         CaseSharingGroup group = CaseSharingGroup.createNewGroup();
@@ -260,7 +260,7 @@ public class CaseSharingService {
     // 9. 특정 유저가 저장한 임시 저장 목록 불러오기
     @Transactional
     public List<CaseSharingDraftListDTO> getDraftsByUser(String userId) {
-        User user = findUser(userId);
+        User user = userService.findByUserId(userId);
         List<CaseSharing> drafts = caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftTrue(user.getUserSeq());
         return drafts.stream()
                 .map(draft -> new CaseSharingDraftListDTO(
@@ -274,7 +274,7 @@ public class CaseSharingService {
     // 10. 임시저장 된 케이스공유 상세 조회(불러오기)
     @Transactional
     public CaseSharingDraftDetailDTO getDraftDetail(Long caseSharingSeq, String userId) {
-        User user = findUser(userId);
+        User user = userService.findByUserId(userId);
         CaseSharing draft = findDraft(caseSharingSeq);
         validateAuthor(draft,user);
 
@@ -292,7 +292,7 @@ public class CaseSharingService {
     // 11. 임시 저장된 케이스 공유 수정.
     @Transactional
     public Long updateDraft(Long caseSharingSeq, String userId, List<MultipartFile> newImages, CaseSharingDraftUpdateDTO requestDTO) {
-        User user = findUser(userId);
+        User user = userService.findByUserId(userId);
         CaseSharing draft = findDraft(caseSharingSeq);
         validateAuthor(draft, user);
 
@@ -301,7 +301,7 @@ public class CaseSharingService {
         caseSharingRepository.save(draft);
         // 키워드 수정
         Flag flag = flagService.findFlag(CASE_SHARING_FLAG, draft.getCaseSharingSeq())
-                .orElseThrow(() -> new IllegalArgumentException("해당 Flag가 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
         pictureService.deletePictures(flag);
 
@@ -319,7 +319,7 @@ public class CaseSharingService {
     // 12. 임시 저장된 케이스 공유 삭제 (완전 삭제)
     @Transactional
     public void deleteDraft(Long caseSharingSeq, String userId) {
-        User user = findUser(userId);
+        User user = userService.findByUserId(userId);
         CaseSharing draft = findCaseSharing(caseSharingSeq);
         validateAuthor(draft, user);
 
@@ -327,7 +327,7 @@ public class CaseSharingService {
         List<Picture> existingPictures = pictureService.getPicturesByFlagTypeAndEntitySeq(CASE_SHARING_FLAG, draft.getCaseSharingSeq());
 
         Flag flag = flagService.findFlag(CASE_SHARING_FLAG, caseSharingSeq)
-                .orElseThrow();
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
         for (Picture picture : existingPictures) {
             amazonS3Service.deleteImageFromS3(picture.getPictureUrl()); // S3에서 삭제
@@ -340,12 +340,14 @@ public class CaseSharingService {
     // 13. 북마크 설정/해제
     @Transactional
     public boolean toggleBookmark(Long caseSharingSeq, String userId) {
+        userService.findByUserId(userId);
         return bookmarkService.toggleBookmark(CASE_SHARING_FLAG, caseSharingSeq, userId);
     }
 
     // 14. 해당 게시글의 북마크 여부 반환
     @Transactional
     public boolean isBookmarked(Long caseSharingSeq, String userId) {
+        userService.findByUserId(userId);
         return bookmarkService.isBookmarked(CASE_SHARING_FLAG, caseSharingSeq, userId);
     }
 
@@ -361,12 +363,6 @@ public class CaseSharingService {
             caseSharingRepository.save(caseSharing);
         }
     }
-
-    private User findUser(String userId) {
-        return userRepository.findByUserId(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
-    }
-
 
     private void validateAuthor(CaseSharing caseSharing, User user) {
         if (!caseSharing.getUser().equals(user)) {
