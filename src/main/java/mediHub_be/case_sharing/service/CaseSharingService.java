@@ -21,7 +21,6 @@ import mediHub_be.case_sharing.repository.CaseSharingGroupRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.user.entity.User;
-import mediHub_be.user.repository.UserRepository;
 import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +35,7 @@ import java.util.stream.Collectors;
 public class CaseSharingService {
     private final CaseSharingRepository caseSharingRepository;
     private final CaseSharingGroupRepository caseSharingGroupRepository;
+
     private final UserService userService;
     private final PictureService pictureService;
     private final KeywordService keywordService;
@@ -43,9 +43,10 @@ public class CaseSharingService {
     private final BookmarkService bookmarkService;
     private final AmazonS3Service amazonS3Service;
     private final FlagService flagService;
+    private final TemplateService templateService;
 
     private static final String CASE_SHARING_FLAG = "case_sharing";
-    private final TemplateService templateService;
+
 
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
@@ -236,7 +237,7 @@ public class CaseSharingService {
     @Transactional
     public Long saveDraft(CaseSharingCreateRequestDTO requestDTO, List<MultipartFile> images, String userId) {
         User user = userService.findByUserId(userId);
-        Template template = templateService.getTemplate(requestDTO.getTemplateSeq());;
+        Template template = templateService.getTemplate(requestDTO.getTemplateSeq());
 
         CaseSharingGroup group = CaseSharingGroup.createNewGroup();
         caseSharingGroupRepository.save(group);
