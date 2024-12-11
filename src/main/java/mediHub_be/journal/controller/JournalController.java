@@ -41,10 +41,9 @@ public class JournalController {
     public ResponseEntity<ApiResponse<?>> journal(@PathVariable("journalPmid") String journalPmid,
                                                   @RequestBody ResponsePubmedDTO requestDTO){
 
-        String currentUserId = SecurityUtil.getCurrentUserId();
-
+        Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
         return ResponseEntity.ok(
-                ApiResponse.ok(journalService.summarizeAbstractByPmid(currentUserId, journalPmid, requestDTO))
+                ApiResponse.ok(journalService.summarizeAbstractByPmid(currentUserSeq, journalPmid, requestDTO))
         );
     }
 
@@ -63,9 +62,9 @@ public class JournalController {
     @PostMapping("/bookmark/{journalSeq}")
     public ResponseEntity<ApiResponse<?>> bookmark(@PathVariable("journalSeq") Long journalSeq){
 
-        String currentUserId = SecurityUtil.getCurrentUserId();
+        Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
         
-        if (journalService.journalBookmark(currentUserId, journalSeq)){
+        if (journalService.journalBookmark(currentUserSeq, journalSeq)){
             return ResponseEntity.ok(ApiResponse.ok("북마크 완료"));
         }
         return ResponseEntity.ok(ApiResponse.ok("북마크 해제"));
@@ -76,16 +75,16 @@ public class JournalController {
     @GetMapping("/mypage")
     public ResponseEntity<ApiResponse<List<?>>> getJournalSearch(@RequestParam("sortBy") String sortBy){
 
-        String currentUserId = SecurityUtil.getCurrentUserId();
+        Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
 
         // 조회 (select)
         if (sortBy.equals("select")){
             return ResponseEntity.ok(
-                    ApiResponse.ok(journalService.getMySearchJournal(currentUserId)));
+                    ApiResponse.ok(journalService.getMySearchJournal(currentUserSeq)));
             // 북마크 (bookmark)
         } else if (sortBy.equals("bookmark")) {
             return ResponseEntity.ok(
-                    ApiResponse.ok(journalService.getMyBookmarkJournal(currentUserId)));
+                    ApiResponse.ok(journalService.getMyBookmarkJournal(currentUserSeq)));
             // 그 외
         } return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.fail(new CustomException(ErrorCode.BAD_REQUEST_INPUT)));
