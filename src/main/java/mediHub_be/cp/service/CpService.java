@@ -5,7 +5,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.Util.ViewCountManager;
+import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.service.BookmarkService;
+import mediHub_be.board.service.FlagService;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
@@ -15,6 +17,8 @@ import mediHub_be.cp.entity.Cp;
 import mediHub_be.cp.repository.CpRepository;
 import mediHub_be.cp.repository.CpVersionRepository;
 import mediHub_be.security.util.SecurityUtil;
+import mediHub_be.user.entity.User;
+import mediHub_be.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -32,6 +36,7 @@ public class CpService {
     // Service
     private final BookmarkService bookmarkService;
     private final PictureService pictureService;
+    private final UserService userService;
 
     // Repository
     private final CpRepository cpRepository;
@@ -42,6 +47,7 @@ public class CpService {
 
     // FlagType
     private final String CP_VERSION_FLAG = "CP_VERSION";
+    private final FlagService flagService;
 
 
     /**
@@ -213,5 +219,54 @@ public class CpService {
         checkBookmark(dtoList);
 
         return dtoList;
+    }
+
+    /**
+     * 주어진 CP 버전 시퀀스에 대해 북마크를 토글합니다.
+     * <p>
+     * 이 메서드는 주어진 CP 버전 시퀀스에 대해 플래그를 생성한 후,
+     * 현재 사용자의 북마크 상태를 변경합니다.
+     *
+     * @param cpVersionSeq 북마크를 설정할 CP 버전 시퀀스
+     * @return 북마크 상태가 변경된 결과 (true: 북마크됨, false: 북마크 해제됨)
+     */
+    public boolean cpBookmark(long cpVersionSeq) {
+        // 플래그 생성
+        flagService.createFlag(CP_VERSION_FLAG, cpVersionSeq);
+        logger.info("CP 버전 {}의 플래그를 생성했습니다.", cpVersionSeq);
+
+        // 북마크 토글
+        boolean newBookmarkState = bookmarkService.toggleBookmark(CP_VERSION_FLAG, cpVersionSeq, SecurityUtil.getCurrentUserId());
+        logger.info("CP 버전 {}의 북마크 상태가 {} 되었습니다.", cpVersionSeq, newBookmarkState ? "북마크됨" : "북마크 해제됨");
+
+        return newBookmarkState;
+    }
+
+    /**
+     * 현재 사용자의 북마크된 CP 버전 목록을 가져옵니다.
+     * <p>
+     * 이 메서드는 현재 사용자의 시퀀스를 사용하여 사용자 정보를 조회한 후,
+     * 해당 사용자의 북마크 목록을 가져옵니다. 각 북마크에 대해 CP 버전을 조회하며,
+     * 결과를 `ResponseCpDTO` 리스트로 반환합니다.
+     *
+     * @return 북마크된 CP 버전의 리스트
+     * @throws CustomException CP 버전이 존재하지 않을 경우 발생합니다.
+     */
+    public List<ResponseCpDTO> getBookmarkedCp() {
+        User user = userService.findUser(SecurityUtil.getCurrentUserSeq());
+        logger.info("사용자 {}의 북마크된 CP 버전을 조회합니다.", user.getUserId());
+
+        List<BookmarkDTO> bookmarkDtoList = bookmarkService.findByUserAndFlagType(user, CP_VERSION_FLAG);
+        logger.info("사용자 {}의 북마크 목록을 {}개 찾았습니다.", user.getUserId(), bookmarkDtoList.size());
+
+        List<ResponseCpDTO> responseCpDTOList = bookmarkDtoList.stream()
+                .map(bookmarkDto ->
+                        cpVersionRepository.findByCpVersionSeq(bookmarkDto.getFlag().getFlagSeq())
+                                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CP_VERSION))
+                )
+                .toList();
+
+        logger.info("사용자 {}의 북마크된 CP 버전 조회가 완료되었습니다.", user.getUserId());
+        return responseCpDTOList;
     }
 }

@@ -2,6 +2,7 @@ package mediHub_be.cp.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import mediHub_be.cp.entity.CpVersion;
 
 import java.time.LocalDateTime;
 import java.util.Map;
