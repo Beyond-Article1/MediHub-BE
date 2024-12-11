@@ -6,7 +6,7 @@ import mediHub_be.user.entity.UserStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
-public class UserCreateDTO {
+public class UserCreateImageDTO {
     private Long partSeq;
     private Long rankingSeq;
     private String userName;
@@ -16,4 +16,5 @@ public class UserCreateDTO {
     private String userPhone;
     private UserAuth userAuth;
     private UserStatus userStatus;
+    private MultipartFile profileImage;
 }
