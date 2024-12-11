@@ -77,6 +77,8 @@ public enum ErrorCode {
     // 플레그 없음
     NOT_FOUND_FLAG(40415,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
 
+    FILE_DELETE_FAILED(40410,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
+
     // 댓글 (comment)
     NOT_FOUND_COMMENT(40416, HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
 
