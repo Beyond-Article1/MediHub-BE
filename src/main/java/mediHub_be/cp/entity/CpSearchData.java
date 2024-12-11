@@ -1,7 +1,9 @@
 package mediHub_be.cp.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
+import mediHub_be.cp.dto.RequestCpSearchDataDTO;
 
 @Entity
 @Table(name = "cp_search_data")
@@ -17,4 +19,17 @@ public class CpSearchData {
 
     @Column
     private long cpSearchCategoryDataSeq;       // cp 카테고리 데이터 번호
+
+    @Builder
+    public CpSearchData(
+            long cpVersionSeq,
+            long cpSearchCategoryDataSeq) {
+    }
+
+    public static CpSearchData toEntity(RequestCpSearchDataDTO requestBody) {
+        return CpSearchData.builder()
+                .cpVersionSeq(requestBody.getCpVersionSeq())
+                .cpSearchCategoryDataSeq(requestBody.getCpSearchCategoryDataSeq())
+                .build();
+    }
 }

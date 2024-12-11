@@ -5,13 +5,11 @@ import mediHub_be.cp.entity.CpVersion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Repository
 public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
 
     @Query("SELECT new map(" +
