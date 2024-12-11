@@ -87,6 +87,8 @@ public enum ErrorCode {
     NOT_FOUND_PICTURE(40417, HttpStatus.NOT_FOUND, "사진을 찾을 수 없습니다."),
     // 논문
     NOT_FOUND_JOURNAL(40418, HttpStatus.NOT_FOUND, "해당 논문이 존재하지 않습니다."),
+    // Medical_Life
+    NOT_FOUND_MEDICAL_LIFE(40419,HttpStatus.NOT_FOUND, "해당 메디컬 라이프가 존재하지 않습니다."),
 
     NOT_FOUND_CASE(40419,  HttpStatus.NOT_FOUND, "해당 케이스 공유글이 존재하지 않습니다."),
 
