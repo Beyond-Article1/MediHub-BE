@@ -10,6 +10,8 @@ import mediHub_be.user.entity.User;
 import mediHub_be.dept.entity.Dept;
 import mediHub_be.part.entity.Part;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
@@ -55,5 +57,22 @@ public class MedicalLife extends BaseFullEntity {
         this.medicalLifeContent = medicalLifeContent;
         this.medicalLifeIsDeleted = medicalLifeIsDeleted != null ? medicalLifeIsDeleted : false;
         this.medicalLifeViewCount = medicalLifeViewCount != null ? medicalLifeViewCount : 0L;
+    }
+
+    public void update(String medicalLifeTitle, String medicalLifeContent) {
+        this.medicalLifeTitle= medicalLifeTitle;
+        this.medicalLifeContent= medicalLifeContent;
+    }
+
+    public void increaseViewCount() {
+        if(this.medicalLifeViewCount == null) {
+            this.medicalLifeViewCount = 1L;
+        } else this.medicalLifeViewCount++;
+    }
+
+    public void setDeleted() {
+        this.deletedAt = LocalDateTime.now();
+        this.medicalLifeIsDeleted = true;
+
     }
 }

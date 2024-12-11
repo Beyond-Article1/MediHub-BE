@@ -3,6 +3,8 @@ package mediHub_be.medical_life.dto;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 public class MedicalLifeDTO {
@@ -14,4 +16,5 @@ public class MedicalLifeDTO {
     private String medicalLifeContent;
     private Boolean medicalLifeIsDeleted;
     private Long medicalLifeViewCount;
+    private List<MedicalLifePictureDTO> pictures;
 }
