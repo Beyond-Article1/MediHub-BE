@@ -29,6 +29,7 @@ public enum ErrorCode {
 
     // 입력 오류
     BAD_REQUEST_INPUT(40907, HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
+
     /**
      * == 401 UNAUTHORIZED ==
      */
@@ -86,6 +87,9 @@ public enum ErrorCode {
     NOT_FOUND_PICTURE(40417, HttpStatus.NOT_FOUND, "사진을 찾을 수 없습니다."),
     // 논문
     NOT_FOUND_JOURNAL(40418, HttpStatus.NOT_FOUND, "해당 논문이 존재하지 않습니다."),
+
+    // 팔로우
+    NOT_FOUND_FOLLOW(40419, HttpStatus.NOT_FOUND, "팔로우한 사용자가 아닙니다."),
 
     /**
      * == 409 CONFLICT ==

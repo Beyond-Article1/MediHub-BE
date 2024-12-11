@@ -1,5 +1,7 @@
 package mediHub_be.journal.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "논문", description = "논문과 북마크")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/journal")
@@ -23,6 +26,7 @@ public class JournalController {
     private final JournalServiceImpl journalService;
 
     // 논문 검색
+    @Operation(summary = "논문 검색", description = "자연어를 통해 논문들을 검색한다.")
     @GetMapping("/chat")
     public ResponseEntity<ApiResponse<List<ResponsePubmedDTO>>> chat(@RequestParam(name = "prompt") String prompt){
 
@@ -32,6 +36,7 @@ public class JournalController {
     }
 
     // 논문 자세히 보기 (조회 이력에 남음 및 해당 논문 Entity 생성됨)
+    @Operation(summary = "논문 초록 요약 보기", description = "논문 자세히 보기, 상세 조회시 조회이력이 남는다.")
     @PostMapping("/{journalPmid}")
     public ResponseEntity<ApiResponse<?>> journal(@PathVariable("journalPmid") String journalPmid,
                                                   @RequestBody ResponsePubmedDTO requestDTO){
@@ -44,6 +49,7 @@ public class JournalController {
     }
 
     // 등록된 논문 조회 sortBy = select or bookmark(조회순 100개, 북마크순 100개)
+    @Operation(summary = "등록된 논문 조회", description = "등록된 논문 조회 sortBy = select or bookmark(조회순 100개, 북마크순 100개)")
     @GetMapping
     public ResponseEntity<ApiResponse<List<ResponseJournalSearchDTO>>> getJournal(@RequestParam(name = "sortBy") String sortBy){
 
@@ -53,6 +59,7 @@ public class JournalController {
     }
     
     // 논문 북마크
+    @Operation(summary = "논문 북마크", description = "논문을 북마크 한다.")
     @PostMapping("/bookmark/{journalSeq}")
     public ResponseEntity<ApiResponse<?>> bookmark(@PathVariable("journalSeq") Long journalSeq){
 
@@ -65,6 +72,7 @@ public class JournalController {
     }
 
     // 내가 조회한 논문 (북마크, 조회)
+    @Operation(summary = "조회 또는 북마크한 논문들 확인", description = "내가 조회한 논문 (북마크, 조회) sortBy = select or bookmark")
     @GetMapping("/mypage")
     public ResponseEntity<ApiResponse<List<?>>> getJournalSearch(@RequestParam("sortBy") String sortBy){
 
