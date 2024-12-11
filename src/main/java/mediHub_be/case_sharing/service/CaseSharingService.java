@@ -63,8 +63,6 @@ public class CaseSharingService {
         // 게시글 정보 조회
         CaseSharing caseSharing = caseSharingRepository.findById(caseSharingSeq)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
-        // 삭제된 게시글인지 확인
-        validateNotDeleted(caseSharing);
 
         boolean shouldIncrease = viewCountManager.shouldIncreaseViewCount(caseSharingSeq, request, response);
         if (shouldIncrease) {
@@ -131,7 +129,6 @@ public class CaseSharingService {
 
         User user = findUser(userId);
         CaseSharing existingCaseSharing = findCaseSharing(caseSharingSeq);
-        validateNotDeleted(existingCaseSharing);
         validateAuthor(existingCaseSharing,user);
 
         // 기존 최신 버전 비활성화
@@ -165,7 +162,6 @@ public class CaseSharingService {
     public void deleteCaseSharing(Long caseSharingSeq, String userId) {
         User user = findUser(userId);
         CaseSharing caseSharing = findCaseSharing(caseSharingSeq);
-        validateNotDeleted(caseSharing);
         validateAuthor(caseSharing,user);
 
         CaseSharingGroup caseSharingGroup = caseSharing.getCaseSharingGroup();
@@ -281,7 +277,6 @@ public class CaseSharingService {
         User user = findUser(userId);
         CaseSharing draft = findDraft(caseSharingSeq);
         validateAuthor(draft,user);
-        validateNotDeleted(draft);
 
         List<CaseSharingKeywordDTO> keywordDTOs = keywordService.getKeywords(CASE_SHARING_FLAG, draft.getCaseSharingSeq());
 
@@ -326,7 +321,6 @@ public class CaseSharingService {
     public void deleteDraft(Long caseSharingSeq, String userId) {
         User user = findUser(userId);
         CaseSharing draft = findCaseSharing(caseSharingSeq);
-        validateNotDeleted(draft);
         validateAuthor(draft, user);
 
         keywordService.deleteKeywords(CASE_SHARING_FLAG, caseSharingSeq);
@@ -382,21 +376,17 @@ public class CaseSharingService {
         }
     }
 
-    private void validateNotDeleted(CaseSharing caseSharing) {
-        if (caseSharing.getDeletedAt() != null) {
-            throw new IllegalArgumentException("삭제된 게시글은 조회할 수 없습니다.");
-        }
-    }
-
     private void validateDoctor(User user) {
         if (!"진료과".equals(user.getPart().getDept().getDeptName())) {
             throw new IllegalArgumentException("케이스 공유글은 의사만 작성할 수 있습니다.");
         }
     }
 
-    private CaseSharing findCaseSharing(Long caseSharingSeq) {
+    @Transactional
+    public CaseSharing findCaseSharing(Long caseSharingSeq) {
         return caseSharingRepository.findById(caseSharingSeq)
-                .orElseThrow(() -> new IllegalArgumentException("케이스 공유글을 찾을 수 없습니다."));
+                .filter(c -> c.getDeletedAt() == null) // 삭제된 댓글은 조회 불가
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않거나 삭제된 케이스 공유글입니다."));
 
     }
 

@@ -38,6 +38,7 @@ public enum ErrorCode {
     // 유효하지 않은 토큰 (Token)
     INVALID_TOKEN(40101, HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
 
+
     /**
      * == 403 FORBIDDEN ==
      */
@@ -86,6 +87,10 @@ public enum ErrorCode {
     NOT_FOUND_PICTURE(40417, HttpStatus.NOT_FOUND, "사진을 찾을 수 없습니다."),
     // 논문
     NOT_FOUND_JOURNAL(40418, HttpStatus.NOT_FOUND, "해당 논문이 존재하지 않습니다."),
+
+    NOT_FOUND_CASE(40419,  HttpStatus.NOT_FOUND, "해당 케이스 공유글이 존재하지 않습니다."),
+
+    NOT_FOUND_TEMPLATE(40420,  HttpStatus.NOT_FOUND, "해당 케이스 공유 템플릿이 존재하지 않습니다."),
 
     /**
      * == 409 CONFLICT ==
