@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.amazonS3.service.AmazonS3Service;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
-import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
@@ -107,9 +106,6 @@ public class PictureService {
     @Transactional
     public List<Picture> getPicturesByFlagTypeAndEntitySeqAndIsDeletedIsNotNull(String flagType, Long entitySeq) {
         return pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeqAndPictureIsDeletedIsNotNull(flagType, entitySeq);
-    }
-    public List<Picture> getPicturesByFlagTypeAndEntitySeq(String flagType, Long entitySeq) {
-        return pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeq(flagType, entitySeq);
     }
 
     private void cleanupUploadedFiles(List<String> uploadedUrls) {
