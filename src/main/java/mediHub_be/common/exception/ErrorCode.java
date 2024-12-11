@@ -29,6 +29,7 @@ public enum ErrorCode {
 
     // 입력 오류
     BAD_REQUEST_INPUT(40907, HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
+
     /**
      * == 401 UNAUTHORIZED ==
      */
@@ -88,6 +89,13 @@ public enum ErrorCode {
     NOT_FOUND_JOURNAL(40418, HttpStatus.NOT_FOUND, "해당 논문이 존재하지 않습니다."),
     // Medical_Life
     NOT_FOUND_MEDICAL_LIFE(40419,HttpStatus.NOT_FOUND, "해당 메디컬 라이프가 존재하지 않습니다."),
+
+    NOT_FOUND_CASE(40419,  HttpStatus.NOT_FOUND, "해당 케이스 공유글이 존재하지 않습니다."),
+
+    NOT_FOUND_TEMPLATE(40420,  HttpStatus.NOT_FOUND, "해당 케이스 공유 템플릿이 존재하지 않습니다."),
+
+    // 팔로우
+    NOT_FOUND_FOLLOW(40421, HttpStatus.NOT_FOUND, "팔로우한 사용자가 아닙니다."),
 
     /**
      * == 409 CONFLICT ==

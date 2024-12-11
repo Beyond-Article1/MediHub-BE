@@ -14,9 +14,6 @@ public class FlagService {
 
     private final FlagRepository flagRepository;
 
-    // FlagType
-    public static final String CP_OPINION_BOARD_FLAG = "CP_OPINION";
-
     // Flag 조회 (존재하지 않으면 빈 Optional 반환)
     @Transactional(readOnly = true)
     public Optional<Flag> findFlag(String flagType, Long entitySeq) {

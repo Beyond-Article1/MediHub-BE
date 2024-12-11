@@ -5,9 +5,12 @@ import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Keyword;
 import mediHub_be.board.repository.KeywordRepository;
 import mediHub_be.case_sharing.dto.CaseSharingKeywordDTO;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,7 +64,7 @@ public class KeywordService {
 
         // 키워드 삭제
         keywordRepository.deleteByFlagSeq(flag.getFlagSeq());
-        flagService.deleteFlag(flag.getFlagSeq());
+//        flagService.deleteFlag(flag.getFlagSeq());
     }
 
     // 특정 게시물의 키워드 조회

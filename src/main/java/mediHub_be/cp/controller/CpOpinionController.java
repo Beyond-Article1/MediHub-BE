@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -73,11 +74,12 @@ public class CpOpinionController {
     public ResponseEntity<ApiResponse<CpOpinionDTO>> createCpOpinion(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
-            @RequestBody RequestCpOpinionDTO requestBody) {
+            @RequestBody RequestCpOpinionDTO requestBody,
+            @RequestPart(value = "images", required = false) List<MultipartFile> imageList) {
 
         logger.info("CP 의견 생성 요청: cpVersionSeq = {}, cpOpinionLocationSeq = {}, 요청 본문 = {}", cpVersionSeq, cpOpinionLocationSeq, requestBody);
 
-        CpOpinionDTO cpOpinion = cpOpinionService.createCpOpinion(cpVersionSeq, cpOpinionLocationSeq, requestBody);
+        CpOpinionDTO cpOpinion = cpOpinionService.createCpOpinion(cpVersionSeq, cpOpinionLocationSeq, requestBody, imageList);
 
         logger.info("CP 의견이 성공적으로 생성되었습니다. CP 의견 정보: {}", cpOpinion);
         return ResponseEntity.ok(ApiResponse.created(cpOpinion));
@@ -108,11 +110,12 @@ public class CpOpinionController {
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
             @PathVariable long cpOpinionSeq,
-            @RequestBody RequestCpOpinionDTO requestBody) {
+            @RequestBody RequestCpOpinionDTO requestBody,
+            @RequestPart(value = "images", required = false) List<MultipartFile> imageList) {
 
-        logger.info("CP 의견 수정 요청: cpOpinionSeq = {}, requestBody = {}", cpOpinionSeq, requestBody);
+        logger.info("CP 의견 수정 요청: cpOpinionSeq = {}, requestBody = {}, imageList = {}", cpOpinionSeq, requestBody, imageList);
 
-        CpOpinionDTO cpOpinionDTO = cpOpinionService.updateCpOpinionByCpOpinionSeq(cpOpinionSeq, requestBody);
+        CpOpinionDTO cpOpinionDTO = cpOpinionService.updateCpOpinionByCpOpinionSeq(cpOpinionSeq, requestBody, imageList);
 
         logger.info("CP 의견이 성공적으로 수정되었습니다: {}", cpOpinionDTO);
         return ResponseEntity.ok(ApiResponse.ok(cpOpinionDTO));

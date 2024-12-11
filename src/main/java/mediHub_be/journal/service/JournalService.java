@@ -16,7 +16,7 @@ public interface JournalService {
     /**
      * PMID를 기반으로 GPT를 통해 논문의 초록을 요약 해주는 메서드
      */
-    ResponseAbstractDTO summarizeAbstractByPmid(String userId, String journalPmid, ResponsePubmedDTO requestDTO);
+    ResponseAbstractDTO summarizeAbstractByPmid(Long userSeq, String journalPmid, ResponsePubmedDTO requestDTO);
 
     /**
      * 논문들 TOP 100 조회 (조회순, 북마크순)
