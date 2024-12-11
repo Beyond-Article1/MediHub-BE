@@ -9,11 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
-import mediHub_be.cp.dto.*;
-import mediHub_be.cp.service.*;
+import mediHub_be.cp.dto.ResponseCpDTO;
+import mediHub_be.cp.dto.ResponseCpDetailDTO;
+import mediHub_be.cp.service.CpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,8 +37,7 @@ public class CpController {
     // CP 검색 조회
     // example: https://medihub.info/cp?cpSearchCategorySeq=1,2,3&cpSearchCategoryData=1,2,3
     @GetMapping
-    @Operation(
-            summary = "CP 리스트 조회",
+    @Operation(summary = "CP 리스트 조회",
             description = "주어진 카테고리 시퀀스와 카테고리 데이터를 사용하여 CP 리스트를 조회하거나, 주어진 CP 이름으로 조회합니다.")
     public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getCpList(
             @RequestParam(required = false) String cpSearchCategorySeq,
@@ -96,7 +95,7 @@ public class CpController {
     @GetMapping(value = "/{cpVersionSeq}")
     @Operation(summary = "CP 조회",
             description = "주어진 CP 버전 시퀀스를 사용하여 CP를 조회합니다.")
-    public ResponseEntity<ApiResponse<ResponseCpDTO>> getCpByCpVersionSeq(
+    public ResponseEntity<ApiResponse<ResponseCpDetailDTO>> getCpByCpVersionSeq(
             @PathVariable long cpVersionSeq,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -104,7 +103,7 @@ public class CpController {
 
         try {
             // Cp 버전을 통하여 Cp 를 가져오는 서비스 호출
-            ResponseCpDTO cpList = cpService.getCpByCpVersionSeq(cpVersionSeq, request, response);
+            ResponseCpDetailDTO cpList = cpService.getCpByCpVersionSeq(cpVersionSeq, request, response);
 
             if (cpList == null) {
                 logger.warn("버전 시퀀스 '{}'에 대한 CP 레코드가 없습니다.", cpVersionSeq);
@@ -128,4 +127,6 @@ public class CpController {
                     .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
         }
     }
+
+    @
 }

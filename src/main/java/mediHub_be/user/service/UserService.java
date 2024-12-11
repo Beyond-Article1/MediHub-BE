@@ -35,6 +35,10 @@ public class UserService {
     private final AmazonS3Service amazonS3Service;
     private final BCryptPasswordEncoder passwordEncoder;
 
+    // ############################ 기본 프로필 사진 url(S3에 업로드 하면 주소 바꿔주세요!!!) ############################
+    public static final String DEFAULT_PROFILE_URL = "https://png.pngtree.com/png-clipart/20220112/ourmid/pngtree-cartoon-hand-drawn-default-avatar-png-image_4154232.png";
+    // ############################ 기본 프로필 사진 url(S3에 업로드 하면 주소 바꿔주세요!!!) ############################
+
     // 회원 자기 정보 조회
     @Transactional(readOnly = true)
     public UserResponseDTO getUserInfo(Long userSeq) {
@@ -149,7 +153,7 @@ public class UserService {
     }
 
     // userId로 User 조회
-    public User findByUserId(String userId){
+    public User findByUserId(String userId) {
         return userRepository.findByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
