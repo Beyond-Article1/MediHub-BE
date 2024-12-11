@@ -227,11 +227,6 @@ public class TemplateService {
     }
 
     private TemplateListDTO toTemplateListDTO(Template template) {
-        String previewImageUrl = flagRepository.findByFlagTypeAndFlagEntitySeq(TEMPLATE_PREVIEW_FLAG, template.getTemplateSeq())
-                .flatMap(flag -> pictureRepository.findByFlag_FlagSeq(flag.getFlagSeq()))
-                .map(Picture::getPictureUrl)
-                .orElse(null);
-
         return TemplateListDTO.builder()
                 .templateSeq(template.getTemplateSeq())
                 .templateTitle(template.getTemplateTitle())
