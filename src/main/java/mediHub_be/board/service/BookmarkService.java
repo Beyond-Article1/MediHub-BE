@@ -68,11 +68,12 @@ public class BookmarkService {
         return bookmarkRepository.findByUserAndFlagType(user, flagType);
     }
 
-    // 게시판이 삭제되었을 때 해당 게시판과 연결된 북마크 삭제.
+    // 게시판이 삭제되었을 때 해당 게시판과 연결된 북마크 삭제
     public void deleteBookmarkByFlag(Flag flag) {
         bookmarkRepository.deleteAllByFlagSeq(flag.getFlagSeq());
     }
 
+    // 플래그를 찾아서 게시판이 삭제되었을 때 해당 게시판과 연결된 북마크 삭제
     public void deleteBookmarkByFlag(String flagType, long entitySeq) {
         // 1. flag 조회
         Flag flag = flagService.findFlag(flagType, entitySeq).orElseThrow(() -> {
