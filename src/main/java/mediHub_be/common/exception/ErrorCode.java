@@ -88,8 +88,12 @@ public enum ErrorCode {
     // 논문
     NOT_FOUND_JOURNAL(40418, HttpStatus.NOT_FOUND, "해당 논문이 존재하지 않습니다."),
 
+    NOT_FOUND_CASE(40419,  HttpStatus.NOT_FOUND, "해당 케이스 공유글이 존재하지 않습니다."),
+
+    NOT_FOUND_TEMPLATE(40420,  HttpStatus.NOT_FOUND, "해당 케이스 공유 템플릿이 존재하지 않습니다."),
+
     // 팔로우
-    NOT_FOUND_FOLLOW(40419, HttpStatus.NOT_FOUND, "팔로우한 사용자가 아닙니다."),
+    NOT_FOUND_FOLLOW(40421, HttpStatus.NOT_FOUND, "팔로우한 사용자가 아닙니다."),
 
     /**
      * == 409 CONFLICT ==
