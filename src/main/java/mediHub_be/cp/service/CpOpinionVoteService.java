@@ -32,7 +32,7 @@ public class CpOpinionVoteService {
      * @return 생성된 CP 의견 투표의 DTO
      * @throws CustomException 데이터베이스 처리 중 오류가 발생한 경우
      */
-    public CpOpinionVoteDTO create(long cpVersionSeq, boolean cpOpinionVote) {
+    public CpOpinionVoteDTO createCpOpinionVote(long cpVersionSeq, boolean cpOpinionVote) {
         logger.info("CP 버전 번호: {}로 CP 의견 투표를 생성합니다. 투표 여부: {}", cpVersionSeq, cpOpinionVote);
 
         CpOpinionVote entity = CpOpinionVote.toEntity(cpVersionSeq, SecurityUtil.getCurrentUserSeq(), cpOpinionVote);
@@ -45,17 +45,11 @@ public class CpOpinionVoteService {
 
             logger.info("CP 의견 투표가 성공적으로 생성되었습니다. 투표 ID: {}", entity.getCpOpinionVoteSeq());
         } catch (DataAccessException e) {
-            logger.error("데이터베이스 접근 오류: {}", e.getMessage());
-            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+            logger.error("데이터베이스 접근 오류: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
         } catch (Exception e) {
-            logger.error("예기치 않은 오류 발생: {}", e.getMessage());
-            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
-        }
-
-        // dto가 null인 경우 처리
-        if (dto == null) {
-            logger.error("CP 의견 투표 DTO 생성에 실패했습니다.");
-            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
+            throw new RuntimeException("예기치 않은 오류가 발생했습니다.", e);
         }
 
         return dto;
@@ -67,23 +61,19 @@ public class CpOpinionVoteService {
      * @param cpOpinionVoteSeq 삭제할 CP 의견 투표의 ID
      * @throws CustomException 데이터베이스 접근 중 오류가 발생한 경우
      */
-    public void delete(long cpOpinionVoteSeq) {
+    public void deleteCpOpinionVote(long cpOpinionVoteSeq) {
         logger.info("CP 의견 투표 삭제 요청. 투표 ID: {}", cpOpinionVoteSeq);
 
         try {
             // 삭제 시도
             cpOpinionVoteRepository.deleteById(cpOpinionVoteSeq);
             logger.info("CP 의견 투표가 성공적으로 삭제되었습니다. 투표 ID: {}", cpOpinionVoteSeq);
-        } catch (EmptyResultDataAccessException e) {
-            logger.error("삭제할 CP 의견 투표가 존재하지 않습니다. 투표 ID: {}", cpOpinionVoteSeq);
-            throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION_VOTE); // 사용자 정의 예외 던지기
         } catch (DataAccessException e) {
-            logger.error("데이터베이스 접근 오류: {}", e.getMessage());
-            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR); // 사용자 정의 예외 던지기
+            logger.error("데이터베이스 접근 오류: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
         } catch (Exception e) {
-            logger.error("예기치 않은 오류 발생: {}", e.getMessage());
-            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR); // 사용자 정의 예외 던지기
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
+            throw new RuntimeException("예기치 않은 오류가 발생했습니다. 투표 ID: " + cpOpinionVoteSeq, e);
         }
     }
-
 }

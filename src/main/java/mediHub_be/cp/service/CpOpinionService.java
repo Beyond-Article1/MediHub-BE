@@ -84,15 +84,12 @@ public class CpOpinionService {
             }
 
             return dtoList;
-        } catch (CustomException e) {
-            logger.error("사용자 정의 예외 발생: {}", e.getMessage());
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         } catch (DataAccessException e) {
             logger.error("데이터베이스 접근 오류: {}", e.getMessage());
-            throw new RuntimeException("데이터베이스 접근 오류가 발생했습니다.", e);
+            throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
         } catch (Exception e) {
             logger.error("예기치 못한 오류 발생: {}", e.getMessage());
-            throw new RuntimeException("예기치 못한 오류가 발생했습니다.", e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -318,6 +315,9 @@ public class CpOpinionService {
             // 데이터베이스 관련 예외 처리
             logger.error("데이터베이스 저장 중 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        } catch (Exception e) {
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
+            throw new RuntimeException("예기치 않은 오류가 발생했습니다.", e);
         }
 
         // Entity -> DTO 변환
@@ -344,11 +344,7 @@ public class CpOpinionService {
             } catch (DataAccessException e) {
                 // 데이터 접근 오류 처리
                 logger.error("데이터베이스 접근 오류: {}", e.getMessage());
-                throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
-            } catch (CustomException e) {
-                // 사용자 정의 예외 처리
-                logger.error("사용자 정의 예외 발생: {}", e.getMessage());
-                throw e; // 사용자 정의 예외는 그대로 던짐
+                throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
             } catch (Exception e) {
                 // 일반 예외 처리
                 logger.error("예기치 못한 오류 발생: {}", e.getMessage());
@@ -362,65 +358,83 @@ public class CpOpinionService {
     /**
      * 주어진 cpOpinionSeq에 해당하는 CP 의견을 삭제합니다.
      *
+     * <p>이 메서드는 다음과 같은 과정을 수행합니다:</p>
+     * <ol>
+     *     <li>주어진 ID로 데이터베이스에서 CP 의견을 조회하고 권한을 확인합니다.</li>
+     *     <li>존재하지 않는 경우, {@link CustomException}을 던집니다.</li>
+     *     <li>이미 삭제된 의견인 경우, {@link CustomException}을 던집니다.</li>
+     *     <li>현재 사용자와 작성자가 다르고, 사용자가 관리자 권한이 아닐 경우, {@link CustomException}을 던집니다.</li>
+     *     <li>의견을 삭제합니다.</li>
+     * </ol>
+     *
      * @param cpOpinionSeq 삭제할 CP 의견의 ID
-     * @throws CustomException 유효하지 않은 ID일 경우 또는 삭제 중 오류가 발생할 경우
+     * @throws CustomException  유효하지 않은 ID일 경우 또는 삭제 중 오류가 발생할 경우
+     * @throws RuntimeException 기타 예기치 않은 오류가 발생할 경우
      */
     @Transactional
-    public void deleteCpOpinionByCpOpinionSeq(long cpOpinionSeq) {
-        // 입력값 유효성 검사
-        validateCpOpinionSeq(cpOpinionSeq);
+    public void deleteByCpOpinionSeq(long cpOpinionSeq) {
+        logger.info("CP 의견 삭제 요청. CP 의견 ID: {}", cpOpinionSeq);
 
+        // DB 조회 및 권한 확인
+        CpOpinion entity = getCpOpinionAndCheckUnauthorizedAccess(cpOpinionSeq);
+
+        // 삭제
+        entity.delete();
+        logger.info("CP 의견 ID: {}가 삭제되었습니다.", cpOpinionSeq);
+
+        // 저장 (필요한 경우에만)
         try {
-            // CP 의견 조회 및 작성자 확인
-            CpOpinion cpOpinion = getCpOpinionAndCheckUnauthorizedAccess(cpOpinionSeq);
+            // 이 부분은 실제로 필요하다면 저장 로직을 추가합니다.
+            // cpOpinionRepository.save(entity); // 주석 처리된 부분은 필요 여부에 따라 결정
 
-            // CP 의견 삭제
-            cpOpinion.delete();
-            cpOpinionRepository.save(cpOpinion);
-            logger.info("CP 의견이 성공적으로 삭제되었습니다. cpOpinionSeq: {}", cpOpinionSeq);
-
-            // 키워드 삭제
-            keywordService.deleteKeywords(FlagService.CP_OPINION_BOARD_FLAG, cpOpinion.getCpOpinionSeq());
+            logger.info("CP 의견 ID: {}가 데이터베이스에서 성공적으로 삭제되었습니다.", cpOpinionSeq);
         } catch (DataAccessException e) {
-            logger.error("데이터베이스 삭제 중 오류 발생: {}", e.getMessage());
-            throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+            logger.error("데이터베이스 삭제 중 오류 발생: {}", e.getMessage(), e);
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_IO_DELETE_ERROR);
+        } catch (Exception e) {
+            logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
+            throw new RuntimeException("예기치 않은 오류가 발생했습니다.", e);
         }
     }
 
     /**
      * CP 의견을 조회하고, 현재 사용자의 접근 권한을 검증하는 메서드입니다.
      *
+     * <p>이 메서드는 주어진 CP 의견의 고유 식별자로 해당 의견을 조회합니다.
+     * 사용자가 해당 의견을 조회할 권한이 있는지 검증하며, 권한이 없거나
+     * 의견이 존재하지 않는 경우 적절한 예외를 발생시킵니다.</p>
+     *
      * @param cpOpinionSeq CP 의견의 고유 식별자
-     * @return CpOpinion 조회된 CP 의견 객체
-     * @throws CustomException 데이터베이스 접근 오류, 권한 없음 등의 예외가 발생할 경우
+     * @return CpOpinion 조회된 CP 의견 객체. 의견이 존재하고 삭제되지 않은 경우.
+     * @throws CustomException  데이터베이스 접근 오류가 발생한 경우,
+     *                          의견이 존재하지 않는 경우, 또는 사용자가 권한이 없는 경우.
+     * @throws RuntimeException 다른 예기치 않은 오류가 발생할 경우
      */
     @Transactional(readOnly = true)
     public CpOpinion getCpOpinionAndCheckUnauthorizedAccess(long cpOpinionSeq) {
 
         // DB에서 CP 의견 조회
-        CpOpinion cpOpinion = cpOpinionRepository.findById(cpOpinionSeq)
+        CpOpinion entity = cpOpinionRepository.findById(cpOpinionSeq)
                 .orElseThrow(() -> {
                     logger.warn("조회된 CP 의견이 없습니다. CP 의견 번호: {}", cpOpinionSeq);
                     return new CustomException(ErrorCode.NOT_FOUND_CP_OPINION); // 의견이 존재하지 않을 경우 예외 발생
-                    // 의견이 존재하지 않을 경우 예외 발생
                 });
+
+        // 삭제 상태 확인
+        if (entity.getDeletedAt() != null) {
+            logger.warn("CP 의견 ID: {}는 이미 삭제된 의견입니다.", cpOpinionSeq);
+            throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
+        }
 
         // 로그인 유저 번호 및 권한 확인
         Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
-        String currentUserAuth = SecurityUtil.getCurrentUserAuthorities();
-
-        // 어드민 여부 확인
-        if (currentUserAuth.equals(UserAuth.ADMIN)) {
-            return cpOpinion; // 어드민이면 즉시 CP 의견 반환
-        }
-
-        // 작성자 확인
-        if (currentUserSeq == null || !currentUserSeq.equals(cpOpinion.getUserSeq())) {
-            logger.warn("작성자 확인 실패. 현재 사용자 번호: {}, 요구되는 사용자 번호: {}", currentUserSeq, cpOpinion.getUserSeq());
+        String currentUserAuthority = SecurityUtil.getCurrentUserAuthorities();
+        if (currentUserSeq != entity.getUserSeq() && !currentUserAuthority.equals(UserAuth.ADMIN)) {
+            logger.warn("사용자 시퀀스: {}가 CP 의견 ID: {}를 조회할 권한이 없습니다.", currentUserSeq, cpOpinionSeq);
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
-        return cpOpinion;
+        return entity; // 권한이 확인된 경우, CP 의견 반환
     }
 
     /**
@@ -433,9 +447,8 @@ public class CpOpinionService {
      */
     @Transactional
     public CpOpinionDTO updateCpOpinionByCpOpinionSeq(long cpOpinionSeq, RequestCpOpinionDTO requestBody) {
-        // 입력값 유효성 검사
-        validateCpOpinionSeq(cpOpinionSeq); // CP 의견 ID 유효성 검사
-        validateRequestCpOpinion(requestBody); // 요청 본문 유효성 검사
+
+        validateRequestCpOpinion(requestBody); // requestBody 유효성 검사
 
         // DB에서 현재 CP 의견 조회 및 작성자 확인
         CpOpinion cpOpinion = getCpOpinionAndCheckUnauthorizedAccess(cpOpinionSeq);
@@ -461,24 +474,11 @@ public class CpOpinionService {
             logger.error("데이터베이스 업데이트 중 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
         } catch (Exception e) {
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+            throw new RuntimeException("예기치 않은 오류가 발생했습니다.", e);
         }
 
         // Entity -> DTO 변환
         return CpOpinionDTO.toDto(cpOpinion); // 업데이트된 CP 의견의 DTO를 반환
-    }
-
-    /**
-     * 주어진 CP 의견 ID의 유효성을 검사합니다.
-     *
-     * @param cpOpinionSeq 검사할 CP 의견 ID
-     * @throws CustomException 유효하지 않은 ID인 경우 예외를 발생시킵니다.
-     */
-    private void validateCpOpinionSeq(long cpOpinionSeq) {
-        if (cpOpinionSeq <= 0) {
-            logger.warn("유효하지 않은 cpOpinionSeq: {}", cpOpinionSeq);
-            throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION); // 예외 발생
-        }
     }
 
     /**
