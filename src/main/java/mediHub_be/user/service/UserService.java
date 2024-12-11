@@ -142,6 +142,11 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    // userSeq로 User 조회
+    public User findUser(Long userSeq) {
+        return userRepository.findByUserSeq(userSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+    }
 
 }
 
