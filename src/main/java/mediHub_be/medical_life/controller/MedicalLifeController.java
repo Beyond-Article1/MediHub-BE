@@ -155,4 +155,22 @@ public class MedicalLifeController {
 
         return ResponseEntity.ok(ApiResponse.ok(isPreferred));
     }
+
+    @Operation(summary = "북마크 여부 확인", description = "특정 게시글에 대해 북마크 여부를 반환합니다.")
+    @GetMapping("/{medicalLifeSeq}/bookmark")
+    public ResponseEntity<ApiResponse<Boolean>> isBookmarked(@PathVariable Long medicalLifeSeq) {
+        String userId = SecurityUtil.getCurrentUserId();
+        boolean isBookmarked = medicalLifeService.isBookmarked(medicalLifeSeq, userId);
+
+        return ResponseEntity.ok(ApiResponse.ok(isBookmarked));
+    }
+
+    @Operation(summary = "좋아요 여부 확인", description = "특정 게시글에 대해 좋아요 여부를 반환합니다.")
+    @GetMapping("/{medicalLifeSeq}/prefer")
+    public ResponseEntity<ApiResponse<Boolean>> isPreferred(@PathVariable Long medicalLifeSeq) {
+        String userId = SecurityUtil.getCurrentUserId();
+        boolean isPreferred = medicalLifeService.isPreferred(medicalLifeSeq, userId);
+
+        return ResponseEntity.ok(ApiResponse.ok(isPreferred));
+    }
 }

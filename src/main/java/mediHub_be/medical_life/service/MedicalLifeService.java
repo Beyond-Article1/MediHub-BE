@@ -53,7 +53,6 @@ public class MedicalLifeService {
         // 유저 확인
         userRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
-        // 게시글 목록 조회 및 DTO 변환
         return medicalLifeRepository.findAllByDeptAndPart(filterDTO.getDeptSeq(), filterDTO.getPartSeq())
                 .stream()
                 .map(medicalLife -> {
@@ -82,7 +81,7 @@ public class MedicalLifeService {
                             .medicalLifeTitle(medicalLife.getMedicalLifeTitle())
                             .medicalLifeContent(medicalLife.getMedicalLifeContent())
                             .medicalLifeViewCount(medicalLife.getMedicalLifeViewCount())
-                            .pictures(pictures) // 사진 추가
+                            .pictures(pictures)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -143,7 +142,6 @@ public class MedicalLifeService {
                         .build())
                 .collect(Collectors.toList());
 
-        // DTO 빌드 및 반환
         return MedicalLifeDetailDTO.builder()
                 .medicalLifeSeq(medicalLife.getMedicalLifeSeq())
                 .userName(author.getUserName())
@@ -166,7 +164,7 @@ public class MedicalLifeService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
-        // 부서 추론
+
         Dept dept = user.getPart().getDept();
         if (dept == null) {
             throw new CustomException(ErrorCode.NOT_FOUND_MEDICAL_LIFE);
@@ -175,8 +173,8 @@ public class MedicalLifeService {
         // 게시글 생성
         MedicalLife medicalLife = MedicalLife.builder()
                 .user(user)
-                .dept(dept) // 자동 설정된 부서
-                .part(user.getPart()) // 사용자의 과 정보
+                .dept(dept)
+                .part(user.getPart())
                 .medicalLifeTitle(title)
                 .medicalLifeContent(content)
                 .build();
@@ -233,6 +231,7 @@ public class MedicalLifeService {
 
         // 기존 이미지 삭제 및 새로운 이미지 추가
         if (imageList != null && !imageList.isEmpty()) {
+
             // 기존 이미지 삭제
             List<Picture> existingPictures = pictureRepository.findAllByFlag_FlagSeq(flag.getFlagSeq());
             for (Picture picture : existingPictures) {
@@ -315,36 +314,46 @@ public class MedicalLifeService {
     // 댓글 수정
     @Transactional
     public void updateMedicalLifeComment(Long commentSeq, String commentContent, String userId) {
+        // 댓글 조회
         Comment comment = commentRepository.findById(commentSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_COMMENT));
 
+        // 사용자 조회
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
+        // 댓글 작성자 확인
         if (!comment.getUser().equals(user)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
+        // 댓글 업데이트
         comment.update(user, comment.getFlag(), commentContent);
         commentRepository.save(comment);
     }
 
+
     // 댓글 삭제
     @Transactional
     public void deleteMedicalLifeComment(Long commentSeq, String userId) {
+        // 댓글 조회
         Comment comment = commentRepository.findById(commentSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_COMMENT));
 
+        // 사용자 조회
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
+        // 댓글 작성자 확인
         if (!comment.getUser().equals(user)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
+        // 댓글 삭제 (소프트 딜리트)
         comment.setDeleted();
         commentRepository.save(comment);
     }
+
 
     // 북마크 토글
     @Transactional
