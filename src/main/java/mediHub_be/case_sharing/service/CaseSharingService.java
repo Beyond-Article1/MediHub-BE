@@ -8,8 +8,6 @@ import mediHub_be.amazonS3.service.AmazonS3Service;
 import mediHub_be.board.Util.ViewCountManager;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
-import mediHub_be.board.repository.FlagRepository;
-import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.FlagService;
 import mediHub_be.board.service.KeywordService;
@@ -19,9 +17,9 @@ import mediHub_be.case_sharing.entity.CaseSharing;
 import mediHub_be.case_sharing.entity.Template;
 import mediHub_be.case_sharing.entity.CaseSharingGroup;
 import mediHub_be.case_sharing.repository.CaseSharingRepository;
-import mediHub_be.board.repository.KeywordRepository;
-import mediHub_be.case_sharing.repository.TemplateRepository;
 import mediHub_be.case_sharing.repository.CaseSharingGroupRepository;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -38,17 +36,15 @@ public class CaseSharingService {
     private final CaseSharingRepository caseSharingRepository;
     private final CaseSharingGroupRepository caseSharingGroupRepository;
     private final UserRepository userRepository;
-    private final PictureRepository pictureRepository;
     private final PictureService pictureService;
-    private final TemplateRepository templateRepository;
     private final KeywordService keywordService;
     private final ViewCountManager viewCountManager;
-    private final FlagRepository flagRepository;
     private final BookmarkService bookmarkService;
     private final AmazonS3Service amazonS3Service;
     private final FlagService flagService;
 
     private static final String CASE_SHARING_FLAG = "case_sharing";
+    private final TemplateService templateService;
 
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
@@ -104,7 +100,7 @@ public class CaseSharingService {
         validateDoctor(user);
 
         // 템플릿 조회
-        Template template = findTemplate(requestDTO.getTemplateSeq());
+        Template template = templateService.getTemplate(requestDTO.getTemplateSeq());
         // 그룹 생성 및 저장
         CaseSharingGroup group = CaseSharingGroup.createNewGroup();
 
@@ -192,9 +188,9 @@ public class CaseSharingService {
                 caseSharingRepository.save(previousVersion);
             }
         }
-        keywordService.deleteKeywords(CASE_SHARING_FLAG, caseSharing.getCaseSharingSeq());
-
-        deletePictures(caseSharing.getCaseSharingSeq());
+        Flag flag = flagService.findFlag(CASE_SHARING_FLAG, caseSharing.getCaseSharingSeq())
+                .orElseThrow(() -> new IllegalArgumentException("해당 Flag가 존재하지 않습니다."));
+        pictureService.deletePictures(flag);
 
         caseSharing.markAsDeleted();
         caseSharingRepository.save(caseSharing);
@@ -245,7 +241,7 @@ public class CaseSharingService {
     @Transactional
     public Long saveDraft(CaseSharingCreateRequestDTO requestDTO, List<MultipartFile> images, String userId) {
         User user = findUser(userId);
-        Template template = findTemplate(requestDTO.getTemplateSeq());
+        Template template = templateService.getTemplate(requestDTO.getTemplateSeq());;
 
         CaseSharingGroup group = CaseSharingGroup.createNewGroup();
         caseSharingGroupRepository.save(group);
@@ -312,7 +308,7 @@ public class CaseSharingService {
         Flag flag = flagService.findFlag(CASE_SHARING_FLAG, draft.getCaseSharingSeq())
                 .orElseThrow(() -> new IllegalArgumentException("해당 Flag가 존재하지 않습니다."));
 
-        deletePictures(draft.getCaseSharingSeq());
+        pictureService.deletePictures(flag);
 
         // 4. 새로운 사진 업로드 및 저장
         if (newImages != null && !newImages.isEmpty()) {
@@ -334,11 +330,14 @@ public class CaseSharingService {
         validateAuthor(draft, user);
 
         keywordService.deleteKeywords(CASE_SHARING_FLAG, caseSharingSeq);
+        List<Picture> existingPictures = pictureService.getPicturesByFlagTypeAndEntitySeq(CASE_SHARING_FLAG, draft.getCaseSharingSeq());
 
-        List<Picture> existingPictures = pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeq(CASE_SHARING_FLAG, caseSharingSeq);
+        Flag flag = flagService.findFlag(CASE_SHARING_FLAG, caseSharingSeq)
+                .orElseThrow();
+
         for (Picture picture : existingPictures) {
             amazonS3Service.deleteImageFromS3(picture.getPictureUrl()); // S3에서 삭제
-            pictureRepository.delete(picture); // 엔티티 삭제
+            pictureService.deletePictures(flag);
         }
 
         caseSharingRepository.delete(draft);
@@ -371,17 +370,9 @@ public class CaseSharingService {
         }
     }
 
-    private void deletePictures(Long entitySeq) {
-        List<Picture> pictures = pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeq(CASE_SHARING_FLAG, entitySeq);
-        pictures.forEach(picture -> {
-            amazonS3Service.deleteImageFromS3(picture.getPictureUrl());
-            pictureRepository.delete(picture);
-        });
-    }
-
     private User findUser(String userId) {
         return userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
 
 
@@ -414,18 +405,9 @@ public class CaseSharingService {
                 .orElseThrow(() -> new IllegalArgumentException("임시 저장 글을 찾을 수 없습니다."));
     }
 
-    private Template findTemplate(Long templateSeq) {
-        return templateRepository.findById(templateSeq)
-                .orElseThrow(() -> new IllegalArgumentException("해당 템플릿을 찾을 수 없습니다."));
-    }
-
     private void saveKeywordsAndFlag(List<String> keywords, Long entitySeq) {
         if (keywords != null && !keywords.isEmpty()) {
-            Flag flag = Flag.builder()
-                    .flagType(CASE_SHARING_FLAG)
-                    .flagEntitySeq(entitySeq)
-                    .build();
-            flagRepository.save(flag);
+            Flag flag = flagService.createFlag(CASE_SHARING_FLAG, entitySeq);
             keywordService.saveKeywords(keywords, flag.getFlagSeq());
         }
     }

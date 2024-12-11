@@ -22,13 +22,12 @@ public class PictureService {
 
     private final PictureRepository pictureRepository;
     private final AmazonS3Service amazonS3Service;
-    private final FlagRepository flagRepository;
+    private final FlagService flagService;
 
     // 이미지 업로드 및 Picture 엔터티 생성
     @Transactional
     public List<String> uploadPictureWithFlag(String flagType, Long entitySeq, List<MultipartFile> pictures) {
-
-        Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq).orElse(null);
+        Flag flag = flagService.findFlag(flagType, entitySeq).orElse(null);
         try {
             return pictures.stream()
                     .map(image -> uploadPicture(image, flag))
@@ -73,5 +72,21 @@ public class PictureService {
             throw new RuntimeException(e);
         }
     }
+
+    @Transactional
+    public void deletePictures(Flag flag) {
+        List<Picture> pictures = pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeq(flag.getFlagType(), flag.getFlagEntitySeq());
+        pictures.forEach(picture -> {
+            amazonS3Service.deleteImageFromS3(picture.getPictureUrl());
+            pictureRepository.delete(picture);
+        });
+    }
+
+    @Transactional
+    public List<Picture> getPicturesByFlagTypeAndEntitySeq(String flagType, Long entitySeq) {
+        return pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeq(flagType, entitySeq);
+
+    }
+
 
 }

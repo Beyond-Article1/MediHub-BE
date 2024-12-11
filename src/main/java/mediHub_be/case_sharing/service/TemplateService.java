@@ -2,11 +2,8 @@ package mediHub_be.case_sharing.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.amazonS3.service.AmazonS3Service;
 import mediHub_be.board.entity.Flag;
-import mediHub_be.board.entity.Picture;
-import mediHub_be.board.repository.FlagRepository;
-import mediHub_be.board.repository.PictureRepository;
+import mediHub_be.board.service.FlagService;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.case_sharing.dto.TemplateDetailDTO;
 import mediHub_be.case_sharing.dto.TemplateListDTO;
@@ -30,11 +27,9 @@ import java.util.stream.Collectors;
 public class TemplateService {
 
     private final TemplateRepository templateRepository;
-    private final PictureRepository pictureRepository;
     private final UserRepository userRepository;
-    private final FlagRepository flagRepository;
     private final PictureService pictureService;
-    private final AmazonS3Service amazonS3Service;
+    private final FlagService flagService;
 
     private static final String TEMPLATE_FLAG = "template";
     private static final String TEMPLATE_PREVIEW_FLAG = "template_preview";
@@ -101,13 +96,13 @@ public class TemplateService {
 
         // 미리보기 이미지 저장
         if (previewImage != null) {
-            Flag previewFlag = saveFlag(template.getTemplateSeq(), TEMPLATE_PREVIEW_FLAG);
+            Flag previewFlag = flagService.createFlag(TEMPLATE_PREVIEW_FLAG, template.getTemplateSeq());
             pictureService.uploadPicture(previewImage, previewFlag);
         }
 
         // 본문 이미지 저장 및 내용 치환
         if (images != null && !images.isEmpty()) {
-            saveFlag(template.getTemplateSeq(), TEMPLATE_FLAG);
+            flagService.createFlag(TEMPLATE_FLAG, template.getTemplateSeq());
             String updatedContent = pictureService.replacePlaceHolderWithUrls(
                     requestDTO.getTemplateContent(),
                     images,
@@ -146,8 +141,13 @@ public class TemplateService {
         Template template = getTemplate(templateSeq);
         validateTemplateOwnership(template, user);
 
-        deleteImagesByFlagType(templateSeq, TEMPLATE_FLAG);
-        deleteImagesByFlagType(templateSeq, TEMPLATE_PREVIEW_FLAG);
+        Flag templateFlag = flagService.findFlag(TEMPLATE_FLAG, templateSeq)
+                .orElseThrow();
+        Flag previewFlag = flagService.findFlag(TEMPLATE_PREVIEW_FLAG, templateSeq)
+                .orElseThrow();
+
+        pictureService.deletePictures(templateFlag);
+        pictureService.deletePictures(previewFlag);
 
         template.markAsDeleted();
         templateRepository.save(template);
@@ -156,17 +156,19 @@ public class TemplateService {
     // 공통 로직
     private void updatePreviewImage(Long templateSeq, MultipartFile previewImage) {
         if (previewImage != null && !previewImage.isEmpty()) {
-            Flag previewFlag = flagRepository.findByFlagTypeAndFlagEntitySeq(TEMPLATE_PREVIEW_FLAG, templateSeq)
-                    .orElseGet(() -> saveFlag(templateSeq, TEMPLATE_PREVIEW_FLAG));
-
-            deleteImagesByFlagType(templateSeq, TEMPLATE_PREVIEW_FLAG);
+            Flag previewFlag = flagService.createFlag(TEMPLATE_FLAG, templateSeq);
+            pictureService.deletePictures(previewFlag);
             pictureService.uploadPicture(previewImage, previewFlag);
         }
     }
 
     private void updateContentImages(Template template, List<MultipartFile> contentImages, TemplateRequestDTO requestDTO) {
         if (contentImages != null && !contentImages.isEmpty()) {
-            deleteImagesByFlagType(template.getTemplateSeq(), TEMPLATE_FLAG);
+
+            Flag flag = flagService.findFlag(TEMPLATE_FLAG, template.getTemplateSeq())
+                    .orElseThrow();
+
+            pictureService.deletePictures(flag);
 
             String updatedContent = pictureService.replacePlaceHolderWithUrls(
                     requestDTO.getTemplateContent(),
@@ -179,29 +181,13 @@ public class TemplateService {
         }
     }
 
-    private void deleteImagesByFlagType(Long entitySeq, String flagType) {
-        List<Picture> pictures = pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeq(flagType, entitySeq);
-        pictures.forEach(picture -> {
-            amazonS3Service.deleteImageFromS3(picture.getPictureUrl());
-            pictureRepository.delete(picture);
-        });
-    }
-
-    private Flag saveFlag(Long entitySeq, String flagType) {
-        Flag flag = Flag.builder()
-                .flagType(flagType)
-                .flagEntitySeq(entitySeq)
-                .build();
-        flagRepository.save(flag);
-        return flag;
-    }
-
     private User getUser(String userId) {
         return userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
     }
 
-    private Template getTemplate(Long templateSeq) {
+    @Transactional
+    public Template getTemplate(Long templateSeq) {
         return templateRepository.findByTemplateSeqAndDeletedAtIsNull(templateSeq)
                 .orElseThrow(() -> new IllegalArgumentException("템플릿을 찾을 수 없습니다."));
     }
