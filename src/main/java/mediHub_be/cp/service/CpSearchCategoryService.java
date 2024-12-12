@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.cp.dto.ResponseCpSearchCategoryAndCpSearchCategoryDataDTO;
 import mediHub_be.cp.dto.ResponseCpSearchCategoryDTO;
+import mediHub_be.cp.dto.ResponseSimpleCpSearchCategoryDataDTO;
 import mediHub_be.cp.entity.CpSearchCategory;
 import mediHub_be.cp.repository.CpSearchCategoryDataRepository;
 import mediHub_be.cp.repository.CpSearchCategoryRepository;
@@ -20,6 +22,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class CpSearchCategoryService {
+
+    // Service
+    private final CpSearchCategoryDataService cpSearchCategoryDataService;
 
     // Repository
     private final CpSearchCategoryRepository cpSearchCategoryRepository;
@@ -261,4 +266,35 @@ public class CpSearchCategoryService {
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
         }
     }
+
+    /**
+     * CP 검색 카테고리와 해당 카테고리에 대한 데이터를 조회합니다.
+     * <p>
+     * 이 메서드는 모든 CP 검색 카테고리를 조회하고,
+     * 각 카테고리에 대해 삭제되지 않은 데이터 목록을 설정합니다.
+     *
+     * @return CP 검색 카테고리와 해당 데이터 목록의 DTO 리스트
+     */
+    public List<ResponseCpSearchCategoryAndCpSearchCategoryDataDTO> getCpSearchCategoryAndCpSearchCategoryData() {
+
+        logger.info("CP 검색 카테고리와 카테고리별 데이터 조회 요청이 시작되었습니다.");
+
+        List<ResponseCpSearchCategoryAndCpSearchCategoryDataDTO> dtoList = cpSearchCategoryRepository.findSimpleCpSearchCategory();
+
+        if (dtoList != null && !dtoList.isEmpty()) {
+            dtoList.forEach(dto -> {
+                List<ResponseSimpleCpSearchCategoryDataDTO> categoryData =
+                        cpSearchCategoryDataService.getCpSearchCategoryDataListByCpSearchCategorySeqAndDeletedAtIsNull(dto.getCpSearchCategorySeq());
+                dto.setCpSearchCategoryDataDtoList(categoryData);
+                logger.info("CP 검색 카테고리 시퀀스 {}에 대한 데이터가 {}개 설정되었습니다.", dto.getCpSearchCategorySeq(), categoryData.size());
+            });
+        } else {
+            logger.warn("CP 검색 카테고리와 카테고리별 데이터 요청 과정에서 에러가 발생했습니다. 데이터가 비어있습니다.");
+            return null;
+        }
+
+        logger.info("CP 검색 카테고리와 카테고리별 데이터 조회가 완료되었습니다.");
+        return dtoList;
+    }
+
 }
