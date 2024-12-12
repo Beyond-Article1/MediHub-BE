@@ -128,5 +128,33 @@ public class CpController {
         }
     }
 
-    @
+    @PostMapping(value = "/bookmark/{cpVersionSeq}")
+    @Operation(summary = "주어진 CP 버전의 북마크 토글",
+            description = "이 API는 지정된 CP 버전 시퀀스에 대해 사용자의 북마크 상태를 토글합니다. " +
+                    "북마크가 되어 있지 않으면 북마크를 추가하고, 이미 북마크 되어 있으면 해제합니다.")
+    public ResponseEntity<ApiResponse<String>> toggleBookmark(@PathVariable long cpVersionSeq) {
+        logger.info("CP 버전 {}에 대한 북마크 토글 요청이 수신되었습니다.", cpVersionSeq);
+
+        boolean isBookmarked = cpService.cpBookmark(cpVersionSeq);
+
+        if (isBookmarked) {
+            logger.info("CP 버전 {}의 북마크가 완료되었습니다.", cpVersionSeq);
+            return ResponseEntity.ok(ApiResponse.ok("북마크 완료"));
+        } else {
+            logger.info("CP 버전 {}의 북마크가 해제되었습니다.", cpVersionSeq);
+            return ResponseEntity.ok(ApiResponse.ok("북마크 해제"));
+        }
+    }
+
+    @GetMapping("/mypage")
+    @Operation(summary = "사용자의 북마크된 CP 버전 조회",
+            description = "사용자가 북마크한 CP 버전 목록을 조회하여 반환합니다.")
+    public ResponseEntity<ApiResponse<List<ResponseCpDTO>>> getBookmarkedCp() {
+        logger.info("사용자의 북마크된 CP 버전 목록 조회 요청이 수신되었습니다.");
+
+        List<ResponseCpDTO> bookmarkedCpList = cpService.getBookmarkedCp();
+        logger.info("사용자의 북마크된 CP 버전 목록이 {}개 조회되었습니다.", bookmarkedCpList.size());
+
+        return ResponseEntity.ok(ApiResponse.ok(bookmarkedCpList));
+    }
 }

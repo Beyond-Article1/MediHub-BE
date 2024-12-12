@@ -2,6 +2,7 @@ package mediHub_be.cp.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Keyword;
 import mediHub_be.board.repository.KeywordRepository;
@@ -17,6 +18,7 @@ import mediHub_be.cp.entity.CpOpinionVote;
 import mediHub_be.cp.repository.CpOpinionRepository;
 import mediHub_be.cp.repository.CpOpinionVoteRepository;
 import mediHub_be.security.util.SecurityUtil;
+import mediHub_be.user.entity.User;
 import mediHub_be.user.entity.UserAuth;
 import mediHub_be.user.service.UserService;
 import org.slf4j.Logger;
@@ -599,5 +601,45 @@ public class CpOpinionService {
             logger.warn("입력값 유효성 검사 실패: requestBody = {}, cpOpinionContent = {}", requestBody, requestBody != null ? requestBody.getCpOpinionContent() : "null");
             throw new CustomException(ErrorCode.REQUIRED_FIELD_MISSING);
         }
+    }
+
+    /**
+     * 주어진 CP 의견 시퀀스에 대해 북마크를 토글합니다.
+     * <p>
+     * 이 메서드는 주어진 CP 의견 시퀀스에 대해 플래그를 생성한 후,
+     * 현재 사용자의 북마크 상태를 변경합니다.
+     *
+     * @param cpOpinionSeq 북마크를 설정할 CP 의견 시퀀스
+     * @return 북마크 상태가 변경된 결과 (true: 북마크됨, false: 북마크 해제됨)
+     */
+    public boolean cpOpinionBookmark(long cpOpinionSeq) {
+        // 플래그 생성
+        flagService.createFlag(CP_OPINION_BOARD_FLAG, cpOpinionSeq);
+        logger.info("CP 의견 {}의 플래그를 생성했습니다.", cpOpinionSeq);
+
+        // 북마크 토글
+        boolean newBookmarkState = bookmarkService.toggleBookmark(CP_OPINION_BOARD_FLAG, cpOpinionSeq, SecurityUtil.getCurrentUserId());
+        logger.info("CP 의견 {}의 북마크 상태가 {} 되었습니다.", cpOpinionSeq, newBookmarkState ? "북마크됨" : "북마크 해제됨");
+
+        return newBookmarkState;
+    }
+
+    public List<ResponseCpOpinionDTO> getBookmarkedCpOpinion() {
+        User user = userService.findUser(SecurityUtil.getCurrentUserSeq());
+        logger.info("사용자 {}의 북마크된 CP 버전을 조회합니다.", user.getUserId());
+
+        List<BookmarkDTO> bookmarkDtoList = bookmarkService.findByUserAndFlagType(user, CP_OPINION_BOARD_FLAG);
+        logger.info("사용자 {}의 북마크 목록을 {}개 찾았습니다.", user.getUserId(), bookmarkDtoList.size());
+
+        List<ResponseCpOpinionDTO> responseCpOpinionDTOList = bookmarkDtoList.stream()
+                .map(bookmarkDto ->
+                        cpOpinionRepository.findByCpOpinionSeq(bookmarkDto.getFlag().getFlagEntitySeq())
+                                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CP_VERSION))
+                )
+                .toList();
+
+
+        logger.info("사용자 {}의 북마크된 CP 의견 조회가 완료되었습니다.", user.getUserId());
+        return responseCpOpinionDTOList;
     }
 }
