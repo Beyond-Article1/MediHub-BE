@@ -132,15 +132,20 @@ public class PictureService {
             });
         }
     }
+
     @Transactional(readOnly = true)
     public String getUserProfileUrl(long userSeq) {
 
         Flag flag = flagService.findFlag("USER", userSeq).orElse(null);
 
-        Picture profile = pictureRepository.findFirstByFlagSeqOrderByCreatedAtDesc(flag.getFlagSeq()).orElse(null);
+        if (flag != null) {
+            Picture profile = pictureRepository.findFirstByFlagSeqOrderByCreatedAtDesc(flag.getFlagSeq()).orElse(null);
 
-        if (profile != null) {
-            return profile.getPictureUrl();
+            if (profile != null) {
+                return profile.getPictureUrl();
+            } else {
+                return UserService.DEFAULT_PROFILE_URL;
+            }
         } else {
             return UserService.DEFAULT_PROFILE_URL;
         }
