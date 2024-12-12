@@ -2,12 +2,14 @@ package mediHub_be.cp.dto;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import mediHub_be.board.entity.Keyword;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class ResponseCpOpinionDTO {
 
     private long cpOpinionSeq;              // CP 의견 번호
@@ -32,6 +34,7 @@ public class ResponseCpOpinionDTO {
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             LocalDateTime deletedAt,
+            long cpOpinionViewCount,
             String userName,
             String userId,
             String partName) {
@@ -44,6 +47,7 @@ public class ResponseCpOpinionDTO {
                 .createdAt(origin.getCreatedAt())
                 .updatedAt(origin.getUpdatedAt())
                 .deletedAt(origin.getDeletedAt())
+                .cpOpinionViewCount(origin.getCpOpinionViewCount())
                 .userName(origin.getUserName())
                 .userId(origin.getUserId())
                 .partName(origin.getPartName())
