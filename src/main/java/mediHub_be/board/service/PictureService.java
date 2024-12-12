@@ -135,7 +135,9 @@ public class PictureService {
     @Transactional(readOnly = true)
     public String getUserProfileUrl(long userSeq) {
 
-        Picture profile = pictureRepository.findUserProfile(userSeq).orElse(null);
+        Flag flag = flagService.findFlag("USER", userSeq).orElse(null);
+
+        Picture profile = pictureRepository.findFirstByFlagSeqOrderByCreatedAtDesc(flag.getFlagSeq()).orElse(null);
 
         if (profile != null) {
             return profile.getPictureUrl();
