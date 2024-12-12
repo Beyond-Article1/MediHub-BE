@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.amazonS3.service.AmazonS3Service;
 import mediHub_be.board.Util.ViewCountManager;
+import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
 import mediHub_be.board.service.BookmarkService;
@@ -378,6 +379,24 @@ public class CaseSharingService {
 
     }
 
+    // 16. 내가 북마크한 케이스 공유 리스트 반환
+    @Transactional(readOnly = true)
+    public List<CaseSharingListDTO> getBookMarkedCaseList(String userId) {
+        User user = userService.findByUserId(userId);
+        List<BookmarkDTO> myBookMarks =  bookmarkService.findByUserAndFlagType(user, CASE_SHARING_FLAG);
+
+        List<Long> caseSharingSeqs = myBookMarks.stream()
+                .map(bookmarkDTO -> bookmarkDTO.getFlag().getFlagEntitySeq())
+                .toList();
+
+        List<CaseSharing> caseSharings = caseSharingRepository.findAllById(caseSharingSeqs);
+
+        return caseSharings.stream()
+                .map(this::toListDTO)
+                .collect(Collectors.toList());
+
+    }
+
     private void updateContentWithImages(CaseSharing caseSharing, List<MultipartFile> images, String content) {
         if (images != null && !images.isEmpty()) {
             String updatedContent = pictureService.replacePlaceHolderWithUrls(
@@ -435,6 +454,7 @@ public class CaseSharingService {
                 caseSharing.getCaseSharingViewCount()
         );
     }
+
 
 
 }
