@@ -1,7 +1,7 @@
 package mediHub_be.journal.repository;
 
 import mediHub_be.journal.dto.ResponseJournalLogDTO;
-import mediHub_be.journal.dto.ResponseJournalSearchDTO;
+import mediHub_be.journal.dto.ResponseJournalRankDTO;
 import mediHub_be.journal.entity.Journal;
 import mediHub_be.journal.entity.JournalSearch;
 import mediHub_be.user.entity.User;
@@ -19,11 +19,11 @@ public interface JournalSearchRepository extends JpaRepository<JournalSearch, Lo
     Optional<JournalSearch> findByUserAndJournal(User user, Journal journal);
 
     // 조회수순으로 상위 100개 조회 및 카운트 수 입력
-    @Query("SELECT new mediHub_be.journal.dto.ResponseJournalSearchDTO(js.journal, COUNT(js)) " +
+    @Query("SELECT new mediHub_be.journal.dto.ResponseJournalRankDTO(js.journal, COUNT(js)) " +
             "FROM JournalSearch js " +
             "GROUP BY js.journal " +
             "ORDER BY COUNT(js) DESC")
-    Page<ResponseJournalSearchDTO> findTopJournalsWithSearchCount(Pageable pageable);
+    Page<ResponseJournalRankDTO> findTopJournalsWithSearchCount(Pageable pageable);
 
     // 내가 조회한 논문 시간순으로 정렬
     @Query("SELECT new mediHub_be.journal.dto.ResponseJournalLogDTO(js.journal, js.createdAt) " +
@@ -31,4 +31,13 @@ public interface JournalSearchRepository extends JpaRepository<JournalSearch, Lo
             "WHERE js.user = :user " +
             "ORDER BY js.createdAt DESC")
     List<ResponseJournalLogDTO> findJournalLogs(User user);
+
+    // 북마크 순으로 상위 100개 조회 및 북마크 수 입력
+    @Query("SELECT new mediHub_be.journal.dto.ResponseJournalRankDTO(js.journal, COUNT(b)) " +
+            "FROM JournalSearch js " +
+            "LEFT JOIN Bookmark b ON b.flag.flagType = 'JOURNAL' AND b.flag.flagEntitySeq = js.journal.journalSeq " +
+            "GROUP BY js.journal " +
+            "ORDER BY COUNT(b) DESC")
+    Page<ResponseJournalRankDTO> findTopJournalsWithBookmarkCount(Pageable pageable);
+
 }
