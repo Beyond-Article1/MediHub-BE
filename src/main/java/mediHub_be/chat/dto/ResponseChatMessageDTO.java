@@ -17,6 +17,7 @@ public class ResponseChatMessageDTO {
     private Long chatroomSeq;
     private Long senderUserSeq;
     private String senderUserName;
+    private String senderUserProfileUrl;
     private String type;
     private String message;
     private LocalDateTime createdAt;
