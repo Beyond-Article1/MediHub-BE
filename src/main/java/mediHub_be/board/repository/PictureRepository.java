@@ -27,6 +27,6 @@ public interface PictureRepository extends JpaRepository<Picture, Long> {
     List<Picture> findAllByFlag_FlagSeqAndDeletedAtIsNull(Long flagSeq);
 
 
-    Optional<Picture> findFirstByFlagSeqOrderByCreatedAtDesc(long flagSeq);
+    Optional<Picture> findFirstByFlag_FlagSeqOrderByCreatedAtDesc(long flagSeq);
 
 }

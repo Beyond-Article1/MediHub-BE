@@ -139,7 +139,7 @@ public class PictureService {
         Flag flag = flagService.findFlag("USER", userSeq).orElse(null);
 
         if (flag != null) {
-            Picture profile = pictureRepository.findFirstByFlagSeqOrderByCreatedAtDesc(flag.getFlagSeq()).orElse(null);
+            Picture profile = pictureRepository.findFirstByFlag_FlagSeqOrderByCreatedAtDesc(flag.getFlagSeq()).orElse(null);
 
             if (profile != null) {
                 return profile.getPictureUrl();
