@@ -29,12 +29,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*"); // api 통신 시, withSockJS() 설정을 빼야됨
+
+        registry.addEndpoint("/ws-chatbot")      // 처음 웹소켓 Handshake를 위한 경로
+                .setAllowedOriginPatterns("*")  // 모든 Origin 허용 -> 배포 시에는 보안을 위해 Origin을 정확히 지정할 예정
+                .withSockJS();                  // SockJS 사용 가능 설정
+
+        registry.addEndpoint("/ws-chatbot")
+                .setAllowedOriginPatterns("*"); // api 통신 시, withSockJS() 설정을 빼야됨
     }
 
     @Override   /* STOMP에서 사용하는 MessageBroker 설정*/
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/subscribe");  // "/subscribe/{chatroomSeq}"로 주제 구독 가능
-        registry.setApplicationDestinationPrefixes("/publish");       // "/publish/message"로 메시지 전송 컨트롤러 라우팅 가능
+        registry.enableSimpleBroker("/subscribe", "/chatbot-subscribe");  // "/subscribe/{chatroomSeq}"로 주제 구독 가능
+        registry.setApplicationDestinationPrefixes("/publish", "/chatbot-publish");       // "/publish/message"로 메시지 전송 컨트롤러 라우팅 가능
     }
 
     @Override

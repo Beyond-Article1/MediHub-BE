@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.chatbot.dto.MessageDTO;
 import mediHub_be.chatbot.service.ChatbotWebSocketService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.annotation.SendToUser;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 @Controller
@@ -15,7 +15,7 @@ public class ChatbotWebSocketController {
     private final ChatbotWebSocketService chatbotService;
 
     @MessageMapping("/medical-bot")
-    @SendToUser("/queue/medical")
+    @SendTo("/chatbot-subscribe/medical")
     public MessageDTO handleChatMessage(MessageDTO userMessage) {
         log.info("handleChatMessage 호출됨");
         if (userMessage == null) {
