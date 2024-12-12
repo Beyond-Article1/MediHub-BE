@@ -129,7 +129,7 @@ public class CpService {
         logger.info("CP 이름으로 검색: {}", cpName);
 
         // DB 조회
-        List<Map<String, Object>> entityList = cpVersionRepository.findByCpNameContainingIgnoreCase(cpName);    // Logger
+        List<Map<String, Object>> entityList = cpVersionRepository.findByCpNameContainingIgnoreCase(cpName);
 
         if (entityList.isEmpty()) {
             logger.info("조회 결과 없음: CP 이름 '{}'에 대한 결과가 없습니다.", cpName);
