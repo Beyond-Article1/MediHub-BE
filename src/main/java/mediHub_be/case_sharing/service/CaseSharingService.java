@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.amazonS3.service.AmazonS3Service;
 import mediHub_be.board.Util.ViewCountManager;
+import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
 import mediHub_be.board.service.BookmarkService;
@@ -21,6 +22,7 @@ import mediHub_be.case_sharing.repository.CaseSharingGroupRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.user.entity.User;
+import mediHub_be.user.repository.UserRepository;
 import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,7 +63,7 @@ public class CaseSharingService {
     //2. 케이스 공유 상세 조회
     @Transactional
     public CaseSharingDetailDTO getCaseSharingDetail(Long caseSharingSeq, String userId, HttpServletRequest request, HttpServletResponse response) {
-        userService.findByUserId(userId);
+        User user = userService.findByUserId(userId);
         // 게시글 정보 조회
         CaseSharing caseSharing = findCaseSharing(caseSharingSeq);
 
@@ -88,6 +90,7 @@ public class CaseSharingService {
                 .caseSharingGroupSeq(caseSharing.getCaseSharingGroup().getCaseSharingGroupSeq())
                 .isLatestVersion(caseSharing.getCaseSharingIsLatest())
                 .caseSharingViewCount(caseSharing.getCaseSharingViewCount())
+                .caseAuthorUrl(pictureService.getUserProfileUrl(user.getUserSeq()))
                 .build();
     }
 
@@ -360,6 +363,41 @@ public class CaseSharingService {
         return bookmarkService.isBookmarked(CASE_SHARING_FLAG, caseSharingSeq, userId);
     }
 
+    // 15. 내가 작성한 케이스 공유 리스트 반환
+    @Transactional(readOnly = true)
+    public List<CaseSharingMyListDTO> getMyCaseList(String userId) {
+        User user = userService.findByUserId(userId);
+        List<CaseSharing> myCaseSharing =  caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftFalseAndDeletedAtIsNullAndCaseSharingIsLatestIsTrue(user.getUserSeq());
+
+        return myCaseSharing.stream()
+                .map(draft -> new CaseSharingMyListDTO(
+                        draft.getCaseSharingSeq(),
+                        draft.getCaseSharingTitle(),
+                        draft.getCreatedAt(),
+                        draft.getCaseSharingViewCount()
+                ))
+                .toList();
+
+    }
+
+    // 16. 내가 북마크한 케이스 공유 리스트 반환
+    @Transactional(readOnly = true)
+    public List<CaseSharingListDTO> getBookMarkedCaseList(String userId) {
+        User user = userService.findByUserId(userId);
+        List<BookmarkDTO> myBookMarks =  bookmarkService.findByUserAndFlagType(user, CASE_SHARING_FLAG);
+
+        List<Long> caseSharingSeqs = myBookMarks.stream()
+                .map(bookmarkDTO -> bookmarkDTO.getFlag().getFlagEntitySeq())
+                .toList();
+
+        List<CaseSharing> caseSharings = caseSharingRepository.findAllById(caseSharingSeqs);
+
+        return caseSharings.stream()
+                .map(this::toListDTO)
+                .collect(Collectors.toList());
+
+    }
+
     private void updateContentWithImages(CaseSharing caseSharing, List<MultipartFile> images, String content) {
         if (images != null && !images.isEmpty()) {
             String updatedContent = pictureService.replacePlaceHolderWithUrls(
@@ -417,4 +455,7 @@ public class CaseSharingService {
                 caseSharing.getCaseSharingViewCount()
         );
     }
+
+
+
 }

@@ -14,19 +14,20 @@ import org.springframework.stereotype.Controller;
 public class ChatbotWebSocketController {
     private final ChatbotWebSocketService chatbotService;
 
-    @MessageMapping("/medical-bot")  // 클라이언트에서 "/app/medical-bot"으로 메시지 전송
-    @SendToUser("/queue/medical")  // 사용자별 경로로 메시지를 전송
+    @MessageMapping("/medical-bot")
+    @SendToUser("/queue/medical")
     public MessageDTO handleChatMessage(MessageDTO userMessage) {
+        log.info("handleChatMessage 호출됨");
+        if (userMessage == null) {
+            log.error("클라이언트 메시지가 null입니다.");
+            return new MessageDTO("bot", "오류가 발생했습니다.");
+        }
         log.info("클라이언트 메시지 수신: {}", userMessage);
 
-        // ChatGPT API를 통해 응답 생성
         String botResponse = chatbotService.getChatbotResponse(userMessage.getContent());
-
         log.info("챗봇 응답 생성: {}", botResponse);
 
-        // 챗봇 응답 반환
         return new MessageDTO("bot", botResponse);
     }
-
 
 }

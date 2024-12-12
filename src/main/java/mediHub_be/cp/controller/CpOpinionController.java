@@ -5,10 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.response.ApiResponse;
-import mediHub_be.cp.dto.CpOpinionDTO;
-import mediHub_be.cp.dto.RequestCpOpinionDTO;
-import mediHub_be.cp.dto.ResponseCpOpinionDTO;
-import mediHub_be.cp.dto.ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO;
+import mediHub_be.cp.dto.*;
 import mediHub_be.cp.service.CpOpinionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,5 +116,38 @@ public class CpOpinionController {
 
         logger.info("CP 의견이 성공적으로 수정되었습니다: {}", cpOpinionDTO);
         return ResponseEntity.ok(ApiResponse.ok(cpOpinionDTO));
+    }
+
+    // CP 의견 북마크
+    @PostMapping(value = "/{cpOpinionLocationSeq}/bookmark/{cpOpinionSeq}")
+    @Operation(summary = "CP 의견 북마크 토글",
+            description = "지정된 CP 의견에 대한 북마크 상태를 토글합니다. " +
+                    "북마크가 되어 있지 않으면 북마크를 추가하고, 이미 북마크 되어 있으면 해제합니다.")
+    public ResponseEntity<ApiResponse<String>> toggleBookmark(
+            @PathVariable long cpOpinionSeq) {
+        logger.info("CP 의견 {}에 대한 북마크 토글 요청이 수신되었습니다.", cpOpinionSeq);
+
+        boolean isBookmarked = cpOpinionService.cpOpinionBookmark(cpOpinionSeq);
+
+        if (isBookmarked) {
+            logger.info("CP 의견 {}의 북마크가 완료되었습니다.", cpOpinionSeq);
+            return ResponseEntity.ok(ApiResponse.ok("북마크 완료"));
+        } else {
+            logger.info("CP 의견 {}의 북마크가 해제되었습니다.", cpOpinionSeq);
+            return ResponseEntity.ok(ApiResponse.ok("북마크 해제"));
+        }
+    }
+
+    // CP 의견 북마크 조회
+    @GetMapping("/{cpOpinionLocationSeq}/mypage")
+    @Operation(summary = "사용자의 북마크된 CP 의견 조회",
+            description = "사용자가 북마크한 CP 의견 목록을 조회하여 반환합니다.")
+    public ResponseEntity<ApiResponse<List<ResponseCpOpinionDTO>>> getBookmarkedCp() {
+        logger.info("사용자의 북마크된 CP 의견 목록 조회 요청이 수신되었습니다.");
+
+        List<ResponseCpOpinionDTO> bookmarkedCpOpinionList = cpOpinionService.getBookmarkedCpOpinion();
+        logger.info("사용자의 북마크된 CP 의견 목록이 {}개 조회되었습니다.", bookmarkedCpOpinionList.size());
+
+        return ResponseEntity.ok(ApiResponse.ok(bookmarkedCpOpinionList));
     }
 }
