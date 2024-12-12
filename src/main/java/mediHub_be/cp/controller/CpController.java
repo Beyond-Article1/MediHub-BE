@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "cp")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "C P", description = "CP 관련 API")
+@Tag(name = "CP", description = "CP 관련 API")
 public class CpController {
 
     // Service
