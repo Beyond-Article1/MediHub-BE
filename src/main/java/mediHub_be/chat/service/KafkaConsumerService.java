@@ -1,7 +1,6 @@
 package mediHub_be.chat.service;
 
 import mediHub_be.chat.KafkaConstants;
-import mediHub_be.chat.dto.ChatMessageDTO;
 import mediHub_be.chat.dto.ResponseChatMessageDTO;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -17,21 +16,11 @@ public class KafkaConsumerService {
 
     // Kafka에서 메시지를 수신하고, STOMP 구독자에게 메시지 전송
     @KafkaListener(topics = KafkaConstants.KAFKA_TOPIC, containerFactory = "kafkaListenerContainerFactory")
-    public void consumeMessage(ChatMessageDTO message) {
+    public void consumeMessage(ResponseChatMessageDTO message) {
         String destination = "/subscribe/" + message.getChatroomSeq();  // 채팅방별 구독 경로
-        ResponseChatMessageDTO response = convertToResponseDTO(message);
 
         // 해당 채팅방을 구독하고 있는 사용자들에게 메시지 전송
-        messagingTemplate.convertAndSend(destination, response);
+        messagingTemplate.convertAndSend(destination, message);
     }
 
-    private ResponseChatMessageDTO convertToResponseDTO(ChatMessageDTO message) {
-        return ResponseChatMessageDTO.builder()
-                .chatroomSeq(message.getChatroomSeq())
-                .senderUserSeq(message.getSenderUserSeq())
-                .message(message.getMessage())
-                .createdAt(message.getCreatedAt())
-                .attachments(message.getAttachments())
-                .build();
-    }
 }
