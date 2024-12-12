@@ -160,7 +160,7 @@ public class UserService {
     }
 
     public boolean validateAdmin(User user){
-        return user.getUserAuth().equals(UserAuth.ADMIN);
+        return !user.getUserAuth().equals(UserAuth.ADMIN);
     }
 
 }

@@ -96,7 +96,7 @@ public class CaseSharingService {
     public Long createCaseSharing(CaseSharingCreateRequestDTO requestDTO, List<MultipartFile> images,String userId) {
 
         User user = userService.findByUserId(userId);
-        if(!userService.validateAdmin(user)) {
+        if(userService.validateAdmin(user)) {
             validateDoctor(user);
         }
 
@@ -131,7 +131,7 @@ public class CaseSharingService {
         User user = userService.findByUserId(userId);
         CaseSharing existingCaseSharing = findCaseSharing(caseSharingSeq);
 
-        if(!userService.validateAdmin(user)) {
+        if(userService.validateAdmin(user)) {
             validateAuthor(existingCaseSharing,user);
         }
 
@@ -167,7 +167,7 @@ public class CaseSharingService {
         User user = userService.findByUserId(userId);
         CaseSharing caseSharing = findCaseSharing(caseSharingSeq);
 
-        if(!userService.validateAdmin(user)) {
+        if(userService.validateAdmin(user)) {
             validateAuthor(caseSharing,user);
         }
 
