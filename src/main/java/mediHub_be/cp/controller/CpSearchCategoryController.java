@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.response.ApiResponse;
+import mediHub_be.cp.dto.ResponseCpSearchCategoryAndCpSearchCategoryDataDTO;
 import mediHub_be.cp.dto.ResponseCpSearchCategoryDTO;
 import mediHub_be.cp.service.CpSearchCategoryService;
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -99,5 +101,22 @@ public class CpSearchCategoryController {
         logger.info("CP 검색 카테고리 삭제 성공: ID={}", cpSearchCategorySeq);
 
         return ResponseEntity.ok(ApiResponse.ok(null));
+    }
+
+    @GetMapping(value = "/cpSearchCategoryData")
+    @Operation(summary = "CP 검색 카테고리 데이터 조회",
+            description = "CP 검색 카테고리와 각 카테고리에 대한 데이터를 조회하여 반환합니다.")
+    public ResponseEntity<ApiResponse<List<ResponseCpSearchCategoryAndCpSearchCategoryDataDTO>>> getCpSearchCategoryAndCpSearchCategoryData() {
+        logger.info("CP 검색 카테고리 별 데이터 조회 요청이 수신되었습니다.");
+
+        List<ResponseCpSearchCategoryAndCpSearchCategoryDataDTO> dtoList = cpSearchCategoryService.getCpSearchCategoryAndCpSearchCategoryData();
+
+        if (dtoList == null || dtoList.isEmpty()) {
+            logger.warn("조회된 CP 검색 카테고리 데이터가 없습니다.");
+            return ResponseEntity.ok(ApiResponse.ok(Collections.emptyList()));
+        }
+
+        logger.info("CP 검색 카테고리 별 데이터 조회가 완료되었습니다. 조회된 데이터 수: {}", dtoList.size());
+        return ResponseEntity.ok(ApiResponse.ok(dtoList));
     }
 }

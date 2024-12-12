@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpSearchCategoryDataDTO;
+import mediHub_be.cp.dto.ResponseSimpleCpSearchCategoryDataDTO;
 import mediHub_be.cp.entity.CpSearchCategoryData;
 import mediHub_be.cp.repository.CpSearchCategoryDataRepository;
 import mediHub_be.security.util.SecurityUtil;
@@ -242,5 +243,23 @@ public class CpSearchCategoryDataService {
         entity.updateUserSeq(SecurityUtil.getCurrentUserSeq()); // 현재 사용자 ID 업데이트
         entity.updateCpSearchCategoryDataName(cpSearchCategoryDataName); // 데이터 이름 업데이트
         logger.info("CP 검색 카테고리 데이터 업데이트: ID={} 이름={}", entity.getCpSearchCategoryDataSeq(), cpSearchCategoryDataName);
+    }
+
+    /**
+     * 주어진 검색 카테고리 시퀀스에 해당하는 CP 검색 카테고리 데이터를 조회합니다.
+     * <p>
+     * 이 메서드는 삭제되지 않은(`deletedAt`이 null인) 카테고리 데이터를 반환합니다.
+     *
+     * @param cpSearchCategorySeq 검색 카테고리 시퀀스
+     * @return 삭제되지 않은 CP 검색 카테고리 데이터 목록
+     */
+    public List<ResponseSimpleCpSearchCategoryDataDTO> getCpSearchCategoryDataListByCpSearchCategorySeqAndDeletedAtIsNull(long cpSearchCategorySeq) {
+        logger.info("CP 검색 카테고리 시퀀스 {}에 대한 데이터 목록을 조회합니다.", cpSearchCategorySeq);
+
+        List<ResponseSimpleCpSearchCategoryDataDTO> result = cpSearchCategoryDataRepository.findByCpSearchCategoryDataSeqAndDeletedAtIsNull(cpSearchCategorySeq);
+
+        logger.info("CP 검색 카테고리 시퀀스 {}에 대한 데이터 목록이 {}개 조회되었습니다.", cpSearchCategorySeq, result.size());
+
+        return result;
     }
 }
