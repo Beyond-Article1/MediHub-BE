@@ -367,7 +367,7 @@ public class CaseSharingService {
     @Transactional(readOnly = true)
     public List<CaseSharingMyListDTO> getMyCaseList(String userId) {
         User user = userService.findByUserId(userId);
-        List<CaseSharing> myCaseSharing =  caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftFalseAndDeletedAtIsNull(user.getUserSeq());
+        List<CaseSharing> myCaseSharing =  caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftFalseAndDeletedAtIsNullAndCaseSharingIsLatestIsTrue(user.getUserSeq());
 
         return myCaseSharing.stream()
                 .map(draft -> new CaseSharingMyListDTO(

@@ -34,7 +34,7 @@ public interface CaseSharingRepository extends JpaRepository<CaseSharing, Long> 
 
     List<CaseSharing> findByUserUserSeqAndCaseSharingIsDraftTrueAndDeletedAtIsNull(Long userSeq);
 
-    List<CaseSharing> findByUserUserSeqAndCaseSharingIsDraftFalseAndDeletedAtIsNull(Long userSeq);
+    List<CaseSharing> findByUserUserSeqAndCaseSharingIsDraftFalseAndDeletedAtIsNullAndCaseSharingIsLatestIsTrue(Long userSeq);
 
 
     Optional<CaseSharing> findByCaseSharingSeqAndCaseSharingIsDraftTrueAndDeletedAtIsNull(Long caseSharingSeq);

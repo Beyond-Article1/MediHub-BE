@@ -169,7 +169,7 @@ public class CaseSharingController {
     }
 
     @Operation(summary = "내가 북마크한 케이스 공유 목록 조회", description = "내가 북마크한, 삭제되지 않은 최신 버전 케이스 공유 글 목록 조회")
-    @GetMapping("/my")
+    @GetMapping("/my/bookmark")
     public ResponseEntity<ApiResponse<List<CaseSharingListDTO>>> getBookMarkedCases() {
         String userId = SecurityUtil.getCurrentUserId();
         List<CaseSharingListDTO> caseSharingList = caseSharingService.getBookMarkedCaseList(userId);
