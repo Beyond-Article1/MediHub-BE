@@ -2,17 +2,22 @@ package mediHub_be.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.service.FlagService;
+import mediHub_be.board.service.PictureService;
 import mediHub_be.chat.dto.ChatMessageDTO;
 import mediHub_be.chat.dto.ResponseChatMessageDTO;
 import mediHub_be.chat.entity.ChatMessage;
 import mediHub_be.chat.repository.ChatMessageRepository;
+import mediHub_be.chat.repository.ChatRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
+import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,8 +27,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChatService {
 
+    private final ChatRepository chatRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final UserService userService;
     private final UserRepository userRepository;
+    private final PictureService pictureService;
 
     /* 채팅 메시지 저장 */
     public ResponseChatMessageDTO saveMessage(ChatMessageDTO message) {
@@ -39,14 +47,15 @@ public class ChatService {
         chatMessageRepository.save(newMessage);
 
         // ChatMessage -> ResponseChatMessageDTO 변환
-        User senderUser = userRepository.findByUserSeq(newMessage.getSenderUserSeq())
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+        User senderUser = userService.findUser(message.getSenderUserSeq());
+        String profileUrl = pictureService.getUserProfileUrl(senderUser.getUserSeq());
 
         return ResponseChatMessageDTO.builder()
                 .messageSeq(newMessage.getId())
                 .chatroomSeq(newMessage.getChatroomSeq())
                 .senderUserSeq(newMessage.getSenderUserSeq())
                 .senderUserName(senderUser.getUserName())
+                .senderUserProfileUrl(profileUrl)
                 .type(newMessage.getType())
                 .message(newMessage.getMessage())
                 .createdAt(newMessage.getCreatedAt().minusHours(9))
@@ -66,8 +75,13 @@ public class ChatService {
     }
 
     /* 특정 채팅방의 메시지 조회 */
-    public List<ResponseChatMessageDTO> getMessagesByRoomSeq(Long chatroomSeq) {
-        List<ChatMessage> messages = chatMessageRepository.findByChatroomSeqAndIsDeletedFalseOrderByCreatedAtAsc(chatroomSeq);
+    public List<ResponseChatMessageDTO> getMessagesByRoomSeq(Long userSeq, Long chatroomSeq) {
+        // 사용자의 채팅방 참여 날짜와 시간을 조회
+        LocalDateTime userJoinDateTime = chatRepository.findJoinDateByUserSeqAndChatroomSeq(userSeq, chatroomSeq);
+        log.info("사용자 {}의 채팅방 {} 참여 날짜 : {}", userSeq, chatroomSeq, userJoinDateTime);
+
+        // 참여 시간 이후의 메시지만 조회
+        List<ChatMessage> messages = chatMessageRepository.findByChatroomSeqAndCreatedAtAfterAndIsDeletedFalseOrderByCreatedAtAsc(chatroomSeq, userJoinDateTime.plusHours(9));
         log.info("채팅방 {}의 메세지 조회 - {}개 메시지 반환", chatroomSeq, messages.size());
 
         // 모든 senderUserSeq를 추출하여 사용자 정보 한 번에 조회
@@ -86,11 +100,13 @@ public class ChatService {
         return messages.stream()
                 .map(message -> {
                     User senderUser = userMap.get(message.getSenderUserSeq()); // 미리 조회한 사용자 정보 사용
+                    String profileUrl = pictureService.getUserProfileUrl(senderUser.getUserSeq());
                     return ResponseChatMessageDTO.builder()
                             .messageSeq(message.getId())
                             .chatroomSeq(message.getChatroomSeq())
                             .senderUserSeq(message.getSenderUserSeq())
                             .senderUserName(senderUser != null ? senderUser.getUserName() : "Unknown") // 사용자 이름 추가
+                            .senderUserProfileUrl(profileUrl)
                             .type(message.getType())
                             .message(message.getMessage())
                             .createdAt(message.getCreatedAt().minusHours(9))  // 시간대 조정

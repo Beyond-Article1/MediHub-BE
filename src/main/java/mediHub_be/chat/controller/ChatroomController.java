@@ -76,7 +76,8 @@ public class ChatroomController {
     @Operation(summary = "채팅방 참여자 조회", description = "특정 채팅방 참여자 조회")
     @GetMapping("/{chatroomSeq}/user")
     public ResponseEntity<ApiResponse<List<ResponseChatUserDTO>>> getChatUsers(@PathVariable Long chatroomSeq) {
-        List<ResponseChatUserDTO> users = chatroomService.getChatUsers(chatroomSeq);
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        List<ResponseChatUserDTO> users = chatroomService.getChatUsers(userSeq, chatroomSeq);
         return ResponseEntity.ok(ApiResponse.ok(users));
     }
 
