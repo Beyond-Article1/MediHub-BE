@@ -21,6 +21,7 @@ import mediHub_be.case_sharing.repository.CaseSharingGroupRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.user.entity.User;
+import mediHub_be.user.repository.UserRepository;
 import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -360,6 +361,23 @@ public class CaseSharingService {
         return bookmarkService.isBookmarked(CASE_SHARING_FLAG, caseSharingSeq, userId);
     }
 
+    // 15. 내가 작성한 케이스 공유 리스트 반환
+    @Transactional(readOnly = true)
+    public List<CaseSharingMyListDTO> getMyCaseList(String userId) {
+        User user = userService.findByUserId(userId);
+        List<CaseSharing> myCaseSharing =  caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftFalseAndDeletedAtIsNull(user.getUserSeq());
+
+        return myCaseSharing.stream()
+                .map(draft -> new CaseSharingMyListDTO(
+                        draft.getCaseSharingSeq(),
+                        draft.getCaseSharingTitle(),
+                        draft.getCreatedAt(),
+                        draft.getCaseSharingViewCount()
+                ))
+                .toList();
+
+    }
+
     private void updateContentWithImages(CaseSharing caseSharing, List<MultipartFile> images, String content) {
         if (images != null && !images.isEmpty()) {
             String updatedContent = pictureService.replacePlaceHolderWithUrls(
@@ -417,4 +435,6 @@ public class CaseSharingService {
                 caseSharing.getCaseSharingViewCount()
         );
     }
+
+
 }

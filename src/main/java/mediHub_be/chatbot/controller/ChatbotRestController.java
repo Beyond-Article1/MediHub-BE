@@ -32,7 +32,6 @@ public class ChatbotRestController {
         return ResponseEntity.ok(ApiResponse.ok(sessionId));
     }
 
-    // 2. 특정 채팅 세션의 메시지 저장
     @Operation(summary = "챗봇 세션 메세지 저장", description = "특정 채팅 세션의 메시지 저장")
     @PostMapping("/sessions/{sessionId}/messages")
     public ResponseEntity<ApiResponse<Void>> saveMessage(
@@ -46,7 +45,6 @@ public class ChatbotRestController {
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
-    // 3. 특정 채팅 세션의 기록 불러오기
     @Operation(summary = "채팅 세션 기록 조회", description = "특정 채팅 세션의 메세지 기록 불러오기")
     @GetMapping("/sessions/{sessionId}/messages")
     public ResponseEntity<ApiResponse<List<ChatbotMessage>>> getSessionMessages(
@@ -56,7 +54,6 @@ public class ChatbotRestController {
         return ResponseEntity.ok(ApiResponse.ok(messages));
     }
 
-    // 4. 특정 유저의 모든 채팅 세션 불러오기
     @Operation(summary = "챗봇 세션 전체 조회", description = "특정 유저가 생성한 모든 채팅 세션 불러오기")
     @GetMapping("/sessions")
     public ResponseEntity<ApiResponse<List<ChatbotSession>>> getUserSessions() {
@@ -76,7 +73,6 @@ public class ChatbotRestController {
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
-    // 6. 채팅 세션 이름 수정
     @Operation(summary = "챗봇 세션 이름 수정", description = "특정 채팅 세션의 이름 수정")
     @PatchMapping("/sessions/{sessionId}/title")
     public ResponseEntity<ApiResponse<Void>> updateSessionTitle(

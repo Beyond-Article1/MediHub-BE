@@ -160,4 +160,12 @@ public class CaseSharingController {
         return ResponseEntity.ok(ApiResponse.ok(isBookmarked));
     }
 
+    @Operation(summary = "내가 작성한 케이스 공유 목록 조회", description = "내가 작성한, 삭제되지 않은 최신 버전 케이스 공유 글 목록 조회")
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponse<List<CaseSharingMyListDTO>>> getMyCases() {
+        String userId = SecurityUtil.getCurrentUserId();
+        List<CaseSharingMyListDTO> caseSharingMyList = caseSharingService.getMyCaseList(userId);
+        return ResponseEntity.ok(ApiResponse.ok(caseSharingMyList));
+    }
+
 }
