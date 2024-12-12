@@ -12,7 +12,6 @@ import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpDTO;
-import mediHub_be.cp.dto.ResponseCpDetailDTO;
 import mediHub_be.cp.entity.Cp;
 import mediHub_be.cp.repository.CpRepository;
 import mediHub_be.cp.repository.CpVersionRepository;
@@ -156,7 +155,7 @@ public class CpService {
      * @throws CustomException 조회 결과가 없을 경우 발생합니다.
      */
     @Transactional
-    public ResponseCpDetailDTO getCpByCpVersionSeq(
+    public ResponseCpDTO getCpByCpVersionSeq(
             long cpVersionSeq,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -190,9 +189,7 @@ public class CpService {
 
         checkBookmark(dto);
 
-        String profileUrl = pictureService.getUserProfileUrl(entity.getUserSeq());
-
-        return ResponseCpDetailDTO.toDto(dto, profileUrl);
+        return dto;
     }
 
     /**

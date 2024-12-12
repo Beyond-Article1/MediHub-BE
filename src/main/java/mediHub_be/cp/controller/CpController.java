@@ -95,7 +95,7 @@ public class CpController {
     @GetMapping(value = "/{cpVersionSeq}")
     @Operation(summary = "CP 조회",
             description = "주어진 CP 버전 시퀀스를 사용하여 CP를 조회합니다.")
-    public ResponseEntity<ApiResponse<ResponseCpDetailDTO>> getCpByCpVersionSeq(
+    public ResponseEntity<ApiResponse<ResponseCpDTO>> getCpByCpVersionSeq(
             @PathVariable long cpVersionSeq,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -103,7 +103,7 @@ public class CpController {
 
         try {
             // Cp 버전을 통하여 Cp 를 가져오는 서비스 호출
-            ResponseCpDetailDTO cpList = cpService.getCpByCpVersionSeq(cpVersionSeq, request, response);
+            ResponseCpDTO cpList = cpService.getCpByCpVersionSeq(cpVersionSeq, request, response);
 
             if (cpList == null) {
                 logger.warn("버전 시퀀스 '{}'에 대한 CP 레코드가 없습니다.", cpVersionSeq);

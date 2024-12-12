@@ -65,7 +65,7 @@ public class CpOpinionService {
      * @throws CustomException 조회된 의견이 없을 경우
      */
     @Transactional(readOnly = true)
-    public List<ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO> getCpOpinionListByCpVersionSeq(
+    public List<ResponseCpOpinionDTO> getCpOpinionListByCpVersionSeq(
             long cpVersionSeq,
             long cpOpinionLocationSeq,
             boolean isDeleted) {
@@ -85,7 +85,7 @@ public class CpOpinionService {
             }
 
             // 키워드 목록 설정
-            List<ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO> dtoList = setKeywordListForCpOpinions(responseCpOpinionDtoList);
+            List<ResponseCpOpinionDTO> dtoList = setKeywordListForCpOpinions(responseCpOpinionDtoList);
 
             // 결과 확인
             if (dtoList.isEmpty()) {
@@ -116,14 +116,14 @@ public class CpOpinionService {
      * @throws RuntimeException    기타 예기치 않은 오류가 발생한 경우
      */
     @Transactional(readOnly = true)
-    public List<ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO> setKeywordListForCpOpinions(List<ResponseCpOpinionDTO> responseCpOpinionDtoList) {
-        List<ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO> resultList = new ArrayList<>();
+    public List<ResponseCpOpinionDTO> setKeywordListForCpOpinions(List<ResponseCpOpinionDTO> responseCpOpinionDtoList) {
+        List<ResponseCpOpinionDTO> resultList = new ArrayList<>();
         logger.info("CP 의견 DTO 리스트에 대한 키워드 목록 설정 시작. 총 의견 수: {}", responseCpOpinionDtoList.size());
 
         try {
             for (ResponseCpOpinionDTO dto : responseCpOpinionDtoList) {
                 logger.info("CP 의견 번호: {}에 대한 키워드 목록 설정 중...", dto.getCpOpinionSeq());
-                ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO resultDto = setKeywordForCpOpinion(dto);
+                ResponseCpOpinionDTO resultDto = setKeywordForCpOpinion(dto);
                 resultList.add(resultDto);
                 logger.info("CP 의견 번호: {}에 대한 키워드 목록이 설정되었습니다.", dto.getCpOpinionSeq());
             }
@@ -151,7 +151,7 @@ public class CpOpinionService {
      * @throws CustomException     사용자 정의 예외가 발생한 경우
      * @throws RuntimeException    기타 예기치 않은 오류가 발생한 경우
      */
-    public ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO setKeywordForCpOpinion(ResponseCpOpinionDTO dto) {
+    public ResponseCpOpinionDTO setKeywordForCpOpinion(ResponseCpOpinionDTO dto) {
         logger.info("CP 의견 번호: {}에 대한 키워드 목록을 설정합니다.", dto.getCpOpinionSeq());
 
         try {
@@ -161,9 +161,9 @@ public class CpOpinionService {
 
             // 비율 계산 및 DTO 생성
             if (voteList.isEmpty()) {
-                return ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO.create(dto, keywordList);
+                return ResponseCpOpinionDTO.create(dto, keywordList);
             } else {
-                return ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO.calculateVoteRatioAndCreate(dto, keywordList, voteList);
+                return ResponseCpOpinionDTO.create(dto, keywordList, voteList);
             }
         } catch (DataAccessException e) {
             throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);

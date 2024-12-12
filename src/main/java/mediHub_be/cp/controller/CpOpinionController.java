@@ -31,14 +31,14 @@ public class CpOpinionController {
     @GetMapping(value = "/{cpOpinionLocationSeq}")
     @Operation(summary = "CP 의견 리스트 조회",
             description = "주어진 CP 버전 시퀀스와 CP 의견 위치 시퀀스를 기준으로 CP 의견 리스트를 조회합니다.")
-    public ResponseEntity<ApiResponse<List<ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO>>> getCpOpinionListByCpOpinionLocationSeq(
+    public ResponseEntity<ApiResponse<List<ResponseCpOpinionDTO>>> getCpOpinionListByCpOpinionLocationSeq(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
             @RequestParam(required = false, defaultValue = "false") boolean isDeleted) {
 
         logger.info("CP 버전 시퀀스: {}의 CP 의견 위치 시퀀스: {}에 위치의 CP 의견 리스트 요청을 받았습니다.", cpVersionSeq, cpOpinionLocationSeq);
 
-        List<ResponseCpOpinionWithKeywordListAndCpOpinionVoteDTO> cpOpinionList = cpOpinionService.getCpOpinionListByCpVersionSeq(cpVersionSeq, cpOpinionLocationSeq, isDeleted);
+        List<ResponseCpOpinionDTO> cpOpinionList = cpOpinionService.getCpOpinionListByCpVersionSeq(cpVersionSeq, cpOpinionLocationSeq, isDeleted);
 
         logger.info("CP 위치 번호로 CP 의견 리스트 조회 성공");
         logger.info("조회된 CP 의견 리스트의 크기: {}", cpOpinionList.size());
