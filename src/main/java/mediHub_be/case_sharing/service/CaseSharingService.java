@@ -63,7 +63,7 @@ public class CaseSharingService {
     //2. 케이스 공유 상세 조회
     @Transactional
     public CaseSharingDetailDTO getCaseSharingDetail(Long caseSharingSeq, String userId, HttpServletRequest request, HttpServletResponse response) {
-        userService.findByUserId(userId);
+        User user = userService.findByUserId(userId);
         // 게시글 정보 조회
         CaseSharing caseSharing = findCaseSharing(caseSharingSeq);
 
@@ -90,6 +90,7 @@ public class CaseSharingService {
                 .caseSharingGroupSeq(caseSharing.getCaseSharingGroup().getCaseSharingGroupSeq())
                 .isLatestVersion(caseSharing.getCaseSharingIsLatest())
                 .caseSharingViewCount(caseSharing.getCaseSharingViewCount())
+                .caseAuthorUrl(pictureService.getUserProfileUrl(user.getUserSeq()))
                 .build();
     }
 

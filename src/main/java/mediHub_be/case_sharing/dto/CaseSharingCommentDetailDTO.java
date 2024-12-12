@@ -19,6 +19,7 @@ public class CaseSharingCommentDetailDTO {
     private Integer startOffset; // 본문 시작 위치
     private Integer endOffset; // 본문 끝 위치
     private LocalDateTime createdAt; // 작성일
+    private String userProfileURL; // 댓글 작성자 이미지 url
 
 }
 
