@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
-@Tag(name = "관리자 회원 관리", description = "관리자 회원관리 API")
+@Tag(name = "관리자", description = "관리자 API")
 @RestController
 @RequestMapping("/api/v1/admin/users")
 @RequiredArgsConstructor
