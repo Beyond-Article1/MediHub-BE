@@ -25,6 +25,14 @@ import java.util.List;
     @Override
     public List<String> convertToEntityAttribute(String data) {
         try {
+            if (data == null || data.trim().isEmpty()) {
+                return List.of(); // 빈 리스트를 반환
+            }
+            // JSON 배열이 아닌 경우, 단일 문자열을 리스트로 감싸서 반환
+            if (!data.startsWith("[") && !data.endsWith("]")) {
+                return List.of(data); // 단일 문자열을 리스트로 반환
+            }
+            // JSON 배열 형식인 경우 정상적으로 파싱
             return mapper.readValue(data, List.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
