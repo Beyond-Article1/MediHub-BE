@@ -1,21 +1,19 @@
 package mediHub_be.journal.service;
 
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.board.entity.Flag;
 import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.FlagService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.journal.dto.ResponseAbstractDTO;
 import mediHub_be.journal.dto.ResponseJournalLogDTO;
-import mediHub_be.journal.dto.ResponseJournalSearchDTO;
+import mediHub_be.journal.dto.ResponseJournalRankDTO;
 import mediHub_be.journal.dto.ResponsePubmedDTO;
 import mediHub_be.journal.entity.Journal;
 import mediHub_be.journal.entity.JournalSearch;
 import mediHub_be.journal.repository.JournalRepository;
 import mediHub_be.journal.repository.JournalSearchRepository;
 import mediHub_be.user.entity.User;
-import mediHub_be.user.repository.UserRepository;
 import mediHub_be.user.service.UserService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -175,16 +173,25 @@ public class JournalServiceImpl implements JournalService{
      * 조회 (조회순, 북마크순)
      */
     @Override
-    public List<ResponseJournalSearchDTO> getJournalTop100(String sortBy) {
+    public List<ResponseJournalRankDTO> getJournalTop100(String sortBy, Long userSeq) {
 
         Pageable top100 = PageRequest.of(0, 100); // 상위 100개
-        if (sortBy.equals("select")){
-            return journalSearchRepository.findTopJournalsWithSearchCount(top100).getContent();
 
-        } else if (sortBy.equals("bookmark")){
-            return null;
+        List<ResponseJournalRankDTO> content = new ArrayList<>();
+
+        if (sortBy.equals("select")) {       // 조회순
+            content = journalSearchRepository.findTopJournalsWithSearchCount(top100).getContent();
+
+        } else if (sortBy.equals("bookmark")) {  // 북마크순
+            content = journalSearchRepository.findTopJournalsWithBookmarkCount(top100).getContent();
+        }
+
+        if (userSeq != null && !content.isEmpty()) {
+            User user = userService.findUser(userSeq);
+            content.forEach(journal -> journal.isBookmark(bookmarkService.isBookmarked(journalFlagName, journal.getJournalSeq(), user.getUserId())));
+            return content;
         } else {
-            return null;
+            return content;
         }
     }
 

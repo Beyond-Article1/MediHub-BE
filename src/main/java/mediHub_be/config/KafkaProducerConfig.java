@@ -1,7 +1,7 @@
 package mediHub_be.config;
 
 import mediHub_be.chat.KafkaConstants;
-import mediHub_be.chat.dto.ChatMessageDTO;
+import mediHub_be.chat.dto.ResponseChatMessageDTO;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
@@ -18,12 +18,12 @@ import java.util.Map;
 public class KafkaProducerConfig {
 
     @Bean
-    public KafkaTemplate<String, ChatMessageDTO> kafkaTemplate() {
+    public KafkaTemplate<String, ResponseChatMessageDTO> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
     @Bean
-    public ProducerFactory<String, ChatMessageDTO> producerFactory() {
+    public ProducerFactory<String, ResponseChatMessageDTO> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaConstants.KAFKA_BROKER);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);    // key(토픽 이름)

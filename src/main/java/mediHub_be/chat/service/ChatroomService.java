@@ -2,6 +2,7 @@ package mediHub_be.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.service.PictureService;
 import mediHub_be.chat.dto.ChatroomDTO;
 import mediHub_be.chat.dto.ResponseChatUserDTO;
 import mediHub_be.chat.dto.ResponseChatroomDTO;
@@ -18,6 +19,7 @@ import mediHub_be.part.entity.Part;
 import mediHub_be.ranking.entity.Ranking;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
+import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +32,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChatroomService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final PictureService pictureService;
     private final ChatroomRepository chatroomRepository;
     private final ChatRepository chatRepository;
     private final ChatMessageRepository chatMessageRepository;
@@ -39,16 +42,17 @@ public class ChatroomService {
     @Transactional
     public Long createChatroom(ChatroomDTO chatroomDTO) {
 
-        Chatroom chatroom = Chatroom.builder().build();
+        Chatroom chatroom = Chatroom.builder()
+                .chatroomDefaultName("채팅방")
+                .build();
         Chatroom savedChatroom = chatroomRepository.save(chatroom); // 채팅방 저장 후 생성된 chatGroupSeq를 반환
         Long chatroomSeq = savedChatroom.getChatroomSeq();
 
         // Chat 테이블에 사용자 정보 추가, 채팅방 기본 이름 설정
         StringBuilder usersInChatGroup = new StringBuilder();
         for (Long userSeq : chatroomDTO.getUsers()) {
-            User user = userRepository.findByUserSeq(userSeq)
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
+            User user = userService.findUser(userSeq);
             usersInChatGroup.append(user.getUserName()).append(" ");    // 채팅방 참여자 이름 나열
 
             Chat chat = Chat.builder()
@@ -75,9 +79,13 @@ public class ChatroomService {
         usersInChatGroup.append(chatroom.getChatroomDefaultName()).append(" ");
 
         for (Long userSeq : chatroomDTO.getUsers()) {
-            User user = userRepository.findByUserSeq(userSeq)
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+            // 이미 채팅방에 참여 중인지 확인
+            if (chatRepository.existsByChatroomChatroomSeqAndUserUserSeq(chatroomSeq, userSeq)) {
+                throw new CustomException(ErrorCode.USER_ALREADY_IN_CHATROOM);
+            }
 
+            // 사용자 조회
+            User user = userService.findUser(userSeq);
             usersInChatGroup.append(user.getUserName()).append(" ");
 
             Chat chat = Chat.builder()
@@ -153,7 +161,7 @@ public class ChatroomService {
                     // 마지막 메시지 조회 (최근 메시지 1개만 가져오기)
                     ChatMessage lastMessage = chatMessageRepository.findTopByChatroomSeqAndIsDeletedFalseOrderByCreatedAtDesc(chatroom.getChatroomSeq());
                     String lastMessageText = (lastMessage != null) ? lastMessage.getMessage() : "No messages yet";
-                    LocalDateTime lastMessageTime = (lastMessage != null) ? lastMessage.getCreatedAt() : null;
+                    LocalDateTime lastMessageTime = (lastMessage != null) ? lastMessage.getCreatedAt().minusHours(9) : null;
 
                     // ResponseChatroomDTO로 변환
                     return ResponseChatroomDTO.builder()
@@ -162,7 +170,7 @@ public class ChatroomService {
                             .chatroomCustomName(chat.getChatroomCustomName())       // 사용자별 채팅방 설정 이름
                             .chatroomUsersCount(chatroomUsersCount)                 // 채팅방 사용자 수
                             .lastMessage(lastMessageText)                           // 마지막 메시지
-                            .lastMessageTime(lastMessageTime.minusHours(9))
+                            .lastMessageTime(lastMessageTime)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -186,7 +194,12 @@ public class ChatroomService {
 
     /* 특정 채팅방 참여자 조회 */
     @Transactional(readOnly = true)
-    public List<ResponseChatUserDTO> getChatUsers(Long chatroomSeq) {
+    public List<ResponseChatUserDTO> getChatUsers(Long userSeq, Long chatroomSeq) {
+        // 조회하려는 사용자가 해당 채팅방에 존재하지 않으면 권한 없음 예외 발생
+        if(!chatRepository.findByUser_UserSeqAndChatroom_ChatroomSeq(userSeq, chatroomSeq).isPresent()) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+        }
+
         List<Chat> chats = chatRepository.findByChatroom_ChatroomSeq(chatroomSeq);
 
         return chats.stream()
@@ -194,10 +207,12 @@ public class ChatroomService {
                     User user = chat.getUser();
                     Part part = user.getPart();
                     Ranking ranking = user.getRanking();
+                    String profileUrl = pictureService.getUserProfileUrl(user.getUserSeq());
 
                     return ResponseChatUserDTO.builder()
                             .userSeq(user.getUserSeq())
                             .userName(user.getUserName())
+                            .userProfileUrl(profileUrl)
                             .partName(part != null ? part.getPartName() : "N/A")
                             .rankingName(ranking != null ? ranking.getRankingName() : "N/A")
                             .build();

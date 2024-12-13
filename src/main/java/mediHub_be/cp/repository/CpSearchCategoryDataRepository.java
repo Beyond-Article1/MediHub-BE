@@ -1,6 +1,7 @@
 package mediHub_be.cp.repository;
 
 import mediHub_be.cp.dto.ResponseCpSearchCategoryDataDTO;
+import mediHub_be.cp.dto.ResponseSimpleCpSearchCategoryDataDTO;
 import mediHub_be.cp.entity.CpSearchCategoryData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -48,4 +49,11 @@ public interface CpSearchCategoryDataRepository extends JpaRepository<CpSearchCa
     boolean existsByCpSearchCategoryDataName(String cpSearchCategoryDataName);
 
     boolean existsByCpSearchCategorySeq(long cpSearchCategorySeq);
+
+    @Query("SELECT new mediHub_be.cp.dto.ResponseSimpleCpSearchCategoryDataDTO( " +
+            "cscd.cpSearchCategoryDataSeq, " +
+            "cscd.cpSearchCategoryDataName) " +
+            "FROM CpSearchCategoryData AS cscd " +
+            "WHERE cscd.cpSearchCategorySeq = :cpSearchCategorySeq")
+    List<ResponseSimpleCpSearchCategoryDataDTO> findByCpSearchCategoryDataSeqAndDeletedAtIsNull(@Param("cpSearchCategorySeq") long cpSearchCategorySeq);
 }

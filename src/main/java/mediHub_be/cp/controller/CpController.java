@@ -10,7 +10,6 @@ import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.cp.dto.ResponseCpDTO;
-import mediHub_be.cp.dto.ResponseCpDetailDTO;
 import mediHub_be.cp.service.CpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

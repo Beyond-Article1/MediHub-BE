@@ -6,8 +6,7 @@ import lombok.RequiredArgsConstructor;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
-import mediHub_be.journal.dto.ResponseJournalLogDTO;
-import mediHub_be.journal.dto.ResponseJournalSearchDTO;
+import mediHub_be.journal.dto.ResponseJournalRankDTO;
 import mediHub_be.journal.dto.ResponsePubmedDTO;
 import mediHub_be.journal.service.JournalServiceImpl;
 import mediHub_be.security.util.SecurityUtil;
@@ -50,10 +49,12 @@ public class JournalController {
     // 등록된 논문 조회 sortBy = select or bookmark(조회순 100개, 북마크순 100개)
     @Operation(summary = "등록된 논문 조회", description = "등록된 논문 조회 sortBy = select or bookmark(조회순 100개, 북마크순 100개)")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ResponseJournalSearchDTO>>> getJournal(@RequestParam(name = "sortBy") String sortBy){
+    public ResponseEntity<ApiResponse<List<ResponseJournalRankDTO>>> getJournal(@RequestParam(name = "sortBy") String sortBy){
+
+        Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
 
         return ResponseEntity.ok(
-                ApiResponse.ok(journalService.getJournalTop100(sortBy))
+                ApiResponse.ok(journalService.getJournalTop100(sortBy, currentUserSeq))
         );
     }
     
