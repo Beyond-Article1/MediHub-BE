@@ -102,18 +102,28 @@ public class CpService {
     }
 
     /**
-     * 주어진 CP DTO에 대해 현재 사용자의 북마크 여부를 확인하고 설정합니다.
+     * 주어진 CP DTO에 대해 북마크 여부를 확인하고 설정합니다.
+     * <p>
+     * 이 메서드는 지정된 CP 버전 시퀀스를 기반으로 사용자의 북마크 여부를 확인하고,
+     * 결과를 DTO에 설정합니다.
      *
-     * @param dto 북마크 여부를 설정할 CP DTO
+     * @param dto 확인할 CP DTO
      */
     @Transactional(readOnly = true)
     public void checkBookmark(ResponseCpDTO dto) {
         // 북마크 여부 확인
-        boolean isBookmarked = bookmarkService.isBookmarked(CP_VERSION_FLAG, dto.getCpVersionSeq(), SecurityUtil.getCurrentUserId());
-        // 설정
-        dto.setBookmarked(isBookmarked);
-    }
+        logger.info("{}번 Cp가 북마크 여부를 확인합니다.", dto.getCpVersionSeq());
 
+        try {
+            boolean isBookmarked = bookmarkService.isBookmarked(CP_VERSION_FLAG, dto.getCpVersionSeq(), SecurityUtil.getCurrentUserId());
+            // 설정
+            dto.setBookmarked(isBookmarked);
+            logger.info("{}번 Cp의 북마크 여부가 {}로 설정되었습니다.", dto.getCpVersionSeq(), isBookmarked);
+        } catch (Exception e) {
+            logger.error("{}번 Cp의 북마크 여부 확인 중 오류 발생: {}", dto.getCpVersionSeq(), e.getMessage());
+            dto.setBookmarked(false);
+        }
+    }
 
     /**
      * 주어진 CP 이름을 기준으로 데이터베이스에서 CP 리스트를 조회하는 메서드입니다.

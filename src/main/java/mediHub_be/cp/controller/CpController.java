@@ -43,8 +43,6 @@ public class CpController {
             @RequestParam(required = false) String cpSearchCategoryData,
             @RequestParam(required = false) String cpName) {
 
-        logger.info("카테고리 시퀀스: {}, 카테고리 데이터: {}, 이름: {}로 CP 리스트 요청을 받았습니다.", cpSearchCategorySeq, cpSearchCategoryData, cpName);
-
         List<Long> cpSearchCategorySeqList = cpSearchCategorySeq != null && !cpSearchCategorySeq.isEmpty()
                 ? Arrays.stream(cpSearchCategorySeq.split(","))
                 .map(Long::valueOf)
@@ -60,6 +58,7 @@ public class CpController {
 
             // 카테고리 시퀀스 또는 카테고리 데이터로 검색
             if (cpSearchCategorySeqList != null || cpSearchCategoryDataList != null) {
+                logger.info("카테고리 시퀀스: {}, 카테고리 데이터: {}, 이름: {}로 CP 리스트 요청을 받았습니다.", cpSearchCategorySeq, cpSearchCategoryData, cpName);
                 logger.info("카테고리 기반 검색 수행. 호출할 메서드: getCpListByCpSearchCategoryAndCpSearchCategoryData");
                 cpList = cpService.getCpListByCpSearchCategoryAndCpSearchCategoryData(cpSearchCategorySeqList, cpSearchCategoryDataList);
             } else if (cpName != null && !cpName.isEmpty()) {
