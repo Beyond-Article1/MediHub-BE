@@ -17,6 +17,7 @@ public class ResponseCpDTO {
     private String cpVersion;                   // cp 버전
     private String cpVersionDescription;        // cp 버전 설명
     private LocalDateTime createdAt;            // cp 버전 생성일
+    private String cpUrl;                       // cp 버전 url
     private String userName;                    // 작성자명
     private String userId;                      // 작성자 아이디
     private String partName;                    // 작성자 과명(ex: 외과/내과/안과 ...)
@@ -31,6 +32,7 @@ public class ResponseCpDTO {
             String cpVersion,
             String cpVersionDescription,
             LocalDateTime createdAt,
+            String cpUrl,
             String userName,
             String userId,
             String partName) {
@@ -41,6 +43,7 @@ public class ResponseCpDTO {
         this.cpVersion = cpVersion;
         this.cpVersionDescription = cpVersionDescription;
         this.createdAt = createdAt;
+        this.cpUrl = cpUrl;
         this.userName = userName;
         this.userId = userId;
         this.partName = partName;
@@ -56,6 +59,7 @@ public class ResponseCpDTO {
                 .cpVersion((String) map.get("cpVersion"))
                 .cpVersionDescription((String) map.get("cpVersionDescription"))
                 .createdAt((LocalDateTime) map.get("createdAt"))
+                .cpUrl((String) map.get("cpUrl"))
                 .userName((String) map.get("userName"))
                 .userId((String) map.get("userId"))
                 .partName((String) map.get("partName"))

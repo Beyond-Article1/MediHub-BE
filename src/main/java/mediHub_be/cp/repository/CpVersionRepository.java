@@ -20,6 +20,7 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "cv.cpVersion AS cpVersion, " +
             "cv.cpVersionDescription AS cpVersionDescription," +
             "cv.createdAt AS createdAt, " +
+            "cv.cpUrl, " +
             "u.userName AS userName, " +
             "u.userId AS userId, " +
             "p.partName AS partName)" +
@@ -43,6 +44,7 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "cv.cpVersion AS cpVersion, " +
             "cv.cpVersionDescription AS cpVersionDescription, " +
             "cv.createdAt AS createdAt, " +
+            "cv.cpUrl, " +
             "u.userName AS userName, " +
             "u.userId AS userId, " +
             "p.partName AS partName)" +
@@ -61,6 +63,7 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "cv.cpVersion, " +
             "cv.cpVersionDescription, " +
             "cv.createdAt, " +
+            "cv.cpUrl, " +
             "u.userName, " +
             "u.userId, " +
             "p.partName)" +
@@ -79,6 +82,7 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "cv.cpVersion, " +
             "cv.cpVersionDescription, " +
             "cv.createdAt, " +
+            "cv.cpUrl, " +
             "u.userName, " +
             "u.userId, " +
             "p.partName)" +
