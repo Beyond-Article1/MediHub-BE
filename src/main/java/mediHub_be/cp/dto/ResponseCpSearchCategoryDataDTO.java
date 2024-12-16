@@ -19,5 +19,4 @@ public class ResponseCpSearchCategoryDataDTO {
     private LocalDateTime createdAt;                // 생성일
     private LocalDateTime updatedAt;                // 수정일
     private LocalDateTime deletedAt;                // 삭제일
-
 }

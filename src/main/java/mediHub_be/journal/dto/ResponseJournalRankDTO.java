@@ -5,13 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import mediHub_be.journal.entity.Journal;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResponseJournalSearchDTO {
+public class ResponseJournalRankDTO {
 
     // 논문 시퀀스
     private Long journalSeq;
@@ -32,19 +31,26 @@ public class ResponseJournalSearchDTO {
     // PMID 값
     private String pmid;
     // 조회수
-    private Long searchCount;
+    private Long count;
+    // 북마크 현황
+    private boolean isBookmark = false;
 
     // === 조회수 생성 === //
-    public ResponseJournalSearchDTO(Journal journal, Long searchCount){
+    public ResponseJournalRankDTO(Journal journal, Long count){
         this.journalSeq = journal.getJournalSeq();
         this.title = journal.getJournalTitle();
-        this.koreanTtile = journal.getJournalKorean();
+        this.koreanTtile = journal.getJournalKoreanTitle();
         this.source = journal.getJournalJournal();
         this.pubDate = journal.getJournalDate();
         this.size = journal.getJournalSize();
         this.authors = journal.getJournalAuthors();
         this.doi = journal.getJournalDoi();
         this.pmid = journal.getJournalPmid();
-        this.searchCount = searchCount;
+        this.count = count;
+    }
+
+    // === 북마크 유무 넣기 === //
+    public void isBookmark(boolean isBookmark){
+        this.isBookmark = isBookmark;
     }
 }

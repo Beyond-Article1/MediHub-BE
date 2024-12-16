@@ -110,6 +110,9 @@ public enum ErrorCode {
     DUPLICATE_CP_SEARCH_CATEGORY_NAME(40902, HttpStatus.CONFLICT, "이미 존재하는 CP 검색 카테고리 입니다."),
     DUPLICATE_CP_SEARCH_CATEGORY_DATA_NAME(40903, HttpStatus.CONFLICT, "이미 존재하는 CP 검색 카테고리 데이터 입니다."),
 
+    // 채팅방 관련 중복
+    USER_ALREADY_IN_CHATROOM(40904, HttpStatus.CONFLICT, "이미 채팅방에 있는 사용자입니다."),
+
     /**
      * == 500 INTERNAL_SERVER_ERROR ==
      */

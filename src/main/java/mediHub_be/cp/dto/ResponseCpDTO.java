@@ -34,6 +34,16 @@ public class ResponseCpDTO {
             String userName,
             String userId,
             String partName) {
+        this.cpVersionSeq = cpVersionSeq;
+        this.cpName = cpName;
+        this.cpDescription = cpDescription;
+        this.cpViewCount = cpViewCount;
+        this.cpVersion = cpVersion;
+        this.cpVersionDescription = cpVersionDescription;
+        this.createdAt = createdAt;
+        this.userName = userName;
+        this.userId = userId;
+        this.partName = partName;
     }
 
     // 변환 메소드

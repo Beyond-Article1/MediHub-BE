@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import mediHub_be.amazonS3.service.AmazonS3Service;
 import mediHub_be.board.Util.ViewCountManager;
+import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.entity.Comment;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
@@ -377,6 +378,48 @@ public class MedicalLifeService {
     @Transactional(readOnly = true)
     public boolean isPreferred(Long medicalLifeSeq, String userId) {
         return preferService.isPreferred("MEDICAL_LIFE", medicalLifeSeq, userId);
+    }
+
+    // 내가 쓴 게시글 조회
+    @Transactional(readOnly = true)
+    public List<MedicalLifeDTO> getMyMedicalLifePosts(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
+
+        return medicalLifeRepository.findByUser(user).stream()
+                .map(medicalLife -> MedicalLifeDTO.builder()
+                        .medicalLifeSeq(medicalLife.getMedicalLifeSeq())
+                        .userName(medicalLife.getUser().getUserName())
+                        .deptName(medicalLife.getDept().getDeptName())
+                        .partName(medicalLife.getPart().getPartName())
+                        .medicalLifeTitle(medicalLife.getMedicalLifeTitle())
+                        .medicalLifeContent(medicalLife.getMedicalLifeContent())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    // 내가 북마크 한 게시글 조회
+    @Transactional(readOnly = true)
+    public List<MedicalLifeDTO> getMyBookmarkedMedicalLifePosts(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
+
+        List<BookmarkDTO> bookmarkedFlags = bookmarkService.findByUserAndFlagType(user, "MEDICAL_LIFE");
+
+        List<Long> bookmarkedFlagSeqs = bookmarkedFlags.stream()
+                .map(bookmarkDTO -> bookmarkDTO.getFlag().getFlagEntitySeq())
+                .collect(Collectors.toList());
+
+        return medicalLifeRepository.findAllByFlagSeqs(bookmarkedFlagSeqs).stream()
+                .map(medicalLife -> MedicalLifeDTO.builder()
+                        .medicalLifeSeq(medicalLife.getMedicalLifeSeq())
+                        .userName(medicalLife.getUser().getUserName())
+                        .deptName(medicalLife.getDept().getDeptName())
+                        .partName(medicalLife.getPart().getPartName())
+                        .medicalLifeTitle(medicalLife.getMedicalLifeTitle())
+                        .medicalLifeContent(medicalLife.getMedicalLifeContent())
+                        .build())
+                .collect(Collectors.toList());
     }
 
 }
