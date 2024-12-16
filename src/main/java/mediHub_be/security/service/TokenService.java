@@ -77,7 +77,7 @@ public class TokenService {
             log.info("리프레시 토큰 조회 완료. userId: {}", userId);
             return refreshToken;
         } catch (CustomException e) {
-            throw e; // 명시적으로 발생시킨 예외는 그대로 던짐
+            throw e;
         } catch (Exception e) {
             log.error("리프레시 토큰 조회 실패. userId: {}", userId, e);
             throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
@@ -99,7 +99,7 @@ public class TokenService {
             redisTemplate.delete("refresh:" + userId);
             log.info("리프레시 토큰 삭제 완료. userId: {}", userId);
         } catch (CustomException e) {
-            throw e; // 명시적으로 발생시킨 예외는 그대로 던짐
+            throw e;
         } catch (Exception e) {
             log.error("리프레시 토큰 삭제 실패. userId: {}", userId, e);
             throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);

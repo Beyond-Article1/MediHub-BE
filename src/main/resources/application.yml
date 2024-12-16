@@ -48,10 +48,10 @@ spring:
       username: ${db.name}
       password: ${db.password}
 
-  #    redis:
-#      host: ${db.name}
-#      port: 6379
-#      password: ${db.password}
+    redis:
+      host: ${db.name}
+      port: 6379
+      password: ${db.password}
 
   web:
     resources:
