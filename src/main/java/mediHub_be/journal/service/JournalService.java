@@ -1,7 +1,7 @@
 package mediHub_be.journal.service;
 
 import mediHub_be.journal.dto.ResponseAbstractDTO;
-import mediHub_be.journal.dto.ResponseJournalSearchDTO;
+import mediHub_be.journal.dto.ResponseJournalRankDTO;
 import mediHub_be.journal.dto.ResponsePubmedDTO;
 
 import java.util.List;
@@ -21,5 +21,5 @@ public interface JournalService {
     /**
      * 논문들 TOP 100 조회 (조회순, 북마크순)
      */
-    List<ResponseJournalSearchDTO> getJournalTop100(String sortBy);
+    List<ResponseJournalRankDTO> getJournalTop100(String sortBy, Long userSeq);
 }

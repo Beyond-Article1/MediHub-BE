@@ -93,7 +93,7 @@ public class MedicalLifeController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "댓글 목록 조회", description = "특정 게시글의 댓글 목록 반환")
+    @Operation(summary = "댓글 목록 조회", description = "특정 게시글의 댓글 목록")
     @GetMapping("/{medicalLifeSeq}/comments")
     public ResponseEntity<ApiResponse<List<MedicalLifeCommentDTO>>> getComments(@PathVariable Long medicalLifeSeq) {
         List<MedicalLifeCommentDTO> comments = medicalLifeService.getMedicalLifeComments(medicalLifeSeq);
@@ -156,7 +156,7 @@ public class MedicalLifeController {
         return ResponseEntity.ok(ApiResponse.ok(isPreferred));
     }
 
-    @Operation(summary = "북마크 여부 확인", description = "특정 게시글에 대해 북마크 여부를 반환합니다.")
+    @Operation(summary = "북마크 여부 확인", description = "특정 게시글에 대해 북마크 여부.")
     @GetMapping("/{medicalLifeSeq}/bookmark")
     public ResponseEntity<ApiResponse<Boolean>> isBookmarked(@PathVariable Long medicalLifeSeq) {
         String userId = SecurityUtil.getCurrentUserId();
@@ -165,12 +165,30 @@ public class MedicalLifeController {
         return ResponseEntity.ok(ApiResponse.ok(isBookmarked));
     }
 
-    @Operation(summary = "좋아요 여부 확인", description = "특정 게시글에 대해 좋아요 여부를 반환합니다.")
+    @Operation(summary = "좋아요 여부 확인", description = "특정 게시글에 대해 좋아요 여부.")
     @GetMapping("/{medicalLifeSeq}/prefer")
     public ResponseEntity<ApiResponse<Boolean>> isPreferred(@PathVariable Long medicalLifeSeq) {
         String userId = SecurityUtil.getCurrentUserId();
         boolean isPreferred = medicalLifeService.isPreferred(medicalLifeSeq, userId);
 
         return ResponseEntity.ok(ApiResponse.ok(isPreferred));
+    }
+
+    @Operation(summary = "내가 작성한 게시글 조회", description = "현재 사용자가 작성한 게시글 목록")
+    @GetMapping("/mymeidicallife")
+    public ResponseEntity<ApiResponse<List<MedicalLifeDTO>>> getMyPosts() {
+        String userId = SecurityUtil.getCurrentUserId();
+        List<MedicalLifeDTO> myPosts = medicalLifeService.getMyMedicalLifePosts(userId);
+
+        return ResponseEntity.ok(ApiResponse.ok(myPosts));
+    }
+
+    @Operation(summary = "내가 북마크한 게시글 조회", description = "현재 사용자가 북마크한 게시글 목록")
+    @GetMapping("/mybookmarks")
+    public ResponseEntity<ApiResponse<List<MedicalLifeDTO>>> getMyBookmarkedPosts() {
+        String userId = SecurityUtil.getCurrentUserId();
+        List<MedicalLifeDTO> bookmarkedPosts = medicalLifeService.getMyBookmarkedMedicalLifePosts(userId);
+
+        return ResponseEntity.ok(ApiResponse.ok(bookmarkedPosts));
     }
 }
