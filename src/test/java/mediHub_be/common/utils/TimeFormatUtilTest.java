@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DisplayName("[TimeFormatUtil 테스트]")
 class TimeFormatUtilTest {
 
     @Test
