@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.security.securitycustom.CustomUserDetails;
+import mediHub_be.security.service.TokenService;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,6 +24,7 @@ import java.util.List;
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final Environment env;
+    private final TokenService tokenService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -48,14 +50,33 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         claims.put("auth", authorities);
 
 
-        String token = Jwts.builder()
-                .setClaims(claims) // userSeq 포함
+        /* Access Token 생성 */
+        Claims accessTokenClaims = Jwts.claims().setSubject(authentication.getName());
+        accessTokenClaims.put("userSeq", userSeq);
+        accessTokenClaims.put("userName", username);
+        accessTokenClaims.put("auth", authorities);
+
+        String accessToken = Jwts.builder()
+                .setClaims(accessTokenClaims) // userSeq 포함
                 .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(env.getProperty("token.expiration_time"))))
                 .signWith(SignatureAlgorithm.HS512, env.getProperty("token.secret"))
                 .compact();
 
-        response.setHeader("Authorization", "Bearer " + token);
+        /* Refresh Token 생성 */
+        String refreshToken = Jwts.builder()
+                .setSubject(authentication.getName())
+                .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(env.getProperty("refresh.token.expiration_time")))) // 리프레시 토큰 만료 시간
+                .signWith(SignatureAlgorithm.HS512, env.getProperty("token.secret"))
+                .compact();
 
+        /* Refresh Token 저장 */
+        tokenService.saveRefreshToken(username, refreshToken, Long.parseLong(env.getProperty("refresh.token.expiration_time")));
 
+        /* 응답 헤더에 토큰 추가 */
+        response.setHeader("Authorization", "Bearer " + accessToken);
+        response.setHeader("Refresh-Token", refreshToken);
+
+        log.info("Access Token 발급: {}", accessToken);
+        log.info("Refresh Token 발급: {}", refreshToken);
     }
 }
