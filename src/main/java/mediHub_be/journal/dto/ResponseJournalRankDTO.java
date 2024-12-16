@@ -39,7 +39,7 @@ public class ResponseJournalRankDTO {
     public ResponseJournalRankDTO(Journal journal, Long count){
         this.journalSeq = journal.getJournalSeq();
         this.title = journal.getJournalTitle();
-        this.koreanTtile = journal.getJournalKorean();
+        this.koreanTtile = journal.getJournalKoreanTitle();
         this.source = journal.getJournalJournal();
         this.pubDate = journal.getJournalDate();
         this.size = journal.getJournalSize();
