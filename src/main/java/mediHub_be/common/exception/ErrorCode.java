@@ -39,6 +39,9 @@ public enum ErrorCode {
     // 유효하지 않은 토큰 (Token)
     INVALID_TOKEN(40101, HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
 
+    // OpenAi와 통신오류 401
+    UNAUTHORIZED_OPENAI_API(40102, HttpStatus.UNAUTHORIZED, "OpenAi key가 유효하지 않습니다."),
+
     /**
      * == 403 FORBIDDEN ==
      */
@@ -112,6 +115,12 @@ public enum ErrorCode {
 
     // 채팅방 관련 중복
     USER_ALREADY_IN_CHATROOM(40904, HttpStatus.CONFLICT, "이미 채팅방에 있는 사용자입니다."),
+
+    /**
+     * == 429 TOO_MANY_REQUESTS ==
+     */
+    // OpenAi 너무 많은 요청
+    RATE_LIMIT_EXCEEDED(42901, HttpStatus.TOO_MANY_REQUESTS, "[OpenAi] 너무 많은 요청입니다."),
 
     /**
      * == 500 INTERNAL_SERVER_ERROR ==
