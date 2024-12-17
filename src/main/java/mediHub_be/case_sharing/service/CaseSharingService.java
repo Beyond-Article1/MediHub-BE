@@ -1,5 +1,8 @@
 package mediHub_be.case_sharing.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -120,10 +123,9 @@ public class CaseSharingService {
                 false
         );
         caseSharingRepository.save(caseSharing);
-        saveKeywordsAndFlag(requestDTO.getKeywords(), caseSharing.getCaseSharingSeq());
 
-        // 이미지 업로드 및 본문 변환 처리
-        updateContentWithImages(caseSharing, images, requestDTO.getContent());
+        saveKeywordsAndFlag(requestDTO.getKeywords(), caseSharing.getCaseSharingSeq());
+        updateContentWithImages(caseSharing,requestDTO.getContent());
         return caseSharing.getCaseSharingSeq();
     }
 
@@ -158,8 +160,7 @@ public class CaseSharingService {
 
         saveKeywordsAndFlag(requestDTO.getKeywords(), newCaseSharing.getCaseSharingSeq());
 
-        // 이미지 업로드 및 본문 변환 처리
-        updateContentWithImages(newCaseSharing, images, requestDTO.getContent());
+        updateContentWithImages(newCaseSharing, requestDTO.getContent());
 
         return newCaseSharing.getCaseSharingSeq();
     }
@@ -264,7 +265,7 @@ public class CaseSharingService {
         );
         caseSharingRepository.save(draftCaseSharing);
         saveKeywordsAndFlag(requestDTO.getKeywords(), draftCaseSharing.getCaseSharingSeq());
-        updateContentWithImages(draftCaseSharing, images, requestDTO.getContent());
+        updateContentWithImages(draftCaseSharing, requestDTO.getContent());
         return draftCaseSharing.getCaseSharingSeq();
     }
 
@@ -319,7 +320,7 @@ public class CaseSharingService {
 
         // 4. 새로운 사진 업로드 및 저장
         if (newImages != null && !newImages.isEmpty()) {
-            String updatedContent = pictureService.replacePlaceHolderWithUrls(requestDTO.getCaseSharingContent(), newImages, flag.getFlagType(), flag.getFlagEntitySeq());
+            String updatedContent = pictureService.replaceBase64WithUrls(requestDTO.getCaseSharingContent(),flag.getFlagType(), flag.getFlagEntitySeq());
             draft.updateContent(requestDTO.getCaseSharingTitle(), updatedContent);
             caseSharingRepository.save(draft);
         }
@@ -398,17 +399,15 @@ public class CaseSharingService {
 
     }
 
-    private void updateContentWithImages(CaseSharing caseSharing, List<MultipartFile> images, String content) {
-        if (images != null && !images.isEmpty()) {
-            String updatedContent = pictureService.replacePlaceHolderWithUrls(
-                    content,
-                    images,
-                    CASE_SHARING_FLAG,
-                    caseSharing.getCaseSharingSeq()
-            );
-            caseSharing.updateContent(caseSharing.getCaseSharingTitle(), updatedContent);
-            caseSharingRepository.save(caseSharing);
-        }
+    private void updateContentWithImages(CaseSharing caseSharing, String content) {
+        // Base64 이미지 -> S3 URL 변환
+        String updatedContent = pictureService.replaceBase64WithUrls(
+                content,
+                CASE_SHARING_FLAG,
+                caseSharing.getCaseSharingSeq()
+        );
+        caseSharing.updateContent(caseSharing.getCaseSharingTitle(), updatedContent);
+        caseSharingRepository.save(caseSharing);
     }
 
     private void validateAuthor(CaseSharing caseSharing, User user) {
