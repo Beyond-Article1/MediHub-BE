@@ -20,6 +20,9 @@ public class CpOpinionLocation extends BaseCreateDeleteEntity {
     @Column
     private long cpVersionSeq;              // cp 버전 번호
 
+    @Column
+    private long cpOpinionLocationPageNum;  // 페이지 번호
+
     @Column(name = "cp_opinion_location_x")
     private double cpOpinionLocationX;      // x 좌표
 
@@ -31,6 +34,9 @@ public class CpOpinionLocation extends BaseCreateDeleteEntity {
             long cpVersionSeq,
             double cpOpinionLocationX,
             double cpOpinionLocationY) {
+        this.cpVersionSeq = cpVersionSeq;
+        this.cpOpinionLocationX = cpOpinionLocationX;
+        this.cpOpinionLocationY = cpOpinionLocationY;
     }
 
     public static CpOpinionLocation create(long cpVersionSeq, RequestCpOpinionLocationDTO requestBody) {
