@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.dept.entity.Dept;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -14,8 +15,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @Table(name = "part")
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE part SET del_date = LOCALTIME WHERE part_seq = ?")
-public class Part {
+@SQLDelete(sql = "UPDATE part SET deleted_at = LOCALTIME WHERE part_seq = ?")
+public class Part extends BaseFullEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

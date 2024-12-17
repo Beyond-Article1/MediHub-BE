@@ -15,7 +15,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Table(name = "user")
 @Getter
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE user SET user_state = 'DELETE', del_date = LOCALTIME WHERE user_seq = ?")
+@SQLDelete(sql = "UPDATE user SET user_state = 'DELETE', deleted_at = LOCALTIME WHERE user_seq = ?")
 public class User extends BaseFullEntity {
 
     @Id
