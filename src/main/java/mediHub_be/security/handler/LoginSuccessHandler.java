@@ -76,7 +76,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
             log.info("Refresh Token 저장 완료 (userId: {}, expiration: {}ms)", username, refreshTokenExpiration);
 
             /* 응답 헤더에 토큰 추가 */
-            response.setHeader("Authorization", "Bearer " + accessToken);
+            response.setHeader("Access-Token", accessToken);
             response.setHeader("Refresh-Token", refreshToken);
 
             /* 응답 본문에 userSeq와 refreshToken 추가 */

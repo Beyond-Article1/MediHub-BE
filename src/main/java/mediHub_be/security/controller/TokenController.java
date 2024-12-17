@@ -76,7 +76,7 @@ public class TokenController {
         tokenService.saveRefreshToken(userId, newRefreshToken, 604800000);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer " + newAccessToken);
+        headers.add("Access-Token", newAccessToken);
         headers.add("Refresh-Token", newRefreshToken);
 
         return ResponseEntity.ok()
