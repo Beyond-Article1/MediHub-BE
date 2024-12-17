@@ -251,6 +251,7 @@ CREATE TABLE cp_opinion_location (
                                      cp_opinion_location_seq	bigint	NOT NULL AUTO_INCREMENT
                                          COMMENT 'AUTO_INCREMENT',
                                      cp_version_seq	bigint	NOT NULL,
+                                     cp_opinion_location_page_num   bigint NOT NULL,
                                      cp_opinion_location_x	double	NOT NULL,
                                      cp_opinion_location_y	double	NOT NULL,
                                      created_at	datetime	NOT NULL	DEFAULT NOW(),
