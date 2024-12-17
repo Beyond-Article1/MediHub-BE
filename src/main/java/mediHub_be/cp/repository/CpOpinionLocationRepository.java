@@ -17,6 +17,7 @@ public interface CpOpinionLocationRepository extends JpaRepository<CpOpinionLoca
     @Query("SELECT new mediHub_be.cp.dto.ResponseCpOpinionLocationDTO( " +
             "col.cpOpinionLocationSeq, " +
             "col.cpVersionSeq, " +
+            "col.cpOpinionLocationPageNum, " +
             "col.cpOpinionLocationX, " +
             "col.cpOpinionLocationY, " +
             "co.userSeq) " +
