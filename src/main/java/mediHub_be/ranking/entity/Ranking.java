@@ -13,7 +13,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Entity
 @Table(name = "ranking")
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE rank SET del_date = LOCALTIME WHERE ranking_seq = ?")
 public class Ranking {
 
     @Id
