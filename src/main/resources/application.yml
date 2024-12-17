@@ -48,10 +48,10 @@ spring:
       username: ${db.name}
       password: ${db.password}
 
-  #    redis:
-#      host: ${db.name}
-#      port: 6379
-#      password: ${db.password}
+    redis:
+      host: ${mariadb.host}
+      port: 6379
+      password: ${db.password}
 
   web:
     resources:
@@ -64,6 +64,7 @@ spring:
 
 token:
   expiration_time: 7200000
+  refresh.token.expiration_time: 604800000
   secret: ${SECRET_KEY}
 
 user:

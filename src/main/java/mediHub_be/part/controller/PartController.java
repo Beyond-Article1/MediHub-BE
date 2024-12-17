@@ -2,6 +2,7 @@ package mediHub_be.part.controller;
 
 import lombok.RequiredArgsConstructor;
 import mediHub_be.part.dto.PartDTO;
+import mediHub_be.part.dto.PartRequestDTO;
 import mediHub_be.part.service.PartService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,15 +22,21 @@ public class PartController {
         return ResponseEntity.ok(parts);
     }
 
+    @GetMapping("/{deptSeq}")
+    public ResponseEntity<List<PartDTO>> getAllPartsByDept(@PathVariable Long deptSeq) {
+        List<PartDTO> parts = partService.getAllPartsByDept(deptSeq);
+        return ResponseEntity.ok(parts);
+    }
+
     @PostMapping
-    public ResponseEntity<PartDTO> createPart(@RequestBody PartDTO partDTO) {
-        PartDTO createdPart = partService.createPart(partDTO);
+    public ResponseEntity<PartDTO> createPart(@RequestBody PartRequestDTO partRequestDTO) {
+        PartDTO createdPart = partService.createPart(partRequestDTO);
         return ResponseEntity.ok(createdPart);
     }
 
     @PutMapping("/{partSeq}")
-    public ResponseEntity<PartDTO> updatePart(@PathVariable long partSeq, @RequestBody PartDTO partDTO) {
-        PartDTO updatedPart = partService.updatePart(partSeq, partDTO);
+    public ResponseEntity<PartDTO> updatePart(@RequestBody PartDTO partDTO) {
+        PartDTO updatedPart = partService.updatePart(partDTO);
         return ResponseEntity.ok(updatedPart);
     }
 

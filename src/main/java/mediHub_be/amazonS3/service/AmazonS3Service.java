@@ -107,6 +107,43 @@ public class AmazonS3Service {
         return newFileName;
     }
 
+    public MetaData uploadFromByteArray(byte[] imageBytes, String fileName, String contentType) {
+
+        MetaData metaData = new MetaData();
+
+        // 파일 이름 변경
+        String changedFileName = changeFileName(fileName);
+
+        metaData.setOriginalFileName(fileName);
+        metaData.setChangeFileName(changedFileName);
+
+        // S3에 업로드할 파일의 메타 데이터 생성
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentType(contentType);
+        metadata.setContentLength(imageBytes.length);
+
+        try {
+            // S3에 파일 업로드
+            amazonS3Client.putObject(amazonS3Bucket, changedFileName, new java.io.ByteArrayInputStream(imageBytes), metadata);
+
+            // 업로드된 파일의 URL 생성
+            String fileUrl = amazonS3Client.getUrl(amazonS3Bucket, changedFileName).toString();
+            metaData.setUrl(fileUrl);
+            metaData.setType(contentType);
+
+            // 로그 출력
+            log.info("origin name = " + metaData.getOriginalFileName());
+            log.info("changed name = " + metaData.getChangeFileName());
+            log.info("url = " + metaData.getUrl());
+
+            return metaData;
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_IO_UPLOAD_ERROR);
+        }
+    }
+
+
+
     @Getter
     @Setter
     public static class MetaData {
