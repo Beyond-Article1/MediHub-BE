@@ -43,14 +43,15 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                                 .requestMatchers("/**").permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/api/v1/user/login", "POST")).permitAll() // 로그인 API 허용
+                                .requestMatchers(new AntPathRequestMatcher("/api/v1/user/login", "POST")).permitAll() // 로그인 API 허용
 //                        .requestMatchers(new AntPathRequestMatcher("/api/**")).permitAll() // 로그인 API 허용
-                        .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/cp/**")).permitAll()
 //                        .requestMatchers(new AntPathRequestMatcher("/case_sharing/**")).permitAll()
-                        .anyRequest().authenticated() // 그 외 요청은 인증 필요
+                                .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 )
                 /* 세션 정책 설정 (Stateless) */
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -94,9 +95,11 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         config.addAllowedOrigin("http://localhost:5173"); // 허용할 도메인
         config.addAllowedOrigin("https://jiangxy.github.io");
+        config.addAllowedOrigin("https://medihub.s3.ap-northeast-2.amazonaws.com"); // S3 URL 추가
         config.addAllowedHeader("*"); // 모든 헤더 허용
         config.addAllowedMethod("*"); // 모든 HTTP 메소드 허용
         config.addExposedHeader("token"); // 서버에서 클라이언트로 반환하는 헤더 허용
+        config.addExposedHeader("Authorization");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
