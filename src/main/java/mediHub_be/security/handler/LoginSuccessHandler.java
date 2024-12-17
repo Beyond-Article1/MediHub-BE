@@ -79,6 +79,13 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
             response.setHeader("Authorization", "Bearer " + accessToken);
             response.setHeader("Refresh-Token", refreshToken);
 
+            /* 응답 본문에 userSeq와 refreshToken 추가 */
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(String.format(
+                    "{\"userSeq\": %d, \"refreshToken\": \"%s\"}",
+                    userSeq, refreshToken
+            ));
+
             log.info("토큰이 응답 헤더에 추가되었습니다.");
         } catch (NumberFormatException e) {
             log.error("토큰 만료 시간 파싱 실패 - 환경변수 설정 확인 필요: {}", e.getMessage(), e);
