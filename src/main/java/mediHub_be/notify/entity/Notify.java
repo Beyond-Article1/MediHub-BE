@@ -25,7 +25,7 @@ public class Notify extends CreateTimeEntity {
     private Flag flag;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "noti_is_read", nullable = false)
+    @Column(name = "readed_at", nullable = false)
     @ColumnDefault(value = "'N'")
     private NotiReadStatus noti_isRead;
 

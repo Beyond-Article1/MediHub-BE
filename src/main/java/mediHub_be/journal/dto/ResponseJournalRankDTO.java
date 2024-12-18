@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import mediHub_be.journal.entity.Journal;
 
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @NoArgsConstructor
@@ -46,7 +47,8 @@ public class ResponseJournalRankDTO {
         this.authors = journal.getJournalAuthors();
         this.doi = journal.getJournalDoi();
         this.pmid = journal.getJournalPmid();
-        this.count = count;
+
+        this.count = Objects.requireNonNullElse(count, 0L);
     }
 
     // === 북마크 유무 넣기 === //

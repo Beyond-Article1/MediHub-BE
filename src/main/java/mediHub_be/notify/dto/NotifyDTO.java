@@ -1,6 +1,7 @@
 package mediHub_be.notify.dto;
 
 import lombok.*;
+import mediHub_be.common.utils.TimeFormatUtil;
 import mediHub_be.notify.entity.NotiReadStatus;
 import mediHub_be.notify.entity.NotiType;
 import mediHub_be.notify.entity.Notify;
@@ -50,7 +51,7 @@ public class NotifyDTO {
                 .type(notify.getNotiType())
                 .senderName(senderUserName)
                 .partName(senderUserPart)
-                .createdAt(notify.getCreatedAt().toString())
+                .createdAt(TimeFormatUtil.yearAndMonthDayHMS(notify.getCreatedAt()).toString())
                 .isRead(false)
                 .build();
     }

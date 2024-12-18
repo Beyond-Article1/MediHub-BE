@@ -50,7 +50,7 @@ spring:
 
     redis:
       host: ${mariadb.host}
-      port: 6379
+      port: ${redis.port}
       password: ${db.password}
 
   web:

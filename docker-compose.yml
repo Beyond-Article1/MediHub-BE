@@ -52,13 +52,14 @@ services:
     container_name: redis
     hostname: ${DB_DATABASE}
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     networks:
       - springboot-network
     command: redis-server --requirepass ${DB_PASSWORD}
 
   kafka:
     image: bitnami/kafka:latest
+    restart: unless-stopped
     container_name: kafka
     ports:
       - "9092:9092" # 내부 네트워크 통신을 위한 PLAINTEXT Listener
