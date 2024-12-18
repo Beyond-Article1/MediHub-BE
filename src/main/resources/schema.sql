@@ -461,3 +461,6 @@ ALTER TABLE part
 
 ALTER TABLE picture
     ADD CONSTRAINT FK_picture_flag FOREIGN KEY (flag_seq) REFERENCES flag (flag_seq) ON DELETE CASCADE;
+
+ALTER TABLE cp_opinion_vote
+DROP COLUMN updated_at;
