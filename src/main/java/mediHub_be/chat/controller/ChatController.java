@@ -54,7 +54,7 @@ public class ChatController {
     }
 
     @Operation(summary = "채팅 메시지 조회", description = "특정 채팅방 내 채팅 메시지 조회")
-    @GetMapping("/room/{chatroomSeq}")
+    @GetMapping("/{chatroomSeq}/messages")
     public ResponseEntity<ApiResponse<List<ResponseChatMessageDTO>>> getMessagesByRoomSeq(@PathVariable Long chatroomSeq) {
         Long userSeq = SecurityUtil.getCurrentUserSeq();
         List<ResponseChatMessageDTO> messages = chatService.getMessagesByRoomSeq(userSeq, chatroomSeq);
