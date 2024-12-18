@@ -90,6 +90,7 @@ public class CaseSharingService {
                 .caseAuthor(caseSharing.getUser().getUserName())
                 .caseAuthorRankName(caseSharing.getUser().getRanking().getRankingName())
                 .keywords(keywordDTOs)
+                .createdAt(caseSharing.getCreatedAt())
                 .caseSharingGroupSeq(caseSharing.getCaseSharingGroup().getCaseSharingGroupSeq())
                 .isLatestVersion(caseSharing.getCaseSharingIsLatest())
                 .caseSharingViewCount(caseSharing.getCaseSharingViewCount())
@@ -112,6 +113,8 @@ public class CaseSharingService {
         CaseSharingGroup group = CaseSharingGroup.createNewGroup();
         caseSharingGroupRepository.save(group);
 
+        String content = requestDTO.getContent();
+
         // 케이스 공유 생성
         CaseSharing caseSharing = CaseSharing.createNewCaseSharing(
                 user,
@@ -119,13 +122,13 @@ public class CaseSharingService {
                 template,
                 group,
                 requestDTO.getTitle(),
-                requestDTO.getContent(),
+                null,
                 false
         );
         caseSharingRepository.save(caseSharing);
-
+        log.info("호출확인");
         saveKeywordsAndFlag(requestDTO.getKeywords(), caseSharing.getCaseSharingSeq());
-        updateContentWithImages(caseSharing,requestDTO.getContent());
+        updateContentWithImages(caseSharing,content);
         return caseSharing.getCaseSharingSeq();
     }
 
@@ -151,16 +154,18 @@ public class CaseSharingService {
                 existingCaseSharing.getTemplate(),
                 existingCaseSharing.getCaseSharingGroup(), // 기존 그룹 유지 (그룹 객체 전달)
                 requestDTO.getTitle(),
-                requestDTO.getContent(),
+               null,
                 false // 임시 저장 여부 기본값 설정 (예: false)
         );
+
+        String content = requestDTO.getContent();
 
         newCaseSharing.markAsLatest(); // 새 버전을 최신으로 설정
         caseSharingRepository.save(newCaseSharing);
 
         saveKeywordsAndFlag(requestDTO.getKeywords(), newCaseSharing.getCaseSharingSeq());
 
-        updateContentWithImages(newCaseSharing, requestDTO.getContent());
+        updateContentWithImages(newCaseSharing, content);
 
         return newCaseSharing.getCaseSharingSeq();
     }
@@ -260,12 +265,14 @@ public class CaseSharingService {
                 template,
                 group,
                 requestDTO.getTitle(),
-                requestDTO.getContent(),
+                null,
                 true // 임시 저장 여부 설정
         );
+
+        String content = requestDTO.getContent();
         caseSharingRepository.save(draftCaseSharing);
         saveKeywordsAndFlag(requestDTO.getKeywords(), draftCaseSharing.getCaseSharingSeq());
-        updateContentWithImages(draftCaseSharing, requestDTO.getContent());
+        updateContentWithImages(draftCaseSharing, content);
         return draftCaseSharing.getCaseSharingSeq();
     }
 
@@ -310,7 +317,7 @@ public class CaseSharingService {
         validateAuthor(draft, user);
 
         // 제목 및 내용 업데이트
-        draft.updateContent(requestDTO.getCaseSharingTitle(), requestDTO.getCaseSharingContent());
+        draft.updateContent(requestDTO.getCaseSharingTitle(), null);
         caseSharingRepository.save(draft);
         // 키워드 수정
         Flag flag = flagService.findFlag(CASE_SHARING_FLAG, draft.getCaseSharingSeq())
@@ -436,8 +443,8 @@ public class CaseSharingService {
     }
 
     private void saveKeywordsAndFlag(List<String> keywords, Long entitySeq) {
+        Flag flag = flagService.createFlag(CASE_SHARING_FLAG, entitySeq);
         if (keywords != null && !keywords.isEmpty()) {
-            Flag flag = flagService.createFlag(CASE_SHARING_FLAG, entitySeq);
             keywordService.saveKeywords(keywords, flag.getFlagSeq());
         }
     }

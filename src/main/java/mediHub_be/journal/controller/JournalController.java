@@ -3,9 +3,11 @@ package mediHub_be.journal.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
+import mediHub_be.common.response.JournalResponse;
 import mediHub_be.journal.dto.ResponseJournalRankDTO;
 import mediHub_be.journal.dto.ResponsePubmedDTO;
 import mediHub_be.journal.service.JournalServiceImpl;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @Tag(name = "논문", description = "논문과 북마크")
 @RequiredArgsConstructor
 @RestController
@@ -27,8 +30,9 @@ public class JournalController {
     // 논문 검색
     @Operation(summary = "논문 검색", description = "자연어를 통해 논문들을 검색한다.")
     @GetMapping("/chat")
-    public ResponseEntity<ApiResponse<List<ResponsePubmedDTO>>> chat(@RequestParam(name = "prompt") String prompt){
+    public ResponseEntity<ApiResponse<JournalResponse<?>>> chat(@RequestParam(name = "prompt") String prompt){
 
+        log.info("요청");
         return ResponseEntity.ok(
                 ApiResponse.ok(journalService.getPubmedKeywords(prompt))
         );
@@ -38,7 +42,7 @@ public class JournalController {
     @Operation(summary = "논문 초록 요약 보기", description = "논문 자세히 보기, 상세 조회시 조회이력이 남는다.")
     @PostMapping("/{journalPmid}")
     public ResponseEntity<ApiResponse<?>> journal(@PathVariable("journalPmid") String journalPmid,
-                                                  @RequestBody ResponsePubmedDTO requestDTO){
+                                                  @RequestBody ResponsePubmedDTO requestDTO) throws Exception {
 
         Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
         return ResponseEntity.ok(
