@@ -4,10 +4,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.entity.Flag;
+import mediHub_be.board.repository.FlagRepository;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.notify.dto.NotifyDTO;
+import mediHub_be.notify.entity.NotiType;
 import mediHub_be.notify.service.NotifyServiceImlp;
 import mediHub_be.security.util.SecurityUtil;
+import mediHub_be.user.entity.User;
+import mediHub_be.user.repository.UserRepository;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +30,9 @@ import java.util.List;
 public class NotifyController {
 
     private final NotifyServiceImlp notifyService;
+
+    private final FlagRepository flagRepository;
+    private final UserRepository userRepository;
 
     @Operation(summary = "sse 세션연결", description = "SSE의 세션을 연결한다.")
     @GetMapping(value = "/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -90,5 +100,19 @@ public class NotifyController {
         return ResponseEntity.ok(
                 ApiResponse.ok("OK")
         );
+    }
+
+    @Operation(summary = "알림 테스트", description = "테스트 알림을 생성하고, SSE를 확인한다.")
+    @GetMapping("/send")
+    public void sendNotify(){
+
+        Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
+
+        User user = userRepository.findByUserSeq(currentUserSeq).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+
+        Long flagSeq = 16L;
+        Flag flag = flagRepository.findById(flagSeq).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
+
+        notifyService.send(user, user, flag, NotiType.BOARD, "/journal/best");
     }
 }
