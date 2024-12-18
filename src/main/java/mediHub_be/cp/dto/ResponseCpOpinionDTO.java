@@ -38,6 +38,15 @@ public class ResponseCpOpinionDTO {
             String userName,
             String userId,
             String partName) {
+        this.cpOpinionSeq = cpOpinionSeq;
+        this.cpOpinionContent = cpOpinionContent;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.deletedAt = deletedAt;
+        this.cpOpinionViewCount = cpOpinionViewCount;
+        this.userName = userName;
+        this.userId = userId;
+        this.partName = partName;
     }
 
     public static ResponseCpOpinionDTO create(ResponseCpOpinionDTO origin, List<Keyword> keywordList) {

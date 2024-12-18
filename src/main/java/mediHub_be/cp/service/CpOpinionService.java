@@ -12,7 +12,10 @@ import mediHub_be.board.service.KeywordService;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
-import mediHub_be.cp.dto.*;
+import mediHub_be.cp.dto.CpOpinionDTO;
+import mediHub_be.cp.dto.CpOpinionVoteDTO;
+import mediHub_be.cp.dto.RequestCpOpinionDTO;
+import mediHub_be.cp.dto.ResponseCpOpinionDTO;
 import mediHub_be.cp.entity.CpOpinion;
 import mediHub_be.cp.entity.CpOpinionVote;
 import mediHub_be.cp.repository.CpOpinionRepository;
@@ -156,9 +159,8 @@ public class CpOpinionService {
 
         try {
             // 키워드 리스트 조회
-            List<Keyword> keywordList = keywordRepository.findByFlagTypeAndEntitySeq(CP_OPINION_BOARD_FLAG, dto.getCpOpinionSeq());
+            List<Keyword> keywordList = keywordService.getKeywordList(CP_OPINION_BOARD_FLAG, dto.getCpOpinionSeq());
             List<CpOpinionVoteDTO> voteList = getCpOpinionVoteList(dto.getCpOpinionSeq());
-
             // 비율 계산 및 DTO 생성
             if (voteList.isEmpty()) {
                 return ResponseCpOpinionDTO.create(dto, keywordList);
