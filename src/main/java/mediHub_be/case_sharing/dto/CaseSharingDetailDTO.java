@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -20,6 +21,8 @@ public class CaseSharingDetailDTO {
     private String caseAuthor; // 작성자
     private String caseAuthorRankName; //작성자 직위명
     private String caseAuthorUrl; //작성자 사진 url
+
+    private LocalDateTime createdAt; // 작성일
 
     private List<CaseSharingKeywordDTO> keywords; // 키워드 리스트
 
