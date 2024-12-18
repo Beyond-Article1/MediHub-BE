@@ -20,7 +20,7 @@ public class Notify extends CreateTimeEntity {
     @Column(name = "noti_seq", nullable = false)
     private Long notiSeq;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "flag_seq")
     private Flag flag;
 
