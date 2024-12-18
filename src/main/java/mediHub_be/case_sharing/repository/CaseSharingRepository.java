@@ -15,15 +15,12 @@ public interface CaseSharingRepository extends JpaRepository<CaseSharing, Long> 
     @Query("SELECT c FROM CaseSharing c WHERE c.caseSharingIsLatest = true AND c.caseSharingIsDraft = false AND c.deletedAt IS NULL")
     List<CaseSharing> findAllLatestVersionsNotDraftAndDeletedAtIsNull();
 
-    // 최신 이전 버전을 찾는 메서드
-    @Query("SELECT c FROM CaseSharing c WHERE c.caseSharingGroup.caseSharingGroupSeq = :caseSharingGroupSeq " +
-            "AND c.caseSharingSeq != :excludedCaseSharingSeq " +
-            "AND c.caseSharingIsDraft = false AND c.deletedAt IS NULL " +
-            "ORDER BY c.createdAt DESC")
-    Optional<CaseSharing> findTopByCaseSharingGroupCaseSharingGroupSeqAndCaseSharingSeqNotAndIsDraftFalseAndDeletedAtIsNullOrderByCreatedAtDesc(
-            @Param("caseSharingGroupSeq") Long caseSharingGroupSeq,
-            @Param("excludedCaseSharingSeq") Long excludedCaseSharingSeq
+    // 최신 레코드 하나만 반환
+    Optional<CaseSharing> findTopByCaseSharingGroup_CaseSharingGroupSeqAndCaseSharingSeqNotAndCaseSharingIsDraftFalseAndDeletedAtIsNullOrderByCreatedAtDesc(
+            Long caseSharingGroupSeq, Long excludedCaseSharingSeq
     );
+
+
 
     // 최신 버전의 게시글 + 해당하는 part 목록 조회
     @Query("SELECT c FROM CaseSharing c WHERE c.part.partSeq = :partSeq AND c.caseSharingIsLatest = true AND c.caseSharingIsDraft = false AND c.deletedAt IS NULL")

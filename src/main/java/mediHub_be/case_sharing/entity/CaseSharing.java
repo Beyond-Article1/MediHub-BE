@@ -78,6 +78,7 @@ public class CaseSharing extends BaseCreateDeleteEntity {
     public void markAsLatest() {
         this.caseSharingIsLatest = true;
     }
+
     public void markAsNotLatest() {
         this.caseSharingIsLatest = false;
     }

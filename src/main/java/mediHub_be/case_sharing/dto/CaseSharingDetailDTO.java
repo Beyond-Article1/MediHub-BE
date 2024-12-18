@@ -25,7 +25,7 @@ public class CaseSharingDetailDTO {
     private LocalDateTime createdAt; // 작성일
 
     private List<CaseSharingKeywordDTO> keywords; // 키워드 리스트
-
+    private Long templateSeq;
     private Long caseSharingGroupSeq; // 그룹 ID (CaseSharingGroup 정보)
     private Boolean isLatestVersion; // 최신 버전 여부
 

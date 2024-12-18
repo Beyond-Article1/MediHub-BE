@@ -119,19 +119,17 @@ public class TemplateService {
             Flag previewFlag = flagService.createFlag(TEMPLATE_PREVIEW_FLAG, template.getTemplateSeq());
             pictureService.uploadPicture(previewImage, previewFlag);
         }
-
-        // 본문 이미지 저장 및 내용 치환
-        if (images != null && !images.isEmpty()) {
             flagService.createFlag(TEMPLATE_FLAG, template.getTemplateSeq());
-            String updatedContent = pictureService.replacePlaceHolderWithUrls(
+            String updatedContent = pictureService.replaceBase64WithUrls(
                     content,
-                    images,
                     TEMPLATE_FLAG,
                     template.getTemplateSeq()
             );
             template.updateTemplate(requestDTO.getTemplateTitle(), updatedContent, OpenScope.valueOf(requestDTO.getOpenScope()));
+
+            log.info("내용"+ updatedContent);
             templateRepository.save(template);
-        }
+
 
         return template.getTemplateSeq();
     }

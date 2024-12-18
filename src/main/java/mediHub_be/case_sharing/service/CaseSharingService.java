@@ -92,6 +92,7 @@ public class CaseSharingService {
                 .keywords(keywordDTOs)
                 .createdAt(caseSharing.getCreatedAt())
                 .caseSharingGroupSeq(caseSharing.getCaseSharingGroup().getCaseSharingGroupSeq())
+                .templateSeq(caseSharing.getTemplate().getTemplateSeq())
                 .isLatestVersion(caseSharing.getCaseSharingIsLatest())
                 .caseSharingViewCount(caseSharing.getCaseSharingViewCount())
                 .caseAuthorUrl(pictureService.getUserProfileUrl(user.getUserSeq()))
@@ -190,11 +191,11 @@ public class CaseSharingService {
 
             // 바로 이전 버전을 최신으로 설정
             CaseSharing previousVersion = caseSharingRepository
-                    .findTopByCaseSharingGroupCaseSharingGroupSeqAndCaseSharingSeqNotAndIsDraftFalseAndDeletedAtIsNullOrderByCreatedAtDesc(
+                    .findTopByCaseSharingGroup_CaseSharingGroupSeqAndCaseSharingSeqNotAndCaseSharingIsDraftFalseAndDeletedAtIsNullOrderByCreatedAtDesc(
                             caseSharingGroup.getCaseSharingGroupSeq(),
                             caseSharingSeq
                     ).orElse(null);
-
+            log.info("seq값"+previousVersion.getCaseSharingSeq());
             if (previousVersion != null) {
                 previousVersion.markAsLatest();
                 caseSharingRepository.save(previousVersion);
@@ -444,7 +445,9 @@ public class CaseSharingService {
 
     private void saveKeywordsAndFlag(List<String> keywords, Long entitySeq) {
         Flag flag = flagService.createFlag(CASE_SHARING_FLAG, entitySeq);
+        log.info("flag정보 " + flag.getFlagSeq() + flag.getFlagEntitySeq());
         if (keywords != null && !keywords.isEmpty()) {
+            log.info("키워드"+ keywords.get(0));
             keywordService.saveKeywords(keywords, flag.getFlagSeq());
         }
     }
