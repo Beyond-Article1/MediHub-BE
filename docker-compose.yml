@@ -52,7 +52,7 @@ services:
     container_name: redis
     hostname: ${DB_DATABASE}
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT}:6379"
     networks:
       - springboot-network
     command: redis-server --requirepass ${DB_PASSWORD}
