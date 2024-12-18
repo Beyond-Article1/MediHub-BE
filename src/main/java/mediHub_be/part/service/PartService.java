@@ -22,7 +22,7 @@ public class PartService {
 
     @Transactional(readOnly = true)
     public List<PartDTO> getAllParts() {
-        return partRepository.findAll()
+        return partRepository.findByDeletedAtIsNull()
                 .stream()
                 .map(part -> PartDTO.builder()
                         .partSeq(part.getPartSeq())

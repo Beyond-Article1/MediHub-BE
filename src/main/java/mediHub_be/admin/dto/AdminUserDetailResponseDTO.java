@@ -8,7 +8,7 @@ import mediHub_be.user.entity.UserStatus;
 @Data
 @Builder
 public class AdminUserDetailResponseDTO {
-    private Long userSeq;
+    private long userSeq;
     private String userName;
     private String userId;
     private String userEmail;
@@ -17,5 +17,6 @@ public class AdminUserDetailResponseDTO {
     private UserStatus userStatus;
     private String rankingName;
     private String partName;
+    private long deptSeq;
     private String profileImage;
 }
