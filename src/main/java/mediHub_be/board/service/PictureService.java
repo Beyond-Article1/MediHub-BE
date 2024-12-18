@@ -186,6 +186,16 @@ public class PictureService {
         return pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeqAndPictureIsDeletedIsNotNull(flagType, entitySeq);
     }
 
+    @Transactional
+    public List<String> getPicturesURLByFlagTypeAndEntitySeqAndIsDeletedIsNotNull(String flagType, Long entitySeq) {
+        List<Picture> pictures =  pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeqAndPictureIsDeletedIsNotNull(flagType, entitySeq);
+        List<String> urls = new ArrayList<>();
+        for(Picture picture : pictures) {
+            urls.add(picture.getPictureUrl());
+        }
+        return urls;
+    }
+
     private void cleanupUploadedFiles(List<String> uploadedUrls) {
         uploadedUrls.forEach(url -> {
             try {
