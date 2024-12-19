@@ -1,13 +1,11 @@
 package mediHub_be.admin.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import mediHub_be.admin.dto.AdminResponseDTO;
 import mediHub_be.admin.dto.AdminUpdateDTO;
 import mediHub_be.admin.dto.AdminUserDetailResponseDTO;
 import mediHub_be.admin.dto.UserCreateDTO;
-import mediHub_be.amazonS3.service.AmazonS3Service;
+import mediHub_be.config.amazonS3.AmazonS3Service;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
 import mediHub_be.board.repository.FlagRepository;

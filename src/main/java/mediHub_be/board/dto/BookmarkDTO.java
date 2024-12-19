@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 public class BookmarkDTO {
 
     private Long bookmarkSeq;
-
     private Flag flag;
-
     private LocalDateTime createAt;
 }
