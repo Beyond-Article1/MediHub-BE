@@ -66,7 +66,7 @@ public class CpOpinionVoteService {
      */
     @Transactional
     public void deleteCpOpinionVote(long cpOpinionVoteSeq) {
-        logger.info("CP 의견 투표 삭제 요청. 투표 ID: {}", cpOpinionVoteSeq);
+        logger.info("CP 의견 투표 삭제 요청. 투표 Seq: {}", cpOpinionVoteSeq);
 
         try {
             // 삭제 시도
@@ -94,7 +94,7 @@ public class CpOpinionVoteService {
             List<CpOpinionVote> entityList = cpOpinionVoteRepository.findByCpOpinionSeq(cpOpinionSeq);
 
             return entityList.stream()
-                    .map(CpOpinionVote::getCpOpinionSeq)
+                    .map(CpOpinionVote::getCpOpinionVoteSeq)
                     .toList();
         } catch (DataAccessException e) {
             logger.error("CP 의견 투표 정보를 가져오는 중 오류 발생: {}", e.getMessage());

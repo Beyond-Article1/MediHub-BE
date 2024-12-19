@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -331,14 +330,14 @@ public class CpOpinionService {
             entity = cpOpinionRepository.save(entity);
             logger.info("CP 의견이 DB에 성공적으로 저장되었습니다: {}", entity);
 
+            // Flag 생성 및 저장
+            Flag flag = flagService.createFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
+            logger.info("플래그 생성 및 저장 완료");
+
             // 키워드 등록
             if (requestBody.getKeywordList() != null && !requestBody.getKeywordList().isEmpty()) {
 
-                // 1. Flag 생성 및 저장
-                Flag flag = flagService.createFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
-                logger.info("플래그 생성 및 저장 완료");
-
-                // 2. Keyword 생성 및 저장
+                // Keyword 생성 및 저장
                 keywordService.saveKeywords(requestBody.getKeywordList(), flag.getFlagSeq());
                 logger.info("키워드 생성 및 저장 완료");
             }
@@ -421,7 +420,7 @@ public class CpOpinionService {
             entity.delete();
             // 저장
             cpOpinionRepository.save(entity);
-            logger.info("CP 의견 ID: {}가 삭제되었습니다.", cpOpinionSeq);
+            logger.info("{}번 CP 의견이 삭제되었습니다.", cpOpinionSeq);
         } catch (DataAccessException e) {
             logger.error("CP 의견 삭제 중 데이터베이스 접근 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_IO_DELETE_ERROR);
@@ -457,24 +456,32 @@ public class CpOpinionService {
     private void deleteBookmark(CpOpinion entity) {
 
         String currentUserAuthorities = SecurityUtil.getCurrentUserAuthorities();
+        logger.info("권환 확인: " + currentUserAuthorities.equals(UserAuth.USER.name()));
+        try {
+            if (currentUserAuthorities.equals(UserAuth.USER.name())) {
+                // 1. 작성자가 삭제하는 경우
+                logger.info("bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId()) = " + bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId()));
+                if (bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId())) {
+                    // 북마크가 된 경우
+                    bookmarkService.deleteBookmarkByFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
+                    logger.info("{}번 CP 의견의 북마크를 삭제했습니다.", entity.getCpOpinionSeq());
+                }
+                logger.info("북마크 삭제 완료");
+            } else {
+                // 2. 어드민이 삭제하는 경우
+                // 작성자 정보 호출
+                String entityUserId = userService.findUser(entity.getUserSeq()).getUserId();
 
-        if (currentUserAuthorities.equals(UserAuth.USER)) {
-            // 1. 작성자가 삭제하는 경우
-            if (bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId())) {
-                // 북마크가 된 경우
-                bookmarkService.deleteBookmarkByFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
-                logger.info("{}번 CP 의견의 북마크를 삭제했습니다.", entity.getCpOpinionSeq());
-            }
-        } else {
-            // 2. 어드민이 삭제하는 경우
-            // 작성자 정보 호출
-            String entityUserId = userService.findUser(entity.getUserSeq()).getUserId();
+                if (bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), entityUserId)) {
+                    // 북마크가 된 경우
+                    bookmarkService.toggleBookmark(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId());
+                    logger.info("{}번 CP 의견의 북마크를 삭제했습니다.", entity.getCpOpinionSeq());
+                }
 
-            if (bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), entityUserId)) {
-                // 북마크가 된 경우
-                bookmarkService.toggleBookmark(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId());
-                logger.info("{}번 CP 의견의 북마크를 삭제했습니다.", entity.getCpOpinionSeq());
+                logger.info("북마크 삭제 완료");
             }
+        } catch (IllegalArgumentException e) {
+            logger.info("삭제할 북마크 플레그가 없습니다.");
         }
     }
 
@@ -491,7 +498,7 @@ public class CpOpinionService {
      *                          의견이 존재하지 않는 경우, 또는 사용자가 권한이 없는 경우.
      * @throws RuntimeException 다른 예기치 않은 오류가 발생할 경우
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public CpOpinion getCpOpinionAndCheckUnauthorizedAccess(long cpOpinionSeq) {
 
         // DB에서 CP 의견 조회
@@ -511,7 +518,7 @@ public class CpOpinionService {
         Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
         String currentUserAuthority = SecurityUtil.getCurrentUserAuthorities();
         if (currentUserSeq != entity.getUserSeq() && !currentUserAuthority.equals(UserAuth.ADMIN)) {
-            logger.warn("사용자 시퀀스: {}가 CP 의견 ID: {}를 조회할 권한이 없습니다.", currentUserSeq, cpOpinionSeq);
+            logger.warn("사용자 시퀀스: {}가 CP 의견 시퀀스: {}를 삭제할 권한이 없습니다.", currentUserSeq, cpOpinionSeq);
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
