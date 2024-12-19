@@ -497,6 +497,8 @@ ALTER TABLE cp_opinion_vote
 ALTER TABLE cp_opinion
     DROP FOREIGN KEY FK_cp_opinion_keyword;
 
-
 ALTER TABLE cp_opinion
     DROP COLUMN keyword_seq;
+
+ALTER TABLE cp_opinion
+    MODIFY COLUMN cp_opinion_content longtext;
