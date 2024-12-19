@@ -36,9 +36,9 @@ public class CaseSharingCommentService {
         List<CaseSharingComment> comments = commentRepository.findByCaseSharing_CaseSharingSeqAndDeletedAtIsNull(caseSharingSeq);
         return comments.stream()
                 .map(comment -> CaseSharingCommentListDTO.builder()
-                        .caseSharingCommentStartOffset(comment.getCaseSharingCommentStartOffset())
-                        .caseSharingCommentEndOffset(comment.getCaseSharingCommentEndOffset())
-                        .build())
+                        .blockId(comment.getCaseSharingBlockId()) // 댓글의 블록 ID만 가져옴
+                        .build()
+                )
                 .toList();
     }
 
@@ -55,8 +55,7 @@ public class CaseSharingCommentService {
                 .userName(user.getUserName()) // 댓글 작성자명
                 .userRankName(user.getRanking().getRankingName()) // 댓글 작성자 직위명
                 .content(comment.getCaseSharingCommentContent()) // 댓글 내용
-                .startOffset(comment.getCaseSharingCommentStartOffset()) // 본문 시작 위치
-                .endOffset(comment.getCaseSharingCommentEndOffset()) // 본문 끝 위치
+                .blockId(comment.getCaseSharingBlockId())
                 .createdAt(comment.getCreatedAt()) // 댓글 작성일
                 .userProfileURL(pictureService.getUserProfileUrl(user.getUserSeq()))
                 .build();
@@ -65,16 +64,15 @@ public class CaseSharingCommentService {
 
     //3. 케이스 공유 댓글 생성
     @Transactional
-    public Long createCaseSharingComment(String userId, CaseSharingCommentRequestDTO requestDTO) {
+    public Long createCaseSharingComment(String userId, Long caseSharingSeq, CaseSharingCommentRequestDTO requestDTO) {
         User user = userService.findByUserId(userId);
-        CaseSharing caseSharing = caseSharingService.findCaseSharing(requestDTO.getCaseSharingSeq());
+        CaseSharing caseSharing = caseSharingService.findCaseSharing(caseSharingSeq);
 
         CaseSharingComment comment = CaseSharingComment.builder()
                 .user(user)
                 .caseSharing(caseSharing)
                 .caseSharingCommentContent(requestDTO.getContent())
-                .caseSharingCommentStartOffset(requestDTO.getStartOffset())
-                .caseSharingCommentEndOffset(requestDTO.getEndOffset())
+                .caseSharingBlockId(requestDTO.getBlockId())
                 .build();
 
         commentRepository.save(comment);
@@ -88,7 +86,7 @@ public class CaseSharingCommentService {
         CaseSharingComment comment = findComment(commentSeq);
         validateAuthor(comment, user);
 
-        comment.updateComment(requestDTO.getContent(), requestDTO.getStartOffset(), requestDTO.getEndOffset());
+        comment.updateComment(requestDTO.getContent(), requestDTO.getBlockId());
         commentRepository.save(comment);
     }
 

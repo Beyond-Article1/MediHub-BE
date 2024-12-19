@@ -42,9 +42,11 @@ public class CaseSharingCommentController {
 
     @Operation(summary = "케이스 공유글 댓글 등록", description = "케이스 공유글에 대한 댓글 등록")
     @PostMapping("/{caseSharingSeq}")
-    public ResponseEntity<ApiResponse<Long>> createCaseSharingComment(@RequestBody CaseSharingCommentRequestDTO requestDTO){
+    public ResponseEntity<ApiResponse<Long>> createCaseSharingComment(
+            @PathVariable("caseSharingSeq") Long caseSharingSeq,
+            @RequestBody CaseSharingCommentRequestDTO requestDTO){
         String userId = SecurityUtil.getCurrentUserId();
-        Long commentSeq = caseSharingCommentService.createCaseSharingComment(userId, requestDTO);
+        Long commentSeq = caseSharingCommentService.createCaseSharingComment(userId, caseSharingSeq, requestDTO);
         return ResponseEntity.ok(ApiResponse.created(commentSeq));
     }
     @Operation(summary = "케이스 공유글 댓글 수정", description = "케이스 공유글 댓글 수정")
@@ -64,7 +66,5 @@ public class CaseSharingCommentController {
         caseSharingCommentService.deleteCaseSharingComment(userId, commentSeq);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
-
-
 
 }
