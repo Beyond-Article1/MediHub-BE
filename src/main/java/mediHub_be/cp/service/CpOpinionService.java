@@ -300,7 +300,6 @@ public class CpOpinionService {
      * @param cpVersionSeq         CP 버전 번호
      * @param cpOpinionLocationSeq CP 의견 위치 번호
      * @param requestBody          CP 의견을 생성하기 위한 요청 본문
-     * @param imageList            CP 의견에 사용되는 사진 리스트
      * @return 생성된 CP 의견의 DTO
      * @throws CustomException 입력값이 유효하지 않거나 데이터베이스 오류가 발생할 경우
      *                         (예: requestBody의 필드가 누락되었거나 잘못된 형식일 때)
@@ -309,8 +308,7 @@ public class CpOpinionService {
     public CpOpinionDTO createCpOpinion(
             long cpVersionSeq,
             long cpOpinionLocationSeq,
-            RequestCpOpinionDTO requestBody,
-            List<MultipartFile> imageList) {
+            RequestCpOpinionDTO requestBody) {
 
         // 입력값 유효성 검사
         validateRequestCpOpinion(requestBody);
@@ -325,12 +323,24 @@ public class CpOpinionService {
 
         try {
             // 이미지 업로드 및 본문 변환 처리
-            updateCpOpinionContentWithImage(entity, imageList, requestBody.getCpOpinionContent());
+            updateCpOpinionContentWithImage(entity, requestBody.getCpOpinionContent());
             logger.info("CP 의견 Entity 이미지 변환 및 저장 완료");
 
             // DB에 저장하고 해당 값을 다시 받아옴.
             entity = cpOpinionRepository.save(entity);
             logger.info("CP 의견이 DB에 성공적으로 저장되었습니다: {}", entity);
+
+            // 키워드 등록
+            if (requestBody.getKeywordList() != null && !requestBody.getKeywordList().isEmpty()) {
+
+                // 1. Flag 생성 및 저장
+                Flag flag = flagService.createFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
+                logger.info("플래그 생성 및 저장 완료");
+
+                // 2. Keyword 생성 및 저장
+                keywordService.saveKeywords(requestBody.getKeywordList(), flag.getFlagSeq());
+                logger.info("키워드 생성 및 저장 완료");
+            }
         } catch (DataAccessException e) {
             // 데이터베이스 관련 예외 처리
             logger.error("데이터베이스 저장 중 오류 발생: {}", e.getMessage());
@@ -344,43 +354,28 @@ public class CpOpinionService {
         logger.info("CP 의견 DTO로 변환 중: {}", entity);
         dto = CpOpinionDTO.toDto(entity);
 
-        // 키워드 등록
-        if (requestBody.getKeywordList() != null && !requestBody.getKeywordList().isEmpty()) {
-
-            try {
-                // 1. Flag 생성 및 저장
-                Flag flag = flagService.createFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
-
-                // 2. Keyword 생성 및 저장
-                keywordService.saveKeywords(requestBody.getKeywordList(), flag.getFlagSeq());
-
-            } catch (DataAccessException e) {
-                // 데이터 접근 오류 처리
-                logger.error("데이터베이스 접근 오류: {}", e.getMessage());
-                throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
-            } catch (Exception e) {
-                // 일반 예외 처리
-                logger.error("예기치 못한 오류 발생: {}", e.getMessage());
-                throw new RuntimeException("CP 의견 생성 중 Flag 및 Keyword 생성 시, 예기치 못한 오류가 발생했습니다.", e);
-            }
-        }
-
         return dto;
     }
 
     /**
-     * CP 의견의 콘텐츠에 포함된 플레이스홀더를 이미지 URL로 교체합니다.
+     * CP 의견의 콘텐츠에 포함된 이미지를 Base64 형식 URL로 교체합니다.
      *
      * @param entity           업데이트할 CP 의견 엔티티
-     * @param imageList        CP 의견에 사용되는 이미지 파일 리스트
      * @param cpOpinionContent 기존 CP 의견 콘텐츠
      */
-    private void updateCpOpinionContentWithImage(CpOpinion entity, List<MultipartFile> imageList, String cpOpinionContent) {
-        if (imageList != null && !imageList.isEmpty()) {
-            String updatedContent = pictureService.replacePlaceHolderWithUrls(cpOpinionContent, imageList, CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
-            entity.updateCpOpinionContent(updatedContent);
-            cpOpinionRepository.save(entity);
-        }
+    private void updateCpOpinionContentWithImage(CpOpinion entity, String cpOpinionContent) {
+        String updatedContent = pictureService.replaceBase64WithUrls(
+                cpOpinionContent,
+                CP_OPINION_BOARD_FLAG,
+                entity.getCpOpinionSeq()
+        );
+        logger.info("변환 완료");
+
+        entity.updateCpOpinionContent(updatedContent);
+        logger.info("업데이트 완료");
+
+        cpOpinionRepository.save(entity);
+        logger.info("저장 완료");
     }
 
     /**
@@ -563,7 +558,7 @@ public class CpOpinionService {
         logger.info("{}번 CP 의견 수정 과정 중, 기존 사진 정보 제거", entity.getCpOpinionSeq());
 
         // 사진 업데이트 -> 본문 2차 업데이트
-        updateCpOpinionContentWithImage(entity, imageList, requestBody.getCpOpinionContent());
+        updateCpOpinionContentWithImage(entity, requestBody.getCpOpinionContent());
         logger.info("{}번 CP 의견 수정 과정 중, 본문 2차 업데이트 성공", entity.getCpOpinionSeq());
 
         try {

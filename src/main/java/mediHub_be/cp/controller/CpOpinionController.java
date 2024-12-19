@@ -71,12 +71,11 @@ public class CpOpinionController {
     public ResponseEntity<ApiResponse<CpOpinionDTO>> createCpOpinion(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
-            @RequestBody RequestCpOpinionDTO requestBody,
-            @RequestPart(value = "images", required = false) List<MultipartFile> imageList) {
+            @RequestPart("data") RequestCpOpinionDTO requestBody) {
 
         logger.info("CP 의견 생성 요청: cpVersionSeq = {}, cpOpinionLocationSeq = {}, 요청 본문 = {}", cpVersionSeq, cpOpinionLocationSeq, requestBody);
 
-        CpOpinionDTO cpOpinion = cpOpinionService.createCpOpinion(cpVersionSeq, cpOpinionLocationSeq, requestBody, imageList);
+        CpOpinionDTO cpOpinion = cpOpinionService.createCpOpinion(cpVersionSeq, cpOpinionLocationSeq, requestBody);
 
         logger.info("CP 의견이 성공적으로 생성되었습니다. CP 의견 정보: {}", cpOpinion);
         return ResponseEntity.ok(ApiResponse.created(cpOpinion));
