@@ -38,7 +38,7 @@ public class MedicalLife extends BaseFullEntity {
     @Column(name = "medical_life_title", nullable = false, length = 255)
     private String medicalLifeTitle;
 
-    @Column(name = "medical_life_content", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "medical_life_content", nullable = false, columnDefinition = "LONGTEXT")
     private String medicalLifeContent;
 
     @Column(name = "medical_life_is_deleted", nullable = false)
