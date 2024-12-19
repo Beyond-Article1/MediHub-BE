@@ -39,7 +39,7 @@ public class NotifyDTO {
         this.senderName = notify.getNotiSenderUserName();
         this.partName = notify.getNotiSenderUserPart();
         this.boardType = notify.getNotiType().getMessage();
-        this.createdAt = notify.getCreatedAt().toString();
+        this.createdAt = TimeFormatUtil.yearAndMonthDayHM(notify.getCreatedAt()).format(TimeFormatUtil.yMDHMFormatter);
         this.isRead = notify.getNoti_isRead() == NotiReadStatus.Y;
     }
 
@@ -51,7 +51,7 @@ public class NotifyDTO {
                 .type(notify.getNotiType())
                 .senderName(senderUserName)
                 .partName(senderUserPart)
-                .createdAt(TimeFormatUtil.yearAndMonthDayHMS(notify.getCreatedAt()).toString())
+                .createdAt(TimeFormatUtil.yearAndMonthDayHM(notify.getCreatedAt()).format(TimeFormatUtil.yMDHMFormatter))
                 .isRead(false)
                 .build();
     }
