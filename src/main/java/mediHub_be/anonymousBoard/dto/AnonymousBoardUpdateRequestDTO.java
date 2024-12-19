@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -14,9 +13,7 @@ import java.util.List;
 @Builder
 public class AnonymousBoardUpdateRequestDTO {
 
-    private Long userSeq;
     private String AnonymousBoardTitle;
     private String AnonymousBoardContent;
-    private List<MultipartFile> imageList;
     private List<String> keywords;
 }
