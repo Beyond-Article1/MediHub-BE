@@ -20,7 +20,9 @@ public class ResponseCpOpinionDTO {
     private long cpOpinionViewCount;        // CP 의견 조회수
     private String userName;                // CP 의견 작성자명
     private String userId;                  // CP 의견 작성자 아이디
+    private long userSeq;                   // CP 의견 작성자 번호
     private String partName;                // CP 의견 과명 (ex: 외과, 내과)
+    private String profileUrl;              // 작성자 프로필 사진
     private List<Keyword> keywordList;      // 키워드 리스트
     private long positiveVotes;             // 찬성표
     private long negativeVotes;             // 반대표
@@ -37,6 +39,7 @@ public class ResponseCpOpinionDTO {
             long cpOpinionViewCount,
             String userName,
             String userId,
+            long userSeq,
             String partName) {
         this.cpOpinionSeq = cpOpinionSeq;
         this.cpOpinionContent = cpOpinionContent;
@@ -46,25 +49,15 @@ public class ResponseCpOpinionDTO {
         this.cpOpinionViewCount = cpOpinionViewCount;
         this.userName = userName;
         this.userId = userId;
+        this.userSeq = userSeq;
         this.partName = partName;
     }
 
     public static ResponseCpOpinionDTO create(ResponseCpOpinionDTO origin, List<Keyword> keywordList) {
-        ResponseCpOpinionDTO dto = ResponseCpOpinionDTO.builder()
-                .cpOpinionSeq(origin.getCpOpinionSeq())
-                .cpOpinionContent(origin.getCpOpinionContent())
-                .createdAt(origin.getCreatedAt())
-                .updatedAt(origin.getUpdatedAt())
-                .deletedAt(origin.getDeletedAt())
-                .cpOpinionViewCount(origin.getCpOpinionViewCount())
-                .userName(origin.getUserName())
-                .userId(origin.getUserId())
-                .partName(origin.getPartName())
-                .build();
-        dto.setKeywordList(keywordList);
-        dto.setZero();
+        origin.setKeywordList(keywordList);
+        origin.setZero();
 
-        return dto;
+        return origin;
     }
 
     public static ResponseCpOpinionDTO create(

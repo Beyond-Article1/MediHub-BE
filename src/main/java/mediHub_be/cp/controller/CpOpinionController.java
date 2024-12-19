@@ -5,13 +5,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.response.ApiResponse;
-import mediHub_be.cp.dto.*;
+import mediHub_be.cp.dto.CpOpinionDTO;
+import mediHub_be.cp.dto.RequestCpOpinionDTO;
+import mediHub_be.cp.dto.ResponseCpOpinionDTO;
 import mediHub_be.cp.service.CpOpinionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -86,8 +87,8 @@ public class CpOpinionController {
     @Operation(summary = "CP 의견 삭제",
             description = "주어진 CP 버전 시퀀스와 CP 의견 위치, CP 의견 번호를 사용하여 CP 의견을 삭제합니다.")
     public ResponseEntity<ApiResponse<String>> deleteCpOpinionByCpOpinionSeq(
-            @PathVariable long cpVersionSeq,
-            @PathVariable long cpOpinionLocationSeq,
+            @PathVariable String cpVersionSeq,
+            @PathVariable String cpOpinionLocationSeq,
             @PathVariable long cpOpinionSeq) {
 
         logger.info("CP 의견 삭제 요청. CP 의견 ID: {}", cpOpinionSeq);
@@ -106,12 +107,11 @@ public class CpOpinionController {
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
             @PathVariable long cpOpinionSeq,
-            @RequestBody RequestCpOpinionDTO requestBody,
-            @RequestPart(value = "images", required = false) List<MultipartFile> imageList) {
+            @RequestPart("data") RequestCpOpinionDTO requestBody) {
 
-        logger.info("CP 의견 수정 요청: cpOpinionSeq = {}, requestBody = {}, imageList = {}", cpOpinionSeq, requestBody, imageList);
+        logger.info("CP 의견 수정 요청: cpOpinionLocationSeq = {}, cpOpinionSeq = {}, requestBody = {}", cpOpinionLocationSeq, cpOpinionSeq, requestBody);
 
-        CpOpinionDTO cpOpinionDTO = cpOpinionService.updateCpOpinionByCpOpinionSeq(cpOpinionSeq, requestBody, imageList);
+        CpOpinionDTO cpOpinionDTO = cpOpinionService.updateCpOpinionByCpOpinionSeq(cpOpinionSeq, requestBody);
 
         logger.info("CP 의견이 성공적으로 수정되었습니다: {}", cpOpinionDTO);
         return ResponseEntity.ok(ApiResponse.ok(cpOpinionDTO));

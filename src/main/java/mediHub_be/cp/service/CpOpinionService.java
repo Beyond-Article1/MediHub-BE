@@ -267,7 +267,8 @@ public class CpOpinionService {
         // 키워드 조회
         logger.info("CP 의견 번호: {}에 대한 키워드 목록을 조회합니다.", cpOpinionSeq);
         setKeywordForCpOpinion(dto);
-
+//        logger.info("dto: {}", dto);
+        dto.setProfileUrl(pictureService.getUserProfileUrl(dto.getUserSeq()));
         return dto;
     }
 
@@ -521,12 +522,11 @@ public class CpOpinionService {
      * 주어진 CP 의견 ID에 해당하는 CP 의견을 업데이트합니다.
      *
      * @param cpOpinionSeq 업데이트할 CP 의견의 ID
-     * @param requestBody  CP 의견 업데이트에 필요한 요청 본문
      * @return 업데이트된 CP 의견의 DTO
      * @throws CustomException 유효성 검사 실패, 의견이 존재하지 않거나 데이터베이스 오류가 발생할 경우
      */
     @Transactional
-    public CpOpinionDTO updateCpOpinionByCpOpinionSeq(long cpOpinionSeq, RequestCpOpinionDTO requestBody, List<MultipartFile> imageList) {
+    public CpOpinionDTO updateCpOpinionByCpOpinionSeq(long cpOpinionSeq, RequestCpOpinionDTO requestBody) {
 
         validateRequestCpOpinion(requestBody); // requestBody 유효성 검사
 
