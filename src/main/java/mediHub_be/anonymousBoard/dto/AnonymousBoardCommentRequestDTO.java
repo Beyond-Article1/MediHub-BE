@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AnonymousBoardKeywordDTO {
+public class AnonymousBoardCommentRequestDTO {
 
-    private Long keywordSeq;
-    private Long flagSeq;
-    private String keywordName;
+    private String commentContent;
 }

@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
                        .requestMatchers(new AntPathRequestMatcher("/case_sharing/**")).permitAll()
+                       .requestMatchers(new AntPathRequestMatcher("/anonymous-board/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/cp/**")).permitAll()
 
                         .anyRequest().authenticated() // 그 외 요청은 인증 필요

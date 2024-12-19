@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookmarkDTO {
+public class PreferDTO {
 
-    private Long bookmarkSeq;
+    private Long preferSeq;
     private Flag flag;
     private LocalDateTime createAt;
 }

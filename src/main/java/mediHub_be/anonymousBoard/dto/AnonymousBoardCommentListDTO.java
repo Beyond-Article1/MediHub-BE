@@ -6,18 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class AnonymousBoardDetailDTO {
+public class AnonymousBoardCommentListDTO {
 
     private String userName;
-    private String anonymousBoardTitle;
-    private String anonymousBoardContent;
-    private Long anonymousBoardViewCount;
+    private String commentContent;
     private LocalDateTime createdAt;
-    private List<AnonymousBoardKeywordDTO> keywords;
 }

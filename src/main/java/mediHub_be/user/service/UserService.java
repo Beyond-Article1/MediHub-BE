@@ -2,7 +2,7 @@ package mediHub_be.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.amazonS3.service.AmazonS3Service;
+import mediHub_be.config.amazonS3.AmazonS3Service;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
 import mediHub_be.board.repository.FlagRepository;
