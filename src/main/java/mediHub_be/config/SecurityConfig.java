@@ -77,7 +77,7 @@ public class SecurityConfig {
     private Filter getAuthenticationFilter() {
         CustomAuthenticationFilter customAuthenticationFilter = new CustomAuthenticationFilter();
         customAuthenticationFilter.setAuthenticationManager(getAuthenticationManager());
-        customAuthenticationFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler(env,tokenService));
+        customAuthenticationFilter.setAuthenticationSuccessHandler(new LoginSuccessHandler(jwtUtil,env,tokenService));
         customAuthenticationFilter.setAuthenticationFailureHandler(new LoginFailureHandler());
         return customAuthenticationFilter;
     }
