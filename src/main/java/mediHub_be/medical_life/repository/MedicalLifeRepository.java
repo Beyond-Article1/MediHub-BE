@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface MedicalLifeRepository extends JpaRepository<MedicalLife, Long> {
 
+    MedicalLife findMedicalLifeSeqAndMedicalLifeIsDEletedFalse(Long medicalLifeSeq);
     List<MedicalLife> findAllByMedicalLifeIsDeletedFalse();
 }

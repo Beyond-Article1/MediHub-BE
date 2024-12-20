@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 public class MedicalLifeCommentListDTO {
 
     private String userName;
+    private String part;
+    private String rankingName;
     private String commentContent;
     private LocalDateTime createdAt;
 }
