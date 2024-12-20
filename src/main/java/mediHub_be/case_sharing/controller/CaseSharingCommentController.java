@@ -32,19 +32,24 @@ public class CaseSharingCommentController {
         return ResponseEntity.ok(ApiResponse.ok(caseSharingCommentList));
     }
 
-    @Operation(summary = "케이스 공유글 댓글 상세 조회", description = "댓글 작성자,내용등 상세 조회")
-    @GetMapping("/details/{commentSeq}")
-    public ResponseEntity<ApiResponse<CaseSharingCommentDetailDTO>> getCaseSharingCommentDetail(@PathVariable("commentSeq") Long commentSeq){
+    @Operation(summary = "케이스 공유글 특정 블록 댓글 조회", description = "특정 케이스 공유글 및 블록에 속하는 댓글 목록 조회")
+    @GetMapping("/{caseSharingSeq}/comments/{blockId}")
+    public ResponseEntity<ApiResponse<List<CaseSharingCommentDetailDTO>>> getCaseSharingBlockComments(
+            @PathVariable("caseSharingSeq") Long caseSharingSeq,
+            @PathVariable("blockId") String blockId) {
         String userId = SecurityUtil.getCurrentUserId();
-        CaseSharingCommentDetailDTO caseSharingCommentDetail = caseSharingCommentService.getCommentDetail(userId, commentSeq);
-        return ResponseEntity.ok(ApiResponse.ok(caseSharingCommentDetail));
+        List<CaseSharingCommentDetailDTO> comments = caseSharingCommentService.getCommentsByBlock(userId, caseSharingSeq, blockId);
+        return ResponseEntity.ok(ApiResponse.ok(comments));
     }
+
 
     @Operation(summary = "케이스 공유글 댓글 등록", description = "케이스 공유글에 대한 댓글 등록")
     @PostMapping("/{caseSharingSeq}")
-    public ResponseEntity<ApiResponse<Long>> createCaseSharingComment(@RequestBody CaseSharingCommentRequestDTO requestDTO){
+    public ResponseEntity<ApiResponse<Long>> createCaseSharingComment(
+            @PathVariable("caseSharingSeq") Long caseSharingSeq,
+            @RequestBody CaseSharingCommentRequestDTO requestDTO){
         String userId = SecurityUtil.getCurrentUserId();
-        Long commentSeq = caseSharingCommentService.createCaseSharingComment(userId, requestDTO);
+        Long commentSeq = caseSharingCommentService.createCaseSharingComment(userId, caseSharingSeq, requestDTO);
         return ResponseEntity.ok(ApiResponse.created(commentSeq));
     }
     @Operation(summary = "케이스 공유글 댓글 수정", description = "케이스 공유글 댓글 수정")
@@ -64,7 +69,5 @@ public class CaseSharingCommentController {
         caseSharingCommentService.deleteCaseSharingComment(userId, commentSeq);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
-
-
 
 }

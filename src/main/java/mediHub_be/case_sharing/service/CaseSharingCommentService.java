@@ -36,45 +36,40 @@ public class CaseSharingCommentService {
         List<CaseSharingComment> comments = commentRepository.findByCaseSharing_CaseSharingSeqAndDeletedAtIsNull(caseSharingSeq);
         return comments.stream()
                 .map(comment -> CaseSharingCommentListDTO.builder()
-                        .caseSharingCommentStartOffset(comment.getCaseSharingCommentStartOffset())
-                        .caseSharingCommentEndOffset(comment.getCaseSharingCommentEndOffset())
+                        .blockId(comment.getCaseSharingBlockId()) // 댓글의 블록 ID만 가져옴
+                        .build()
+                )
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CaseSharingCommentDetailDTO> getCommentsByBlock(String userId, Long caseSharingSeq, String blockId) {
+        userService.findByUserId(userId); // 사용자 검증
+        List<CaseSharingComment> comments = commentRepository.findByCaseSharing_CaseSharingSeqAndCaseSharingBlockIdAndDeletedAtIsNull(caseSharingSeq, blockId);
+
+        // DTO로 변환
+        return comments.stream()
+                .map(comment -> CaseSharingCommentDetailDTO.builder()
+                        .userName(comment.getUser().getUserName()) // 댓글 작성자명
+                        .userRankName(comment.getUser().getRanking().getRankingName()) // 댓글 작성자 직위명
+                        .content(comment.getCaseSharingCommentContent()) // 댓글 내용
+                        .createdAt(comment.getCreatedAt()) // 댓글 작성일
+                        .userProfileURL(pictureService.getUserProfileUrl(comment.getUser().getUserSeq())) // 프로필 이미지 URL
                         .build())
                 .toList();
     }
 
-    //2. 케이스 공유 댓글 상세 조회
-    @Transactional(readOnly = true)
-    public CaseSharingCommentDetailDTO getCommentDetail(String userId, Long commentSeq) {
-        User user = userService.findByUserId(userId);
-        CaseSharingComment comment = findComment(commentSeq);
-        // 댓글 작성자 정보 조회
-        validateAuthor(comment, user);
-
-        // DTO 생성 및 반환
-        return CaseSharingCommentDetailDTO.builder()
-                .userName(user.getUserName()) // 댓글 작성자명
-                .userRankName(user.getRanking().getRankingName()) // 댓글 작성자 직위명
-                .content(comment.getCaseSharingCommentContent()) // 댓글 내용
-                .startOffset(comment.getCaseSharingCommentStartOffset()) // 본문 시작 위치
-                .endOffset(comment.getCaseSharingCommentEndOffset()) // 본문 끝 위치
-                .createdAt(comment.getCreatedAt()) // 댓글 작성일
-                .userProfileURL(pictureService.getUserProfileUrl(user.getUserSeq()))
-                .build();
-    }
-
-
     //3. 케이스 공유 댓글 생성
     @Transactional
-    public Long createCaseSharingComment(String userId, CaseSharingCommentRequestDTO requestDTO) {
+    public Long createCaseSharingComment(String userId, Long caseSharingSeq, CaseSharingCommentRequestDTO requestDTO) {
         User user = userService.findByUserId(userId);
-        CaseSharing caseSharing = caseSharingService.findCaseSharing(requestDTO.getCaseSharingSeq());
+        CaseSharing caseSharing = caseSharingService.findCaseSharing(caseSharingSeq);
 
         CaseSharingComment comment = CaseSharingComment.builder()
                 .user(user)
                 .caseSharing(caseSharing)
                 .caseSharingCommentContent(requestDTO.getContent())
-                .caseSharingCommentStartOffset(requestDTO.getStartOffset())
-                .caseSharingCommentEndOffset(requestDTO.getEndOffset())
+                .caseSharingBlockId(requestDTO.getBlockId())
                 .build();
 
         commentRepository.save(comment);
@@ -88,7 +83,7 @@ public class CaseSharingCommentService {
         CaseSharingComment comment = findComment(commentSeq);
         validateAuthor(comment, user);
 
-        comment.updateComment(requestDTO.getContent(), requestDTO.getStartOffset(), requestDTO.getEndOffset());
+        comment.updateComment(requestDTO.getContent(), requestDTO.getBlockId());
         commentRepository.save(comment);
     }
 
@@ -116,5 +111,6 @@ public class CaseSharingCommentService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
     }
+
 
 }
