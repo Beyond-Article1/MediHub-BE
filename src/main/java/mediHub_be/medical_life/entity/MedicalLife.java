@@ -1,10 +1,7 @@
 package mediHub_be.medical_life.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.user.entity.User;
 import mediHub_be.dept.entity.Dept;
@@ -16,6 +13,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "medical_life")
+@AllArgsConstructor
+@Builder
 public class MedicalLife extends BaseFullEntity {
 
     @Id
@@ -46,18 +45,6 @@ public class MedicalLife extends BaseFullEntity {
 
     @Column(name = "medical_life_view_count", nullable = false)
     private Long medicalLifeViewCount = 0L;
-
-    @Builder
-    public MedicalLife(User user, Dept dept, Part part, String medicalLifeTitle, String medicalLifeContent,
-                       Boolean medicalLifeIsDeleted, Long medicalLifeViewCount) {
-        this.user = user;
-        this.dept = dept;
-        this.part = part;
-        this.medicalLifeTitle = medicalLifeTitle;
-        this.medicalLifeContent = medicalLifeContent;
-        this.medicalLifeIsDeleted = medicalLifeIsDeleted != null ? medicalLifeIsDeleted : false;
-        this.medicalLifeViewCount = medicalLifeViewCount != null ? medicalLifeViewCount : 0L;
-    }
 
     public void update(String medicalLifeTitle, String medicalLifeContent) {
         this.medicalLifeTitle= medicalLifeTitle;

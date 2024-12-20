@@ -1,20 +1,23 @@
 package mediHub_be.medical_life.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
-import java.util.List;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-public class MedicalLifeDTO {
+@NoArgsConstructor
+@AllArgsConstructor
+public class MedicalLifeListDTO {
     private Long medicalLifeSeq;
+    private Long userSeq;
     private String userName;
-    private String deptName;
-    private String partName;
+    private String PartSeq;
+    private String DeptSeq;
+    private String medicalLifeName;
     private String medicalLifeTitle;
     private String medicalLifeContent;
     private Boolean medicalLifeIsDeleted;
     private Long medicalLifeViewCount;
-    private List<MedicalLifePictureDTO> pictures;
 }
