@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface CaseSharingCommentRepository extends JpaRepository<CaseSharingComment, Long> {
     List<CaseSharingComment> findByCaseSharing_CaseSharingSeqAndDeletedAtIsNull(Long caseSharingSeq);
+
+    List<CaseSharingComment> findByCaseSharing_CaseSharingSeqAndCaseSharingBlockIdAndDeletedAtIsNull(Long caseSharingSeq, String blockId);
 }
 

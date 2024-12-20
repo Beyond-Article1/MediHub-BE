@@ -42,25 +42,22 @@ public class CaseSharingCommentService {
                 .toList();
     }
 
-    //2. 케이스 공유 댓글 상세 조회
     @Transactional(readOnly = true)
-    public CaseSharingCommentDetailDTO getCommentDetail(String userId, Long commentSeq) {
-        User user = userService.findByUserId(userId);
-        CaseSharingComment comment = findComment(commentSeq);
-        // 댓글 작성자 정보 조회
-        validateAuthor(comment, user);
+    public List<CaseSharingCommentDetailDTO> getCommentsByBlock(String userId, Long caseSharingSeq, String blockId) {
+        userService.findByUserId(userId); // 사용자 검증
+        List<CaseSharingComment> comments = commentRepository.findByCaseSharing_CaseSharingSeqAndCaseSharingBlockIdAndDeletedAtIsNull(caseSharingSeq, blockId);
 
-        // DTO 생성 및 반환
-        return CaseSharingCommentDetailDTO.builder()
-                .userName(user.getUserName()) // 댓글 작성자명
-                .userRankName(user.getRanking().getRankingName()) // 댓글 작성자 직위명
-                .content(comment.getCaseSharingCommentContent()) // 댓글 내용
-                .blockId(comment.getCaseSharingBlockId())
-                .createdAt(comment.getCreatedAt()) // 댓글 작성일
-                .userProfileURL(pictureService.getUserProfileUrl(user.getUserSeq()))
-                .build();
+        // DTO로 변환
+        return comments.stream()
+                .map(comment -> CaseSharingCommentDetailDTO.builder()
+                        .userName(comment.getUser().getUserName()) // 댓글 작성자명
+                        .userRankName(comment.getUser().getRanking().getRankingName()) // 댓글 작성자 직위명
+                        .content(comment.getCaseSharingCommentContent()) // 댓글 내용
+                        .createdAt(comment.getCreatedAt()) // 댓글 작성일
+                        .userProfileURL(pictureService.getUserProfileUrl(comment.getUser().getUserSeq())) // 프로필 이미지 URL
+                        .build())
+                .toList();
     }
-
 
     //3. 케이스 공유 댓글 생성
     @Transactional
@@ -114,5 +111,6 @@ public class CaseSharingCommentService {
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
     }
+
 
 }

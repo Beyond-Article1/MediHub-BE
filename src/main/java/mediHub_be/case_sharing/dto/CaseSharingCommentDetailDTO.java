@@ -15,7 +15,6 @@ public class CaseSharingCommentDetailDTO {
     private String userName; // 댓글 작성자명
     private String userRankName; //댓글 작성자 직위명
     private String content; // 댓글 내용
-    private String blockId;
     private LocalDateTime createdAt; // 작성일
     private String userProfileURL; // 댓글 작성자 이미지 url
 

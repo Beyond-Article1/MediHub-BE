@@ -27,10 +27,14 @@ import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import mediHub_be.user.service.UserService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,8 +54,7 @@ public class CaseSharingService {
     private final FlagService flagService;
     private final TemplateService templateService;
 
-    private static final String CASE_SHARING_FLAG = "case_sharing";
-
+    private static final String CASE_SHARING_FLAG = "CASE_SHARING";
 
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
@@ -98,6 +101,7 @@ public class CaseSharingService {
                 .caseAuthorUrl(pictureService.getUserProfileUrl(user.getUserSeq()))
                 .build();
     }
+
 
     //3. 케이스 공유 등록
     @Transactional
@@ -407,6 +411,8 @@ public class CaseSharingService {
 
     }
 
+
+
     private void updateContentWithImages(CaseSharing caseSharing, String content) {
         // Base64 이미지 -> S3 URL 변환
         String updatedContent = pictureService.replaceBase64WithUrls(
@@ -466,5 +472,25 @@ public class CaseSharingService {
     }
 
 
+    @Transactional(readOnly = true)
+    public List<CaseSharingMain3DTO> getTop3Cases() {
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusDays(7);
+        Pageable top3 = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "caseSharingViewCount"));
 
+        List<CaseSharing> topCases = caseSharingRepository.findTop3ByCreatedAtAfterOrderByCaseSharingViewCountDesc(oneWeekAgo, top3);
+
+        return topCases.stream()
+                .map(caseSharing -> {
+                    String url = pictureService.getCaseSharingFirstImageUrl(caseSharing.getCaseSharingSeq()); // caseSharingSeq 전달
+                    return new CaseSharingMain3DTO(
+                            caseSharing.getCaseSharingSeq(),
+                            caseSharing.getCaseSharingTitle(),
+                            caseSharing.getUser().getUserName(),
+                            caseSharing.getPart().getPartName(),
+                            caseSharing.getUser().getRanking().getRankingName(),
+                            url // 대표 이미지 URL
+                    );
+                })
+                .toList();
+    }
 }

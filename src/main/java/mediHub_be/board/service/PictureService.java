@@ -220,6 +220,21 @@ public class PictureService {
             });
         }
     }
+    @Transactional(readOnly = true)
+    public String getCaseSharingFirstImageUrl(Long caseSharingSeq ){
+        Flag flag = flagService.findFlag("case_sharing", caseSharingSeq).orElse(null);
+        if (flag != null) {
+            Picture profile = pictureRepository.findFirstByFlag_FlagSeqOrderByCreatedAtDesc(flag.getFlagSeq()).orElse(null);
+
+            if (profile != null) {
+                return profile.getPictureUrl();
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
 
     @Transactional(readOnly = true)
     public String getUserProfileUrl(long userSeq) {

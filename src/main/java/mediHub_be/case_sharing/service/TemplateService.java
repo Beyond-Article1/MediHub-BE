@@ -33,8 +33,8 @@ public class TemplateService {
     private final PictureService pictureService;
     private final FlagService flagService;
 
-    private static final String TEMPLATE_FLAG = "template";
-    private static final String TEMPLATE_PREVIEW_FLAG = "template_preview";
+    private static final String TEMPLATE_FLAG = "TEMPLATE";
+    private static final String TEMPLATE_PREVIEW_FLAG = "TEMPLATE_PREVIEW";
 
     // 회원이 볼 수 있는 템플릿 전체 조회
     @Transactional(readOnly = true)

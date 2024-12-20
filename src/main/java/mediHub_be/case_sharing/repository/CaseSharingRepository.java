@@ -1,11 +1,14 @@
 package mediHub_be.case_sharing.repository;
 
+import io.micrometer.common.KeyValues;
 import mediHub_be.case_sharing.entity.CaseSharing;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,5 +38,14 @@ public interface CaseSharingRepository extends JpaRepository<CaseSharing, Long> 
 
 
     Optional<CaseSharing> findByCaseSharingSeqAndCaseSharingIsDraftTrueAndDeletedAtIsNull(Long caseSharingSeq);
+
+    @Query("SELECT c FROM CaseSharing c " +
+            "WHERE c.createdAt >= :oneWeekAgo " +
+            "AND c.caseSharingIsDraft = false " +
+            "AND c.deletedAt IS NULL " +
+            "ORDER BY c.caseSharingViewCount DESC")
+    List<CaseSharing> findTop3ByCreatedAtAfterOrderByCaseSharingViewCountDesc(
+            @Param("oneWeekAgo") LocalDateTime oneWeekAgo,
+            Pageable pageable);
 
 }
