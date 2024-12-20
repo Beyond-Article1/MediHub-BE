@@ -312,6 +312,7 @@ public class CpOpinionService {
 
         // 입력값 유효성 검사
         validateRequestCpOpinion(requestBody);
+        logger.info("유효성 검사 완료");
 
         // 입력값으로 DTO 생성
         CpOpinionDTO dto = CpOpinionDTO.create(cpOpinionLocationSeq, requestBody);
@@ -322,10 +323,6 @@ public class CpOpinionService {
         logger.info("CP 의견 Entity 변환 완료");
 
         try {
-            // 이미지 업로드 및 본문 변환 처리
-            updateCpOpinionContentWithImage(entity, requestBody.getCpOpinionContent());
-            logger.info("CP 의견 Entity 이미지 변환 및 저장 완료");
-
             // DB에 저장하고 해당 값을 다시 받아옴.
             entity = cpOpinionRepository.save(entity);
             logger.info("CP 의견이 DB에 성공적으로 저장되었습니다: {}", entity);
@@ -333,6 +330,10 @@ public class CpOpinionService {
             // Flag 생성 및 저장
             Flag flag = flagService.createFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
             logger.info("플래그 생성 및 저장 완료");
+
+            // 이미지 업로드 및 본문 변환 처리
+            updateCpOpinionContentWithImage(entity, requestBody.getCpOpinionContent());
+            logger.info("CP 의견 Entity 이미지 변환 및 저장 완료");
 
             // 키워드 등록
             if (requestBody.getKeywordList() != null && !requestBody.getKeywordList().isEmpty()) {
@@ -600,8 +601,12 @@ public class CpOpinionService {
      *                         필수 필드가 누락된 경우에 해당합니다.
      */
     private void validateRequestCpOpinion(RequestCpOpinionDTO requestBody) {
-        if (requestBody == null || requestBody.getCpOpinionContent() == null ||
-                !requestBody.getCpOpinionContent().matches("^(?!\\s*$).{1,65535}$")) {
+//        if (requestBody == null || requestBody.getCpOpinionContent() == null ||
+//                !requestBody.getCpOpinionContent().matches("^(?!\\s*$).{1,65535}$")) {
+//            logger.warn("입력값 유효성 검사 실패: requestBody = {}, cpOpinionContent = {}", requestBody, requestBody != null ? requestBody.getCpOpinionContent() : "null");
+//            throw new CustomException(ErrorCode.REQUIRED_FIELD_MISSING);
+//        }
+        if (requestBody == null || requestBody.getCpOpinionContent() == null) {
             logger.warn("입력값 유효성 검사 실패: requestBody = {}, cpOpinionContent = {}", requestBody, requestBody != null ? requestBody.getCpOpinionContent() : "null");
             throw new CustomException(ErrorCode.REQUIRED_FIELD_MISSING);
         }
