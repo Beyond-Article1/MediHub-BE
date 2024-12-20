@@ -4,11 +4,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.anonymousBoard.entity.AnonymousBoard;
+import mediHub_be.board.entity.Comment;
 import mediHub_be.board.entity.Flag;
+import mediHub_be.board.entity.Keyword;
 import mediHub_be.board.repository.CommentRepository;
 import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.KeywordRepository;
 import mediHub_be.board.service.FlagService;
+import mediHub_be.board.service.KeywordService;
+import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.dept.entity.Dept;
@@ -20,6 +25,7 @@ import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,11 +42,12 @@ public class MedicalLifeService {
     private final KeywordRepository keywordRepository;
     private final CommentRepository commentRepository;
     private FlagService flagService;
-
-
+    private KeywordService keywordService;
+    private PictureService pictureService;
 
 
     private static final String MEDICAL_LIFE_FLAG = "MEDICAL_LIFE";
+
 
 
     // 전체 회원 조회
@@ -193,4 +200,87 @@ public class MedicalLifeService {
                 })
                 .collect(Collectors.toList());
     }
+
+    // 메디컬 라이프 게시글 생성
+    @Transactional
+    public Long createMedicalLife(
+            MedicalLifeCreateRequestDTO medicalLifeCreateRequestDTO,
+            List<MultipartFile> pictureList,
+            Long userSeq
+    ) {
+        // 유저 존재 확인
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
+
+        // MedicalLife 게시글 내용
+        String medicalLifeContent = medicalLifeCreateRequestDTO.getMedicalLifeContent();
+
+        // MedicalLife 엔티티 생성
+        MedicalLife medicalLife = MedicalLife.builder()
+                .user(user)
+                .medicalLifeTitle(medicalLifeCreateRequestDTO.getMedicalLifeTitle())
+                .medicalLifeContent(medicalLifeContent)
+                .medicalLifeIsDeleted(false)
+                .medicalLifeViewCount(0L)
+                .build();
+
+        // MedicalLife 저장
+        medicalLifeRepository.save(medicalLife);
+
+        // 키워드와 플래그 저장
+        saveKeywordsAndFlag(medicalLifeCreateRequestDTO.getKeywords(), medicalLife.getMedicalLifeSeq());
+
+        // 이미지 처리
+        updateMedicalLifeContentWithImages(medicalLife, medicalLifeContent);
+
+        return medicalLife.getMedicalLifeSeq();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private void saveKeywordsAndFlag(List<String> keywordList, Long medicalLifeSeq) {
+        Flag flag = flagService.createFlag(MEDICAL_LIFE_FLAG, medicalLifeSeq);
+
+        if (keywordList != null && !keywordList.isEmpty()) {
+            keywordService.saveKeywords(keywordList, flag.getFlagSeq());
+        }
+    }
+
+    private void updateMedicalLifeContentWithImages(MedicalLife medicalLife, String medicalLifeContent) {
+        String updatedMedicalLifeContent = pictureService.replaceBase64WithUrls(
+                medicalLifeContent,
+                MEDICAL_LIFE_FLAG,
+                medicalLife.getMedicalLifeSeq()
+        );
+
+        medicalLife.update(
+                medicalLife.getMedicalLifeTitle(),
+                updatedMedicalLifeContent
+        );
+    }
+
 }

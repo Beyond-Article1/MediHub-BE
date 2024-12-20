@@ -7,15 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.medical_life.dto.MedicalLifeCommentListDTO;
+import mediHub_be.medical_life.dto.MedicalLifeCreateRequestDTO;
 import mediHub_be.medical_life.dto.MedicalLifeListDTO;
 import mediHub_be.medical_life.entity.MedicalLife;
 import mediHub_be.medical_life.service.MedicalLifeService;
 import mediHub_be.security.util.SecurityUtil;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -61,6 +60,20 @@ public class MedicalLifeController {
         List<MedicalLifeCommentListDTO> commentList = medicalLifeService.getMedicalLifeCommentList(medicalLifeSeq, userSeq);
 
         return ResponseEntity.ok(ApiResponse.ok(commentList));
+    }
+
+    // 메디컬 라이프 게시글 작성
+    @Operation(summary = "메디컬 라이프 댓글 등록", description = "메디컬 라이프 게시글을 등록합니다.")
+    @PostMapping
+    public ResponseEntity<ApiResponse<Long>> createMedicalLife(
+            @RequestPart("medicalLife") MedicalLifeCreateRequestDTO medicalLifeCreateRequestDTO,
+            @RequestPart(value = "pictures", required = false) List<MultipartFile> pictureList) {
+
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+
+        Long medicalLifeSeq = medicalLifeService.createMedicalLife(medicalLifeCreateRequestDTO, pictureList, userSeq);
+
+        return ResponseEntity.ok(ApiResponse.ok(medicalLifeSeq));
     }
 }
 
