@@ -30,7 +30,8 @@ public class ChatroomController {
     @Operation(summary = "채팅방 생성", description = "새로운 채팅방 생성")
     @PostMapping
     public ResponseEntity<ApiResponse<Long>> createChatroom(@RequestBody ChatroomDTO chatroomDTO) {
-        Long chatroomSeq = chatroomService.createChatroom(chatroomDTO);
+        Long myUserSeq = SecurityUtil.getCurrentUserSeq();
+        Long chatroomSeq = chatroomService.createChatroom(myUserSeq, chatroomDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(chatroomSeq));
     }
 
