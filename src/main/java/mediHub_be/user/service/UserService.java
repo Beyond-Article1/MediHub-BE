@@ -135,6 +135,7 @@ public class UserService {
 
                     // UserSearchDTO 생성
                     UserSearchDTO dto = new UserSearchDTO();
+                    dto.setUserSeq(user.getUserSeq());
                     dto.setUserName(user.getUserName());
                     dto.setUserEmail(user.getUserEmail());
                     dto.setUserPhone(user.getUserPhone());
