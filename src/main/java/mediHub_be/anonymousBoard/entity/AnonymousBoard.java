@@ -25,7 +25,7 @@ public class AnonymousBoard extends BaseFullEntity {
     @Column(name = "anonymous_board_title")
     private String anonymousBoardTitle;                 // 제목
 
-    @Column(name = "anonymous_board_content")
+    @Column(name = "anonymous_board_content", columnDefinition = "LONGTEXT")
     private String anonymousBoardContent;               // 내용
 
     @Column(name = "anonymous_board_is_deleted")
@@ -41,7 +41,8 @@ public class AnonymousBoard extends BaseFullEntity {
     public static AnonymousBoard createNewAnonymousBoard(
             User user,
             String anonymousBoardTitle,
-            String anonymousBoardContent) {
+            String anonymousBoardContent
+    ) {
 
         return AnonymousBoard.builder()
                 .user(user)
@@ -52,9 +53,14 @@ public class AnonymousBoard extends BaseFullEntity {
                 .build();
     }
 
-    public void update(User user, String anonymousBoardTitle, String anonymousBoardContent) {
+    public void updateContent(String anonymousBoardTitle, String anonymousBoardContent) {
 
-        this.user = user;
+        this.anonymousBoardTitle = anonymousBoardTitle;
+        this.anonymousBoardContent = anonymousBoardContent;
+    }
+
+    public void updateAnonymousBoardContent(String anonymousBoardTitle, String anonymousBoardContent) {
+
         this.anonymousBoardTitle = anonymousBoardTitle;
         this.anonymousBoardContent = anonymousBoardContent;
     }

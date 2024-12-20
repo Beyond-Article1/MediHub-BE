@@ -29,14 +29,14 @@ public class CpOpinion extends BaseFullEntity {
     @Column
     private long cpOpinionViewCount;        // 조회수
 
-    @Column
-    private long keywordSeq;                // 키워드 번호
-
     @Builder
     public CpOpinion(
             long userSeq,
             long cpOpinionLocationSeq,
             String cpOpinionContent) {
+        this.userSeq = userSeq;
+        this.cpOpinionLocationSeq = cpOpinionLocationSeq;
+        this.cpOpinionContent = cpOpinionContent;
     }
 
     public static CpOpinion toEntity(CpOpinionDTO cpOpinionDTO) {

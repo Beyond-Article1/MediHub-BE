@@ -12,6 +12,7 @@ import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpDTO;
+import mediHub_be.cp.dto.ResponseCpVersionDTO;
 import mediHub_be.cp.entity.Cp;
 import mediHub_be.cp.repository.CpRepository;
 import mediHub_be.cp.repository.CpVersionRepository;
@@ -276,4 +277,26 @@ public class CpService {
         logger.info("사용자 {}의 북마크된 CP 버전 조회가 완료되었습니다.", user.getUserId());
         return responseCpDTOList;
     }
+
+    /**
+     * 입력받은 CP의 다른 버전들을 조회합니다.
+     * <p>
+     * 이 메서드는 현재 사용자의 시퀀스를 사용하여 사용자 정보를 조회한 후,
+     * 해당 사용자의 북마크 목록을 가져옵니다. 각 북마크에 대해 CP 버전을 조회하며,
+     * 결과를 `ResponseCpVersionDTO` 리스트로 반환합니다.
+     * <p>
+     * 이 메서드는 특정 CP 버전 시퀀스를 기반으로 해당 버전의 모든 관련 CP 버전을 조회합니다.
+     *
+     * @param cpVersionSeq 조회할 CP 버전의 시퀀스
+     * @return 북마크된 CP 버전의 리스트
+     */
+    public List<ResponseCpVersionDTO> getCpVersionListByCpVersionSeq(long cpVersionSeq) {
+        logger.info("CP 버전 목록 조회 시작: cpVersionSeq = {}", cpVersionSeq);
+
+        List<ResponseCpVersionDTO> dtoList = cpRepository.findJoinCpVersionOnCpVersionSeq(cpVersionSeq);
+
+        logger.info("CP 버전 목록 조회 성공: {}개의 버전이 조회되었습니다.", dtoList.size());
+        return dtoList;
+    }
+
 }

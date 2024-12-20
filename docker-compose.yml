@@ -40,7 +40,6 @@ services:
       MONGO_INITDB_DATABASE: ${DB_DATABASE}
       MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
-
     volumes:
       - mongo_data:/data/db
     networks:
@@ -59,6 +58,7 @@ services:
 
   kafka:
     image: bitnami/kafka:latest
+    restart: unless-stopped
     container_name: kafka
     ports:
       - "9092:9092" # 내부 네트워크 통신을 위한 PLAINTEXT Listener
@@ -94,10 +94,59 @@ services:
     networks:
       - kafka-net
 
+  # elk 서비스 - elasticsearch, kibana, logstash
+  elasticsearch:
+    container_name: elasticsearch
+#    image: elasticsearch:7.14.1
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: 7.14.1
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - ./elasticsearch:/usr/share/elasticsearch/data
+    networks:
+      - elk
+
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:7.14.1
+    ports:
+      - 5000:5000
+      - 9600:9600
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:7.14.1
+    environment:
+      SERVER_NAME: kibana
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk
+
 networks:
   springboot-network:
     driver: bridge
   kafka-net:
+    driver: bridge
+  elk:
     driver: bridge
 
 volumes:

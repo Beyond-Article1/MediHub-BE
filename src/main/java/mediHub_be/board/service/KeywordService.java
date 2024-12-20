@@ -5,12 +5,9 @@ import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Keyword;
 import mediHub_be.board.repository.KeywordRepository;
 import mediHub_be.case_sharing.dto.CaseSharingKeywordDTO;
-import mediHub_be.common.exception.CustomException;
-import mediHub_be.common.exception.ErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,6 +75,11 @@ public class KeywordService {
                         keyword.getKeywordName()
                 ))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<Keyword> getKeywordList(String flagType, Long entitySeq) {
+        return keywordRepository.findByFlagTypeAndEntitySeq(flagType, entitySeq);
     }
 }
 

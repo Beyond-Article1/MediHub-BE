@@ -173,6 +173,11 @@ public class CpOpinionLocationService {
         Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
         String currentUserAuth = SecurityUtil.getCurrentUserAuthorities();
 
+        if (currentUserSeq == null) {
+            logger.error("로그인이 필요한 서비스 입니다.");
+            throw new CustomException(ErrorCode.NEED_LOGIN);
+        }
+
         try {
             // DB에서 데이터 조회
             dto = cpOpinionLocationRepository.findByCpOpinionLocation_CpOpinion_CpOpinionLocationSeq(cpOpinionLocationSeq)
@@ -192,7 +197,7 @@ public class CpOpinionLocationService {
         }
 
         // 권한 확인
-        if (dto.getUserSeq() != currentUserSeq && !currentUserAuth.equals(UserAuth.ADMIN)) {
+        if (dto.getUserSeq() != currentUserSeq && !UserAuth.valueOf(currentUserAuth).equals(UserAuth.ADMIN)) {
             logger.warn("사용자 ID: {}가 CP 의견 위치 ID: {}에 대한 접근 권한이 없습니다.", currentUserSeq, cpOpinionLocationSeq);
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }

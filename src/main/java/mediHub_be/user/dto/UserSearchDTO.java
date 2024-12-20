@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class UserSearchDTO {
+    private Long userSeq;
     private String userName;
     private String userEmail;
     private String userPhone;

@@ -12,7 +12,10 @@ import mediHub_be.board.service.KeywordService;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
-import mediHub_be.cp.dto.*;
+import mediHub_be.cp.dto.CpOpinionDTO;
+import mediHub_be.cp.dto.CpOpinionVoteDTO;
+import mediHub_be.cp.dto.RequestCpOpinionDTO;
+import mediHub_be.cp.dto.ResponseCpOpinionDTO;
 import mediHub_be.cp.entity.CpOpinion;
 import mediHub_be.cp.entity.CpOpinionVote;
 import mediHub_be.cp.repository.CpOpinionRepository;
@@ -26,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -156,9 +158,8 @@ public class CpOpinionService {
 
         try {
             // 키워드 리스트 조회
-            List<Keyword> keywordList = keywordRepository.findByFlagTypeAndEntitySeq(CP_OPINION_BOARD_FLAG, dto.getCpOpinionSeq());
+            List<Keyword> keywordList = keywordService.getKeywordList(CP_OPINION_BOARD_FLAG, dto.getCpOpinionSeq());
             List<CpOpinionVoteDTO> voteList = getCpOpinionVoteList(dto.getCpOpinionSeq());
-
             // 비율 계산 및 DTO 생성
             if (voteList.isEmpty()) {
                 return ResponseCpOpinionDTO.create(dto, keywordList);
@@ -265,7 +266,8 @@ public class CpOpinionService {
         // 키워드 조회
         logger.info("CP 의견 번호: {}에 대한 키워드 목록을 조회합니다.", cpOpinionSeq);
         setKeywordForCpOpinion(dto);
-
+//        logger.info("dto: {}", dto);
+        dto.setProfileUrl(pictureService.getUserProfileUrl(dto.getUserSeq()));
         return dto;
     }
 
@@ -298,7 +300,6 @@ public class CpOpinionService {
      * @param cpVersionSeq         CP 버전 번호
      * @param cpOpinionLocationSeq CP 의견 위치 번호
      * @param requestBody          CP 의견을 생성하기 위한 요청 본문
-     * @param imageList            CP 의견에 사용되는 사진 리스트
      * @return 생성된 CP 의견의 DTO
      * @throws CustomException 입력값이 유효하지 않거나 데이터베이스 오류가 발생할 경우
      *                         (예: requestBody의 필드가 누락되었거나 잘못된 형식일 때)
@@ -307,8 +308,7 @@ public class CpOpinionService {
     public CpOpinionDTO createCpOpinion(
             long cpVersionSeq,
             long cpOpinionLocationSeq,
-            RequestCpOpinionDTO requestBody,
-            List<MultipartFile> imageList) {
+            RequestCpOpinionDTO requestBody) {
 
         // 입력값 유효성 검사
         validateRequestCpOpinion(requestBody);
@@ -323,12 +323,24 @@ public class CpOpinionService {
 
         try {
             // 이미지 업로드 및 본문 변환 처리
-            updateCpOpinionContentWithImage(entity, imageList, requestBody.getCpOpinionContent());
+            updateCpOpinionContentWithImage(entity, requestBody.getCpOpinionContent());
             logger.info("CP 의견 Entity 이미지 변환 및 저장 완료");
 
             // DB에 저장하고 해당 값을 다시 받아옴.
             entity = cpOpinionRepository.save(entity);
             logger.info("CP 의견이 DB에 성공적으로 저장되었습니다: {}", entity);
+
+            // Flag 생성 및 저장
+            Flag flag = flagService.createFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
+            logger.info("플래그 생성 및 저장 완료");
+
+            // 키워드 등록
+            if (requestBody.getKeywordList() != null && !requestBody.getKeywordList().isEmpty()) {
+
+                // Keyword 생성 및 저장
+                keywordService.saveKeywords(requestBody.getKeywordList(), flag.getFlagSeq());
+                logger.info("키워드 생성 및 저장 완료");
+            }
         } catch (DataAccessException e) {
             // 데이터베이스 관련 예외 처리
             logger.error("데이터베이스 저장 중 오류 발생: {}", e.getMessage());
@@ -342,43 +354,28 @@ public class CpOpinionService {
         logger.info("CP 의견 DTO로 변환 중: {}", entity);
         dto = CpOpinionDTO.toDto(entity);
 
-        // 키워드 등록
-        if (requestBody.getKeywordList() != null && !requestBody.getKeywordList().isEmpty()) {
-
-            try {
-                // 1. Flag 생성 및 저장
-                Flag flag = flagService.createFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
-
-                // 2. Keyword 생성 및 저장
-                keywordService.saveKeywords(requestBody.getKeywordList(), flag.getFlagSeq());
-
-            } catch (DataAccessException e) {
-                // 데이터 접근 오류 처리
-                logger.error("데이터베이스 접근 오류: {}", e.getMessage());
-                throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
-            } catch (Exception e) {
-                // 일반 예외 처리
-                logger.error("예기치 못한 오류 발생: {}", e.getMessage());
-                throw new RuntimeException("CP 의견 생성 중 Flag 및 Keyword 생성 시, 예기치 못한 오류가 발생했습니다.", e);
-            }
-        }
-
         return dto;
     }
 
     /**
-     * CP 의견의 콘텐츠에 포함된 플레이스홀더를 이미지 URL로 교체합니다.
+     * CP 의견의 콘텐츠에 포함된 이미지를 Base64 형식 URL로 교체합니다.
      *
      * @param entity           업데이트할 CP 의견 엔티티
-     * @param imageList        CP 의견에 사용되는 이미지 파일 리스트
      * @param cpOpinionContent 기존 CP 의견 콘텐츠
      */
-    private void updateCpOpinionContentWithImage(CpOpinion entity, List<MultipartFile> imageList, String cpOpinionContent) {
-        if (imageList != null && !imageList.isEmpty()) {
-            String updatedContent = pictureService.replacePlaceHolderWithUrls(cpOpinionContent, imageList, CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
-            entity.updateCpOpinionContent(updatedContent);
-            cpOpinionRepository.save(entity);
-        }
+    private void updateCpOpinionContentWithImage(CpOpinion entity, String cpOpinionContent) {
+        String updatedContent = pictureService.replaceBase64WithUrls(
+                cpOpinionContent,
+                CP_OPINION_BOARD_FLAG,
+                entity.getCpOpinionSeq()
+        );
+        logger.info("변환 완료");
+
+        entity.updateCpOpinionContent(updatedContent);
+        logger.info("업데이트 완료");
+
+        cpOpinionRepository.save(entity);
+        logger.info("저장 완료");
     }
 
     /**
@@ -423,7 +420,7 @@ public class CpOpinionService {
             entity.delete();
             // 저장
             cpOpinionRepository.save(entity);
-            logger.info("CP 의견 ID: {}가 삭제되었습니다.", cpOpinionSeq);
+            logger.info("{}번 CP 의견이 삭제되었습니다.", cpOpinionSeq);
         } catch (DataAccessException e) {
             logger.error("CP 의견 삭제 중 데이터베이스 접근 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_SERVER_IO_DELETE_ERROR);
@@ -459,24 +456,32 @@ public class CpOpinionService {
     private void deleteBookmark(CpOpinion entity) {
 
         String currentUserAuthorities = SecurityUtil.getCurrentUserAuthorities();
+        logger.info("권환 확인: " + currentUserAuthorities.equals(UserAuth.USER.name()));
+        try {
+            if (currentUserAuthorities.equals(UserAuth.USER.name())) {
+                // 1. 작성자가 삭제하는 경우
+                logger.info("bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId()) = " + bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId()));
+                if (bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId())) {
+                    // 북마크가 된 경우
+                    bookmarkService.deleteBookmarkByFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
+                    logger.info("{}번 CP 의견의 북마크를 삭제했습니다.", entity.getCpOpinionSeq());
+                }
+                logger.info("북마크 삭제 완료");
+            } else {
+                // 2. 어드민이 삭제하는 경우
+                // 작성자 정보 호출
+                String entityUserId = userService.findUser(entity.getUserSeq()).getUserId();
 
-        if (currentUserAuthorities.equals(UserAuth.USER)) {
-            // 1. 작성자가 삭제하는 경우
-            if (bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId())) {
-                // 북마크가 된 경우
-                bookmarkService.deleteBookmarkByFlag(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq());
-                logger.info("{}번 CP 의견의 북마크를 삭제했습니다.", entity.getCpOpinionSeq());
-            }
-        } else {
-            // 2. 어드민이 삭제하는 경우
-            // 작성자 정보 호출
-            String entityUserId = userService.findUser(entity.getUserSeq()).getUserId();
+                if (bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), entityUserId)) {
+                    // 북마크가 된 경우
+                    bookmarkService.toggleBookmark(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId());
+                    logger.info("{}번 CP 의견의 북마크를 삭제했습니다.", entity.getCpOpinionSeq());
+                }
 
-            if (bookmarkService.isBookmarked(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), entityUserId)) {
-                // 북마크가 된 경우
-                bookmarkService.toggleBookmark(CP_OPINION_BOARD_FLAG, entity.getCpOpinionSeq(), SecurityUtil.getCurrentUserId());
-                logger.info("{}번 CP 의견의 북마크를 삭제했습니다.", entity.getCpOpinionSeq());
+                logger.info("북마크 삭제 완료");
             }
+        } catch (IllegalArgumentException e) {
+            logger.info("삭제할 북마크 플레그가 없습니다.");
         }
     }
 
@@ -493,7 +498,7 @@ public class CpOpinionService {
      *                          의견이 존재하지 않는 경우, 또는 사용자가 권한이 없는 경우.
      * @throws RuntimeException 다른 예기치 않은 오류가 발생할 경우
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public CpOpinion getCpOpinionAndCheckUnauthorizedAccess(long cpOpinionSeq) {
 
         // DB에서 CP 의견 조회
@@ -513,7 +518,7 @@ public class CpOpinionService {
         Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
         String currentUserAuthority = SecurityUtil.getCurrentUserAuthorities();
         if (currentUserSeq != entity.getUserSeq() && !currentUserAuthority.equals(UserAuth.ADMIN)) {
-            logger.warn("사용자 시퀀스: {}가 CP 의견 ID: {}를 조회할 권한이 없습니다.", currentUserSeq, cpOpinionSeq);
+            logger.warn("사용자 시퀀스: {}가 CP 의견 시퀀스: {}를 삭제할 권한이 없습니다.", currentUserSeq, cpOpinionSeq);
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
@@ -524,12 +529,11 @@ public class CpOpinionService {
      * 주어진 CP 의견 ID에 해당하는 CP 의견을 업데이트합니다.
      *
      * @param cpOpinionSeq 업데이트할 CP 의견의 ID
-     * @param requestBody  CP 의견 업데이트에 필요한 요청 본문
      * @return 업데이트된 CP 의견의 DTO
      * @throws CustomException 유효성 검사 실패, 의견이 존재하지 않거나 데이터베이스 오류가 발생할 경우
      */
     @Transactional
-    public CpOpinionDTO updateCpOpinionByCpOpinionSeq(long cpOpinionSeq, RequestCpOpinionDTO requestBody, List<MultipartFile> imageList) {
+    public CpOpinionDTO updateCpOpinionByCpOpinionSeq(long cpOpinionSeq, RequestCpOpinionDTO requestBody) {
 
         validateRequestCpOpinion(requestBody); // requestBody 유효성 검사
 
@@ -561,7 +565,7 @@ public class CpOpinionService {
         logger.info("{}번 CP 의견 수정 과정 중, 기존 사진 정보 제거", entity.getCpOpinionSeq());
 
         // 사진 업데이트 -> 본문 2차 업데이트
-        updateCpOpinionContentWithImage(entity, imageList, requestBody.getCpOpinionContent());
+        updateCpOpinionContentWithImage(entity, requestBody.getCpOpinionContent());
         logger.info("{}번 CP 의견 수정 과정 중, 본문 2차 업데이트 성공", entity.getCpOpinionSeq());
 
         try {

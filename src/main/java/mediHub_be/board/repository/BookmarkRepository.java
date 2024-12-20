@@ -13,15 +13,16 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
-    Optional<Bookmark> findByUserAndFlag(User user, Flag flag);
 
+    Optional<Bookmark> findByUserAndFlag(User user, Flag flag);
     boolean existsByUserAndFlag(User user, Flag flag);
 
-    // 게시판 식별 타입과 유저로 찾기
+    // 구분자와 엔터티 번호로 찾기
     @Query("SELECT new mediHub_be.board.dto.BookmarkDTO(b.bookmarkSeq, b.flag, b.createdAt)" +
-            " FROM Bookmark b " +
-            "WHERE b.user = :user " +
-            "AND b.flag.flagType = :flagType")
+           "  FROM Bookmark b " +
+           " WHERE b.user = :user " +
+           "   AND b.flag.flagType = :flagType"
+    )
     List<BookmarkDTO> findByUserAndFlagType(User user, String flagType);
 
     @Transactional

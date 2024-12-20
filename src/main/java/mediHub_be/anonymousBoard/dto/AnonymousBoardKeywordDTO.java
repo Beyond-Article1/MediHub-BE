@@ -12,5 +12,6 @@ import lombok.NoArgsConstructor;
 public class AnonymousBoardKeywordDTO {
 
     private Long keywordSeq;
+    private Long flagSeq;
     private String keywordName;
 }

@@ -10,6 +10,7 @@ import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.cp.dto.ResponseCpDTO;
+import mediHub_be.cp.dto.ResponseCpVersionDTO;
 import mediHub_be.cp.service.CpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,5 +155,17 @@ public class CpController {
         logger.info("사용자의 북마크된 CP 버전 목록이 {}개 조회되었습니다.", bookmarkedCpList.size());
 
         return ResponseEntity.ok(ApiResponse.ok(bookmarkedCpList));
+    }
+
+    @GetMapping(value = "/{cpVersionSeq}/cpVersion")
+    @Operation(summary = "입력받은 CP 버전들의 다른 버전을 조회",
+            description = "다른 버전을 반환합니다.")
+    public ResponseEntity<ApiResponse<List<ResponseCpVersionDTO>>> getCpVersionList(@PathVariable long cpVersionSeq) {
+        logger.info("다른 CP 버전들을 조회하는 요청을 수신되었습니다.");
+
+        List<ResponseCpVersionDTO> dtoList = cpService.getCpVersionListByCpVersionSeq(cpVersionSeq);
+        logger.info("다른 PC 버전 {}개를 조회 완료했습니다.", dtoList.size());
+
+        return ResponseEntity.ok(ApiResponse.ok(dtoList));
     }
 }

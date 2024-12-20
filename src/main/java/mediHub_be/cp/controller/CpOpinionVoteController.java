@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "cp/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}/cpOpinionVote")
+@RequestMapping(value = "cp/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}/{cpOpinionSeq}/cpOpinionVote")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "CP", description = "CP 관련 API")
@@ -29,11 +29,13 @@ public class CpOpinionVoteController {
     @Operation(summary = "CP 의견 투표 생성")
     public ResponseEntity<ApiResponse<CpOpinionVoteDTO>> createCpOpinionVote(
             @PathVariable long cpVersionSeq,
+            @PathVariable long cpOpinionLocationSeq,
+            @PathVariable long cpOpinionSeq,
             @RequestBody boolean cpOpinionVote) {
 
-        logger.info("CP 버전 번호: {}로 CP 의견 투표 요청을 받았습니다. 의견(true: 찬성, false: 반대): {}", cpVersionSeq, cpOpinionVote);
+        logger.info("CP 의견 번호: {}로 CP 의견 투표 요청을 받았습니다. 의견(true: 찬성, false: 반대): {}", cpOpinionSeq, cpOpinionVote);
 
-        CpOpinionVoteDTO dto = cpOpinionVoteService.createCpOpinionVote(cpVersionSeq, cpOpinionVote);
+        CpOpinionVoteDTO dto = cpOpinionVoteService.createCpOpinionVote(cpOpinionSeq, cpOpinionVote);
         logger.info("CP 의견 투표가 성공적으로 생성되었습니다. 투표 ID: {}", dto.getCpOpinionVoteSeq());
 
         return ResponseEntity.ok(ApiResponse.created(dto));
