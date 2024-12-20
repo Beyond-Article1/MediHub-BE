@@ -13,72 +13,60 @@ import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.security.util.SecurityUtil;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.io.IOException;
-import java.net.URI;
 import java.util.List;
 
-@Tag(
-        name = "익명 게시판",
-        description = "익명 게시판 API"
-)
-@RestController
-@RequestMapping(value = "anonymousBoard")
-@RequiredArgsConstructor
 @Slf4j
+@RestController
+@RequestMapping(value = "anonymous-board")
+@RequiredArgsConstructor
+@Tag(name = "익명 게시판", description = "익명 게시판 API")
 public class AnonymousBoardController {
 
     private final AnonymousBoardService anonymousBoardService;
 
-    // 익명 게시글 목록 조회
-    @Operation(
-            summary = "익명 게시글 목록 조회", description = "익명 게시글 목록 반환"
-    )
+    @Operation(summary = "익명 게시판 전체 목록 조회", description = "필터링 되지 않은 익명 게시판 전체 글 목록 조회")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AnonymousBoardDTO>>> getAllAnonymousBoards() {
+    public ResponseEntity<ApiResponse<List<AnonymousBoardListDTO>>> getAllBoards() {
 
-        String userId = SecurityUtil.getCurrentUserId();
-        List<AnonymousBoardDTO> anonymousBoardDTOList = anonymousBoardService.getAnonymousBoardList(userId);
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        List<AnonymousBoardListDTO> anonymousBoardListDTOList = anonymousBoardService.getBoardList(userSeq);
 
-        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardDTOList));
+        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardListDTOList));
     }
 
-    // 익명 게시글 댓글 목록 조회
-    @Operation(
-            summary = "익명 게시글 댓글 목록 조회", description = "익명 게시글 댓글 목록 반환"
-    )
+    @Operation(summary = "익명 게시판 댓글 전체 목록 조회", description = "필터링 되지 않은 익명 게시판 전체 댓글 목록 조회")
     @GetMapping(value = "/{anonymousBoardSeq}/comment")
-    public ResponseEntity<ApiResponse<List<AnonymousBoardCommentDTO>>> getAllAnonymousBoardComments(
+    public ResponseEntity<ApiResponse<List<AnonymousBoardCommentListDTO>>> getAllBoardComments(
             @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq
     ) {
 
-        String userId = SecurityUtil.getCurrentUserId();
-        List<AnonymousBoardCommentDTO> anonymousBoardCommentDTOList = anonymousBoardService
-                .getAnonymousBoardCommentList(anonymousBoardSeq, userId);
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        List<AnonymousBoardCommentListDTO> anonymousBoardCommentListDTOList = anonymousBoardService
+                .getBoardCommentList(anonymousBoardSeq, userSeq);
 
-        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardCommentDTOList));
+        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardCommentListDTOList));
     }
 
-    // 익명 게시글 조회
     @Operation(
-            summary = "특정 익명 게시글 상세 조회",
-            description = "익명 게시글 번호, 작성자, 제목, 내용, 조회 수, 작성일, 첨부 사진, 키워드를 반환"
+            summary = "익명 게시판 상세 조회",
+            description = "익명 게시판 작성자, 제목, 내용, 조회 수, 작성일, 첨부 사진, 키워드, 북마크, 좋아요 포함한 글 조회"
     )
     @GetMapping(value = "/{anonymousBoardSeq}")
-    public ResponseEntity<ApiResponse<AnonymousBoardDetailDTO>> getAnonymousBoardDetail(
+    public ResponseEntity<ApiResponse<AnonymousBoardDetailDTO>> getBoardDetail(
             @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq,
             HttpServletRequest request,
             HttpServletResponse response
     ) {
 
-        String userId = SecurityUtil.getCurrentUserId();
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
         AnonymousBoardDetailDTO anonymousBoardDetailDTO = anonymousBoardService.getAnonymousBoardDetail(
                 anonymousBoardSeq,
-                userId,
+                userSeq,
                 request,
                 response
         );
@@ -86,148 +74,106 @@ public class AnonymousBoardController {
         return ResponseEntity.ok(ApiResponse.ok(anonymousBoardDetailDTO));
     }
 
-    // 익명 게시글 등록
-    @Operation(
-            summary = "익명 게시글 등록",
-            description = "익명 게시글의 제목, 내용, 첨부 사진, 키워드를 입력 받아 새로운 익명 게시글 등록"
-    )
-    @PostMapping(consumes = "multipart/form-data")
+    @Operation(summary = "익명 게시글 등록", description = "글 작성 및 등록")
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Long>> createAnonymousBoard(
-            @RequestParam("anonymousBoardTitle") String anonymousBoardTitle,
-            @RequestParam("anonymousBoardContent") String anonymousBoardContent,
-            @RequestParam("keywords") List<String> keywords,
-            @RequestParam(value = "imageList", required = false) List<MultipartFile> imageList
-    ) throws IOException {
+            @RequestPart("data") AnonymousBoardCreateRequestDTO anonymousBoardCreateRequestDTO,
+            @RequestPart(value = "images", required = false) List<MultipartFile> pictureList
+    ) {
 
-        String userId = SecurityUtil.getCurrentUserId();
-
-        AnonymousBoardCreateRequestDTO anonymousBoardCreateRequestDTO = new AnonymousBoardCreateRequestDTO();
-
-        anonymousBoardCreateRequestDTO.setAnonymousBoardTitle(anonymousBoardTitle);
-        anonymousBoardCreateRequestDTO.setAnonymousBoardContent(anonymousBoardContent);
-        anonymousBoardCreateRequestDTO.setKeywords(keywords);
-
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
         Long anonymousBoardSeq = anonymousBoardService.createAnonymousBoard(
                 anonymousBoardCreateRequestDTO,
-                imageList,
-                userId
+                pictureList,
+                userSeq
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(anonymousBoardSeq));
     }
 
-    // 익명 게시글 댓글 등록
-    @Operation(
-            summary = "익명 게시글 댓글 등록",
-            description = "익명 게시글 댓글의 내용을 입력 받아 새로운 익명 게시글 댓글 등록"
-    )
+    @Operation(summary = "익명 게시글 댓글 등록", description = "익명 게시글 댓글 작성 및 등록")
     @PostMapping(value = "/{anonymousBoardSeq}/comment")
     public ResponseEntity<ApiResponse<Long>> createAnonymousBoardComment(
             @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq,
-            @RequestParam("commentContent") String commentContent
+            @RequestBody AnonymousBoardCommentRequestDTO anonymousBoardCommentRequestDTO
     ) {
 
-        String userId = SecurityUtil.getCurrentUserId();
-        Long commentSeq = anonymousBoardService.createAnonymousBoardComment(anonymousBoardSeq, commentContent, userId);
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        Long commentSeq = anonymousBoardService.createAnonymousBoardComment(
+                anonymousBoardSeq,
+                anonymousBoardCommentRequestDTO,
+                userSeq
+        );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(commentSeq));
     }
 
-    // 익명 게시글 수정
-    @Operation(
-            summary = "익명 게시글 수정", description = "등록된 익명 게시글의 제목, 내용, 첨부 사진, 키워드를 수정 (작성자만 가능)"
-    )
-    @PutMapping(value = "/{anonymousBoardSeq}", consumes = "multipart/form-data")
-    public ResponseEntity<ApiResponse<String>> updateAnonymousBoard(
+    @Operation(summary = "익명 게시글 수정", description = "익명 게시글의 제목과 내용, 키워드 등을 수정")
+    @PutMapping(value = "/{anonymousBoardSeq}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<Long>> updateAnonymousBoard(
             @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq,
-            @RequestParam("anonymousBoardTitle") String anonymousBoardTitle,
-            @RequestParam("anonymousBoardContent") String anonymousBoardContent,
-            @RequestParam("keywords") List<String> keywords,
-            @RequestParam(value = "imageList", required = false) List<MultipartFile> imageList
-    ) throws IOException {
-
-        String userId = SecurityUtil.getCurrentUserId();
-
-        AnonymousBoardUpdateRequestDTO anonymousBoardUpdateRequestDTO = new AnonymousBoardUpdateRequestDTO();
-
-        anonymousBoardUpdateRequestDTO.setAnonymousBoardTitle(anonymousBoardTitle);
-        anonymousBoardUpdateRequestDTO.setAnonymousBoardContent(anonymousBoardContent);
-        anonymousBoardUpdateRequestDTO.setKeywords(keywords);
-
-        anonymousBoardService.updateAnonymousBoard(
-                anonymousBoardSeq,
-                anonymousBoardUpdateRequestDTO,
-                imageList,
-                userId
-        );
-
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/anonymousBoard/{anonymousBoardSeq}")
-                .buildAndExpand(anonymousBoardSeq)
-                .toUri();
-
-        return ResponseEntity.created(location).body(ApiResponse.ok("익명 게시글이 성공적으로 수정되었습니다."));
-    }
-
-    // 익명 게시글 댓글 수정
-    @Operation(
-            summary = "익명 게시글 댓글 수정", description = "등록된 익명 게시글 댓글의 내용을 수정 (작성자만 가능)"
-    )
-    @PutMapping(value = "/{anonymousBoardSeq}/comment/{commentSeq}")
-    public ResponseEntity<ApiResponse<String>> updateAnonymousBoardComment(
-            @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq,
-            @PathVariable("commentSeq") Long commentSeq,
-            @RequestParam("commentContent") String commentContent
+            @RequestPart AnonymousBoardUpdateRequestDTO anonymousBoardUpdateRequestDTO,
+            @RequestPart(value = "images", required = false) List<MultipartFile> newImageList
     ) {
 
-        String userId = SecurityUtil.getCurrentUserId();
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        Long updatedAnonymousBoardSeq = anonymousBoardService.updateAnonymousBoard(
+                anonymousBoardSeq,
+                anonymousBoardUpdateRequestDTO,
+                newImageList,
+                userSeq
+        );
 
-        anonymousBoardService.updateAnonymousBoardComment(anonymousBoardSeq, commentSeq, commentContent, userId);
-
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/anonymousBoard/{anonymousBoardSeq}/comment/{commentSeq}")
-                .buildAndExpand(anonymousBoardSeq, commentSeq)
-                .toUri();
-
-        return ResponseEntity.created(location).body(ApiResponse.ok("익명 게시글 댓글이 성공적으로 수정되었습니다."));
+        return ResponseEntity.ok(ApiResponse.ok(updatedAnonymousBoardSeq));
     }
 
-    // 익명 게시글 삭제
-    @Operation(
-            summary = "익명 게시글 삭제", description = "익명 게시글 삭제 (작성자 또는 관리자만 가능)"
-    )
+    @Operation(summary = "익명 게시글 댓글 수정", description = "익명 게시글 댓글의 내용을 수정")
+    @PutMapping(value = "/{anonymousBoardSeq}/comment/{commentSeq}")
+    public ResponseEntity<ApiResponse<Long>> updateAnonymousBoardComment(
+            @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq,
+            @PathVariable("commentSeq") Long commentSeq,
+            @RequestBody AnonymousBoardCommentRequestDTO anonymousBoardCommentRequestDTO
+    ) {
+
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        Long updatedCommentSeq = anonymousBoardService.updateAnonymousBoardComment(
+                anonymousBoardSeq,
+                commentSeq,
+                anonymousBoardCommentRequestDTO,
+                userSeq
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok(updatedCommentSeq));
+    }
+
+    @Operation(summary = "익명 게시글 삭제", description = "익명 게시글 소프트 삭제")
     @DeleteMapping(value = "/{anonymousBoardSeq}")
     public ResponseEntity<ApiResponse<String>> deleteAnonymousBoard(@PathVariable Long anonymousBoardSeq) {
 
-        String userId = SecurityUtil.getCurrentUserId();
-        boolean isDeleted = anonymousBoardService.deleteAnonymousBoard(anonymousBoardSeq, userId);
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        boolean isDeleted = anonymousBoardService.deleteAnonymousBoard(anonymousBoardSeq, userSeq);
 
-        // 삭제 성공 시 204 No Content 반환
-        if (isDeleted) {
+        if(isDeleted) {
+
             return ResponseEntity.noContent().build();
-          // 익명 게시글이 존재하지 않거나 삭제 실패 시 404 Not Found, 메시지 본문에 추가
         } else return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.fail(
                 new CustomException(ErrorCode.NOT_FOUND_ANONYMOUS_BOARD)
         ));
     }
 
-    // 익명 게시글 댓글 삭제
-    @Operation(
-            summary = "익명 게시글 댓글 삭제", description = "익명 게시글 댓글 삭제 (작성자 또는 관리자만 가능)"
-    )
+    @Operation(summary = "익명 게시글 댓글 삭제", description = "익명 게시글 댓글 소프트 삭제")
     @DeleteMapping(value = "/{anonymousBoardSeq}/comment/{commentSeq}")
     public ResponseEntity<ApiResponse<String>> deleteAnonymousBoardComment(
             @PathVariable Long anonymousBoardSeq,
             @PathVariable Long commentSeq
     ) {
 
-        String userId = SecurityUtil.getCurrentUserId();
-        boolean isDeleted = anonymousBoardService.deleteAnonymousBoardComment(anonymousBoardSeq, commentSeq, userId);
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        boolean isDeleted = anonymousBoardService.deleteAnonymousBoardComment(anonymousBoardSeq, commentSeq, userSeq);
 
-        // 삭제 성공 시 204 No Content 반환
         if (isDeleted) {
+
             return ResponseEntity.noContent().build();
-            // 익명 게시글 댓글이 존재하지 않거나 삭제 실패 시 404 Not Found, 메시지 본문에 추가
         } else return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.fail(
                 new CustomException(ErrorCode.NOT_FOUND_COMMENT)
         ));
@@ -237,6 +183,7 @@ public class AnonymousBoardController {
     @PatchMapping("/{anonymousBoardSeq}/bookmark")
     public ResponseEntity<ApiResponse<Boolean>> toggleBookmark(@PathVariable Long anonymousBoardSeq) {
 
+//        Long userSeq = SecurityUtil.getCurrentUserSeq();
         String userId = SecurityUtil.getCurrentUserId();
         boolean isBookmarked = anonymousBoardService.toggleBookmark(anonymousBoardSeq, userId);
 
@@ -247,6 +194,7 @@ public class AnonymousBoardController {
     @GetMapping("/{anonymousBoardSeq}/bookmark")
     public ResponseEntity<ApiResponse<Boolean>> isBookmarked(@PathVariable Long anonymousBoardSeq) {
 
+//        Long userSeq = SecurityUtil.getCurrentUserSeq();
         String userId = SecurityUtil.getCurrentUserId();
         boolean isBookmarked = anonymousBoardService.isBookmarked(anonymousBoardSeq, userId);
 
@@ -257,6 +205,7 @@ public class AnonymousBoardController {
     @PatchMapping("/{anonymousBoardSeq}/prefer")
     public ResponseEntity<ApiResponse<Boolean>> togglePrefer(@PathVariable Long anonymousBoardSeq) {
 
+//        Long userSeq = SecurityUtil.getCurrentUserSeq();
         String userId = SecurityUtil.getCurrentUserId();
         boolean isPreferred = anonymousBoardService.togglePrefer(anonymousBoardSeq, userId);
 
@@ -267,9 +216,30 @@ public class AnonymousBoardController {
     @GetMapping("/{anonymousBoardSeq}/prefer")
     public ResponseEntity<ApiResponse<Boolean>> isPreferred(@PathVariable Long anonymousBoardSeq) {
 
+//        Long userSeq = SecurityUtil.getCurrentUserSeq();
         String userId = SecurityUtil.getCurrentUserId();
         boolean isPreferred = anonymousBoardService.isPreferred(anonymousBoardSeq, userId);
 
         return ResponseEntity.ok(ApiResponse.ok(isPreferred));
+    }
+
+    @Operation(summary = "내가 작성한 익명 게시글 목록 조회", description = "내가 작성한, 삭제되지 않은 익명 게시글 목록 조회")
+    @GetMapping("/mypage")
+    public ResponseEntity<ApiResponse<List<AnonymousBoardMyListDTO>>> getMyBoards() {
+
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        List<AnonymousBoardMyListDTO> anonymousBoardMyDTOList = anonymousBoardService.getMyBoardList(userSeq);
+
+        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardMyDTOList));
+    }
+
+    @Operation(summary = "내가 북마크 한 익명 게시글 목록 조회", description = "내가 북마크 한, 삭제되지 않은 익명 게시글 목록 조회")
+    @GetMapping("/mypage/bookmark")
+    public ResponseEntity<ApiResponse<List<AnonymousBoardListDTO>>> getBookMarkedBoards() {
+
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        List<AnonymousBoardListDTO> anonymousBoardListDTOList = anonymousBoardService.getBookMarkedBoardList(userSeq);
+
+        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardListDTOList));
     }
 }

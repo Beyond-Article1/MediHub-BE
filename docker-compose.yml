@@ -59,6 +59,7 @@ services:
 
   kafka:
     image: bitnami/kafka:latest
+    restart: unless-stopped
     container_name: kafka
     ports:
       - "9092:9092" # 내부 네트워크 통신을 위한 PLAINTEXT Listener

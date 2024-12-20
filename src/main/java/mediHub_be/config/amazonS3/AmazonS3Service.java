@@ -1,4 +1,4 @@
-package mediHub_be.amazonS3.service;
+package mediHub_be.config.amazonS3;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
