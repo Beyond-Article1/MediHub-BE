@@ -12,8 +12,8 @@ import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
-import mediHub_be.medical_life.entity.MedicalLife;
-import mediHub_be.medical_life.repository.MedicalLifeRepository;
+import mediHub_be.medicalLife.entity.MedicalLife;
+import mediHub_be.medicalLife.repository.MedicalLifeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -1,13 +1,8 @@
-package mediHub_be.medical_life.service;
+package mediHub_be.medicalLife.service;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.anonymousBoard.entity.AnonymousBoard;
-import mediHub_be.board.entity.Comment;
 import mediHub_be.board.entity.Flag;
-import mediHub_be.board.entity.Keyword;
 import mediHub_be.board.repository.CommentRepository;
 import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.KeywordRepository;
@@ -17,9 +12,9 @@ import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.dept.entity.Dept;
-import mediHub_be.medical_life.dto.*;
-import mediHub_be.medical_life.entity.MedicalLife;
-import mediHub_be.medical_life.repository.MedicalLifeRepository;
+import mediHub_be.medicalLife.dto.*;
+import mediHub_be.medicalLife.entity.MedicalLife;
+import mediHub_be.medicalLife.repository.MedicalLifeRepository;
 import mediHub_be.part.entity.Part;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;

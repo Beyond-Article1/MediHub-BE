@@ -1,11 +1,9 @@
-package mediHub_be.medical_life.entity;
+package mediHub_be.medicalLife.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.user.entity.User;
-import mediHub_be.dept.entity.Dept;
-import mediHub_be.part.entity.Part;
 
 import java.time.LocalDateTime;
 

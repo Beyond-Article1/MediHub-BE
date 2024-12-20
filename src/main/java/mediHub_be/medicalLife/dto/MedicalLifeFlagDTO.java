@@ -1,4 +1,4 @@
-package mediHub_be.medical_life.dto;
+package mediHub_be.medicalLife.dto;
 
 import lombok.Builder;
 import lombok.Data;

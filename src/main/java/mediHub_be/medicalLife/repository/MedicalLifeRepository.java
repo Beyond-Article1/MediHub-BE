@@ -1,9 +1,8 @@
-package mediHub_be.medical_life.repository;
+package mediHub_be.medicalLife.repository;
 
-import mediHub_be.medical_life.entity.MedicalLife;
+import mediHub_be.medicalLife.entity.MedicalLife;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Collection;
 import java.util.List;
 
 public interface MedicalLifeRepository extends JpaRepository<MedicalLife, Long> {

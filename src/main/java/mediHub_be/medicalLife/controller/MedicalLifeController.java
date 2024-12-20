@@ -1,4 +1,4 @@
-package mediHub_be.medical_life.controller;
+package mediHub_be.medicalLife.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -6,11 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import mediHub_be.common.response.ApiResponse;
-import mediHub_be.medical_life.dto.MedicalLifeCommentListDTO;
-import mediHub_be.medical_life.dto.MedicalLifeCreateRequestDTO;
-import mediHub_be.medical_life.dto.MedicalLifeListDTO;
-import mediHub_be.medical_life.entity.MedicalLife;
-import mediHub_be.medical_life.service.MedicalLifeService;
+import mediHub_be.medicalLife.dto.MedicalLifeCommentListDTO;
+import mediHub_be.medicalLife.dto.MedicalLifeCreateRequestDTO;
+import mediHub_be.medicalLife.dto.MedicalLifeListDTO;
+import mediHub_be.medicalLife.service.MedicalLifeService;
 import mediHub_be.security.util.SecurityUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
