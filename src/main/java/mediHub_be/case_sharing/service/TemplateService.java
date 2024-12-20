@@ -33,8 +33,8 @@ public class TemplateService {
     private final PictureService pictureService;
     private final FlagService flagService;
 
-    private static final String TEMPLATE_FLAG = "template";
-    private static final String TEMPLATE_PREVIEW_FLAG = "template_preview";
+    private static final String TEMPLATE_FLAG = "TEMPLATE";
+    private static final String TEMPLATE_PREVIEW_FLAG = "TEMPLATE_PREVIEW";
 
     // 회원이 볼 수 있는 템플릿 전체 조회
     @Transactional(readOnly = true)
@@ -119,19 +119,17 @@ public class TemplateService {
             Flag previewFlag = flagService.createFlag(TEMPLATE_PREVIEW_FLAG, template.getTemplateSeq());
             pictureService.uploadPicture(previewImage, previewFlag);
         }
-
-        // 본문 이미지 저장 및 내용 치환
-        if (images != null && !images.isEmpty()) {
             flagService.createFlag(TEMPLATE_FLAG, template.getTemplateSeq());
-            String updatedContent = pictureService.replacePlaceHolderWithUrls(
+            String updatedContent = pictureService.replaceBase64WithUrls(
                     content,
-                    images,
                     TEMPLATE_FLAG,
                     template.getTemplateSeq()
             );
             template.updateTemplate(requestDTO.getTemplateTitle(), updatedContent, OpenScope.valueOf(requestDTO.getOpenScope()));
+
+            log.info("내용"+ updatedContent);
             templateRepository.save(template);
-        }
+
 
         return template.getTemplateSeq();
     }
