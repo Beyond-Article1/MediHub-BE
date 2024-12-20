@@ -37,4 +37,16 @@ public class MedicalLifeController {
 
         return ResponseEntity.ok(ApiResponse.ok(medicalLifeListDTOList));
     }
+
+    // 메디컬 라이프 상세 조회
+    @Operation(summary = "메디컬 라이프 게시물 전체 조회", description = "로그인한 사용자가 메디컬 라이프 게시물을 전체 조회합니다.")
+    @GetMapping("/detail")
+    public ResponseEntity<ApiResponse<List<MedicalLifeListDTO>>> getMedicalLifeDetailList() {
+
+         Long userSeq = SecurityUtil.getCurrentUserSeq();
+         List<MedicalLifeListDTO> medicalLifeListDTOList = medicalLifeService.getMedicalLifeDetailList(userSeq);
+
+         return ResponseEntity.ok(ApiResponse.ok(medicalLifeListDTOList));
+    }
 }
+

@@ -26,14 +26,6 @@ public class MedicalLife extends BaseFullEntity {
     @JoinColumn(name = "user_seq", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "dept_seq", nullable = false)
-    private Dept dept;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "part_seq", nullable = false)
-    private Part part;
-
     @Column(name = "medical_life_title", nullable = false, length = 255)
     private String medicalLifeTitle;
 
