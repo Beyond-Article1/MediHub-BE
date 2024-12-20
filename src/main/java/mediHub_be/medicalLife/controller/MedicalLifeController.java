@@ -2,6 +2,8 @@ package mediHub_be.medicalLife.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,14 +40,17 @@ public class MedicalLifeController {
     }
 
     // 메디컬 라이프 상세 조회
-    @Operation(summary = "메디컬 라이프 게시물 전체 조회", description = "로그인한 사용자가 메디컬 라이프 게시물을 전체 조회합니다.")
-    @GetMapping("/detail")
-    public ResponseEntity<ApiResponse<List<MedicalLifeListDTO>>> getMedicalLifeDetailList() {
+    @Operation(summary = "메디컬 라이프 상세 조회", description = "특정 메디컬 라이프 게시물의 상세 정보를 조회합니다.")
+    @GetMapping("/detail/{medicalLifeSeq}")
+    public ResponseEntity<ApiResponse<MedicalLifeDetailDTO>> getMedicalLifeDetail(
+            @PathVariable("medicalLifeSeq") Long medicalLifeSeq,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        MedicalLifeDetailDTO medicalLifeDetailDTO = medicalLifeService.getMedicalLifeDetail(medicalLifeSeq, userSeq, request, response);
 
-         Long userSeq = SecurityUtil.getCurrentUserSeq();
-         List<MedicalLifeListDTO> medicalLifeListDTOList = medicalLifeService.getMedicalLifeDetailList(userSeq);
-
-         return ResponseEntity.ok(ApiResponse.ok(medicalLifeListDTOList));
+        return ResponseEntity.ok(ApiResponse.ok(medicalLifeDetailDTO));
     }
 
     // 메디컬 라이프 댓글 조회
