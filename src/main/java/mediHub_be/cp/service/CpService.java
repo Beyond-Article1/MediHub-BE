@@ -215,7 +215,7 @@ public class CpService {
     public List<ResponseCpDTO> getCpList() {
         logger.info("전체 CP 리스트 조회 요청을 받았습니다.");
 
-        List<ResponseCpDTO> dtoList = cpVersionRepository.findCp();
+        List<ResponseCpDTO> dtoList = cpVersionRepository.findLatestCp();
 
         if (dtoList == null || dtoList.isEmpty()) {
             logger.warn("조회 결과 없음: CP 리스트가 비어있습니다.");

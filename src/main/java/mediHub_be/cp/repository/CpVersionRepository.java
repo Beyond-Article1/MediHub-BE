@@ -75,7 +75,7 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
     Optional<ResponseCpDTO> findByCpVersionSeq(@Param("cpVersionSeq") long cpVersionSeq);
 
     @Query("SELECT new mediHub_be.cp.dto.ResponseCpDTO(" +
-            "cv.cpVersionSeq ," +
+            "cv.cpVersionSeq, " +
             "cp.cpName, " +
             "cp.cpDescription, " +
             "cp.cpViewCount, " +
@@ -85,11 +85,16 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "cv.cpUrl, " +
             "u.userName, " +
             "u.userId, " +
-            "p.partName)" +
-            "FROM CpVersion AS cv " +
-            "JOIN Cp AS cp ON cv.cpSeq = cp.cpSeq " +
-            "JOIN User AS u ON cv.userSeq = u.userSeq " +
-            "JOIN Part AS p ON u.part.partSeq = p.partSeq")
-    List<ResponseCpDTO> findCp();
+            "p.partName) " +
+            "FROM CpVersion cv " +
+            "JOIN Cp cp ON cv.cpSeq = cp.cpSeq " +
+            "LEFT JOIN User u ON cv.userSeq = u.userSeq " +
+            "LEFT JOIN Part p ON u.part.partSeq = p.partSeq " +
+            "WHERE cv.createdAt = (" +
+            "SELECT MAX(cv2.createdAt) " +
+            "FROM CpVersion cv2 " +
+            "WHERE cv2.cpSeq = cv.cpSeq) " +
+            "ORDER BY cv.cpSeq")
+    List<ResponseCpDTO> findLatestCp();
 }
 
