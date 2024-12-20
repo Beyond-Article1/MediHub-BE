@@ -6,12 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import mediHub_be.common.response.ApiResponse;
-import mediHub_be.medicalLife.dto.MedicalLifeCommentListDTO;
-import mediHub_be.medicalLife.dto.MedicalLifeCommentRequestDTO;
-import mediHub_be.medicalLife.dto.MedicalLifeCreateRequestDTO;
-import mediHub_be.medicalLife.dto.MedicalLifeListDTO;
+import mediHub_be.medicalLife.dto.*;
 import mediHub_be.medicalLife.service.MedicalLifeService;
 import mediHub_be.security.util.SecurityUtil;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -86,6 +84,25 @@ public class MedicalLifeController {
         Long commentSeq = medicalLifeService.createMedicalLifeComment(medicalLifeSeq, medicalLifeCommentRequestDTO, userSeq);
 
         return ResponseEntity.ok(ApiResponse.ok(commentSeq));
+    }
+
+    @Operation(summary = "메디컬 라이프 게시글 수정", description = "메디컬 라이프 게시글의 제목, 내용, 키워드 등을 수정")
+    @PutMapping(value = "/{medicalLifeSeq}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<Long>> updateMedicalLife(
+            @PathVariable("medicalLifeSeq") Long medicalLifeSeq,
+            @RequestPart MedicalLifeUpdateRequestDTO medicalLifeUpdateRequestDTO,
+            @RequestPart(value = "images", required = false) List<MultipartFile> newImageList
+    ) {
+
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        Long updatedMedicalLifeSeq = medicalLifeService.updateMedicalLife(
+                medicalLifeSeq,
+                medicalLifeUpdateRequestDTO,
+                newImageList,
+                userSeq
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok(updatedMedicalLifeSeq));
     }
 
 

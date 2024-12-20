@@ -4,14 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.entity.Comment;
 import mediHub_be.board.entity.Flag;
+import mediHub_be.board.entity.Picture;
 import mediHub_be.board.repository.CommentRepository;
 import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.KeywordRepository;
+import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.board.service.FlagService;
 import mediHub_be.board.service.KeywordService;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.config.amazonS3.AmazonS3Service;
 import mediHub_be.dept.entity.Dept;
 import mediHub_be.medicalLife.dto.*;
 import mediHub_be.medicalLife.entity.MedicalLife;
@@ -40,10 +43,11 @@ public class MedicalLifeService {
     private FlagService flagService;
     private KeywordService keywordService;
     private PictureService pictureService;
+    private PictureRepository pictureRepository;
+    private AmazonS3Service amazonS3Service;
 
 
     private static final String MEDICAL_LIFE_FLAG = "MEDICAL_LIFE";
-
 
 
     // 전체 회원 조회
@@ -260,6 +264,72 @@ public class MedicalLifeService {
         return comment.getCommentSeq();
     }
 
+    @Transactional
+    public Long updateMedicalLife(
+            Long medicalLifeSeq,
+            MedicalLifeUpdateRequestDTO medicalLifeUpdateRequestDTO,
+            List<MultipartFile> newImageList,
+            Long userSeq
+    ) {
+        // 유저 존재 확인
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
+
+        // MedicalLife 게시글 존재 확인
+        MedicalLife medicalLife = medicalLifeRepository
+                .findById(medicalLifeSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEDICAL_LIFE));
+
+        // 작성자 권한 확인
+        if (!medicalLife.getUser().equals(user)) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
+        }
+
+        // 게시글 업데이트 (제목, 내용)
+        medicalLife.update(
+                medicalLifeUpdateRequestDTO.getMedicalLifeTitle(),
+                null
+        );
+        medicalLifeRepository.save(medicalLife);
+
+        // 기존 키워드 및 이미지 삭제
+        Flag flag = flagService.findFlag(MEDICAL_LIFE_FLAG, medicalLifeSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
+
+        // 기존 이미지 삭제
+        List<Picture> pictureList = pictureRepository.findAllByFlag_FlagSeqAndPictureIsDeletedFalse(flag.getFlagSeq());
+        for (Picture picture : pictureList) {
+            amazonS3Service.deleteImageFromS3(picture.getPictureUrl());
+            picture.setDeleted();
+            pictureRepository.save(picture);
+        }
+
+        // 새 이미지 처리 및 업데이트된 내용 저장
+        if (newImageList != null && !newImageList.isEmpty()) {
+            String updatedContent = pictureService.replaceBase64WithUrls(
+                    medicalLifeUpdateRequestDTO.getMedicalLifeContent(),
+                    flag.getFlagType(),
+                    flag.getFlagEntitySeq()
+            );
+
+            medicalLife.update(
+                    medicalLifeUpdateRequestDTO.getMedicalLifeTitle(),
+                    updatedContent
+            );
+            medicalLifeRepository.save(medicalLife);
+        }
+
+        // 키워드 업데이트
+        if (medicalLifeUpdateRequestDTO.getKeywords() != null) {
+            keywordService.updateKeywords(
+                    medicalLifeUpdateRequestDTO.getKeywords(),
+                    MEDICAL_LIFE_FLAG,
+                    medicalLifeSeq
+            );
+        }
+
+        return medicalLife.getMedicalLifeSeq();
+    }
 
 
 
