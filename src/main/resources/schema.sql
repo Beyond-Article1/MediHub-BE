@@ -63,8 +63,6 @@ CREATE TABLE cp_opinion (
 CREATE TABLE medical_life (
                               medical_life_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
                               user_seq	bigint	NOT NULL,
-                              dept_seq	bigint	NOT NULL,
-                              part_seq	bigint	NOT NULL,
                               medical_life_title	varchar(255)	NOT NULL,
                               medical_life_content	text	NOT NULL,
                               medical_life_is_deleted boolean NOT NULL DEFAULT FALSE,

@@ -122,16 +122,16 @@ INSERT INTO user (part_seq, ranking_seq, user_name, user_id, user_password, user
 
 INSERT INTO medical_life (user_seq, dept_seq, part_seq, medical_life_title, medical_life_content,
                           medical_life_is_deleted, medical_life_view_count, created_at, updated_at, deleted_at) VALUES
-                                                                                         (1, 1, 1, '의료 생활 제목 1', '의료 생활 내용 1', false, 0, NOW(), NULL, NULL),
-                                                                                         (2, 1, 1, '의료 생활 제목 2', '의료 생활 내용 2', false, 0, NOW(), NULL, NULL),
-                                                                                         (3, 1, 1, '의료 생활 제목 3', '의료 생활 내용 3', false, 0, NOW(), NULL, NULL),
-                                                                                         (4, 1, 1, '의료 생활 제목 4', '의료 생활 내용 4', false, 0, NOW(), NULL, NULL),
-                                                                                         (5, 1, 1, '의료 생활 제목 5', '의료 생활 내용 5', false, 0, NOW(), NULL, NULL),
-                                                                                         (6, 1, 1, '의료 생활 제목 6', '의료 생활 내용 6', false, 0, NOW(), NULL, NULL),
-                                                                                         (7, 1, 1, '의료 생활 제목 7', '의료 생활 내용 7', false, 0, NOW(), NULL, NULL),
-                                                                                         (8, 1, 1, '의료 생활 제목 8', '의료 생활 내용 8', false, 0, NOW(), NULL, NULL),
-                                                                                         (9, 1, 1, '의료 생활 제목 9', '의료 생활 내용 9', false, 0, NOW(), NULL, NULL),
-                                                                                         (10, 1, 1, '의료 생활 제목 10', '의료 생활 내용 10', false, 0, NOW(), NULL, NULL);
+                                                                                         (1,'의료 생활 제목 1', '의료 생활 내용 1', false, 0, NOW(), NULL, NULL),
+                                                                                         (2,'의료 생활 제목 2', '의료 생활 내용 2', false, 0, NOW(), NULL, NULL),
+                                                                                         (3,'의료 생활 제목 3', '의료 생활 내용 3', false, 0, NOW(), NULL, NULL),
+                                                                                         (4,'의료 생활 제목 4', '의료 생활 내용 4', false, 0, NOW(), NULL, NULL),
+                                                                                         (5,'의료 생활 제목 5', '의료 생활 내용 5', false, 0, NOW(), NULL, NULL),
+                                                                                         (6,'의료 생활 제목 6', '의료 생활 내용 6', false, 0, NOW(), NULL, NULL),
+                                                                                         (7,'의료 생활 제목 7', '의료 생활 내용 7', false, 0, NOW(), NULL, NULL),
+                                                                                         (8,'의료 생활 제목 8', '의료 생활 내용 8', false, 0, NOW(), NULL, NULL),
+                                                                                         (9,'의료 생활 제목 9', '의료 생활 내용 9', false, 0, NOW(), NULL, NULL),
+                                                                                         (10,'의료 생활 제목 10', '의료 생활 내용 10', false, 0, NOW(), NULL, NULL);
 
 INSERT INTO journal_search (journal_seq, user_seq, created_at, updated_at) VALUES
                                                                    (1, 1, NOW(), NOW()),
