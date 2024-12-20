@@ -2,7 +2,6 @@ package mediHub_be.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.board.service.FlagService;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.chat.dto.ChatMessageDTO;
 import mediHub_be.chat.dto.ResponseChatMessageDTO;
