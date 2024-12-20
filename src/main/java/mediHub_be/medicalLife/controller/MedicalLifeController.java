@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.medicalLife.dto.MedicalLifeCommentListDTO;
+import mediHub_be.medicalLife.dto.MedicalLifeCommentRequestDTO;
 import mediHub_be.medicalLife.dto.MedicalLifeCreateRequestDTO;
 import mediHub_be.medicalLife.dto.MedicalLifeListDTO;
 import mediHub_be.medicalLife.service.MedicalLifeService;
@@ -74,5 +75,19 @@ public class MedicalLifeController {
 
         return ResponseEntity.ok(ApiResponse.ok(medicalLifeSeq));
     }
+
+    // 댓글 작성
+    @PostMapping("/{medicalLifeSeq}/comments")
+    public ResponseEntity<ApiResponse<Long>> createMedicalLifeComment(
+            @PathVariable Long medicalLifeSeq,
+            @RequestBody MedicalLifeCommentRequestDTO medicalLifeCommentRequestDTO) {
+
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        Long commentSeq = medicalLifeService.createMedicalLifeComment(medicalLifeSeq, medicalLifeCommentRequestDTO, userSeq);
+
+        return ResponseEntity.ok(ApiResponse.ok(commentSeq));
+    }
+
+
 }
 

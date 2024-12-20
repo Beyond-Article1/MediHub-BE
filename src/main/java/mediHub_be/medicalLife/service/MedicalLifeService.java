@@ -2,6 +2,7 @@ package mediHub_be.medicalLife.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.entity.Comment;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.repository.CommentRepository;
 import mediHub_be.board.repository.FlagRepository;
@@ -231,6 +232,33 @@ public class MedicalLifeService {
         return medicalLife.getMedicalLifeSeq();
     }
 
+    // 댓글 생성
+    @Transactional
+    public Long createMedicalLifeComment(
+            Long medicalLifeSeq,
+            MedicalLifeCommentRequestDTO medicalLifeCommentRequestDTO,
+            Long userSeq) {
+
+        // 유저 존재 확인
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
+
+        // Flag 조회 (MedicalLifeFlag 확인)
+        Flag flag = flagService.findFlag(MEDICAL_LIFE_FLAG, medicalLifeSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
+
+        // 댓글 생성
+        Comment comment = Comment.createNewComment(
+                user,
+                flag,
+                medicalLifeCommentRequestDTO.getCommentContent()
+        );
+
+        // 댓글 저장
+        commentRepository.save(comment);
+
+        return comment.getCommentSeq();
+    }
 
 
 
@@ -277,5 +305,7 @@ public class MedicalLifeService {
                 updatedMedicalLifeContent
         );
     }
+
+
 
 }
