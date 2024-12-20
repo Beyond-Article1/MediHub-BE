@@ -120,7 +120,7 @@ INSERT INTO user (part_seq, ranking_seq, user_name, user_id, user_password, user
                                                                                   (1, 1,  '박상현', 'psh950519', '12345', 'tkdgus0519@naver.com', '010-7474-5101', 'USER', 'ACTIVE', NOW(),
                                                                                    NULL, NULL);
 
-INSERT INTO medical_life (user_seq, dept_seq, part_seq, medical_life_title, medical_life_content,
+INSERT INTO medical_life (user_seq, medical_life_title, medical_life_content,
                           medical_life_is_deleted, medical_life_view_count, created_at, updated_at, deleted_at) VALUES
                                                                                          (1,'의료 생활 제목 1', '의료 생활 내용 1', false, 0, NOW(), NULL, NULL),
                                                                                          (2,'의료 생활 제목 2', '의료 생활 내용 2', false, 0, NOW(), NULL, NULL),
