@@ -76,5 +76,10 @@ public class KeywordService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public List<Keyword> getKeywordList(String flagType, Long entitySeq) {
+        return keywordRepository.findByFlagTypeAndEntitySeq(flagType, entitySeq);
+    }
 }
 

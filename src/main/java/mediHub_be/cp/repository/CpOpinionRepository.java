@@ -21,6 +21,7 @@ public interface CpOpinionRepository extends JpaRepository<CpOpinion, Long> {
             "co.cpOpinionViewCount, " +
             "u.userName, " +
             "u.userId, " +
+            "u.userSeq, " +
             "u.part.partName) " +
             "FROM CpOpinion AS co " +
             "JOIN User AS u ON u.userSeq = co.userSeq " +
@@ -38,6 +39,7 @@ public interface CpOpinionRepository extends JpaRepository<CpOpinion, Long> {
             "co.cpOpinionViewCount, " +
             "u.userName, " +
             "u.userId, " +
+            "u.userSeq, " +
             "u.part.partName) " +
             "FROM CpOpinion AS co " +
             "JOIN User AS u ON u.userSeq = co.userSeq " +
@@ -55,6 +57,7 @@ public interface CpOpinionRepository extends JpaRepository<CpOpinion, Long> {
             "co.cpOpinionViewCount, " +
             "u.userName, " +
             "u.userId, " +
+            "u.userSeq, " +
             "u.part.partName) " +
             "FROM CpOpinion AS co " +
             "JOIN User AS u ON u.userSeq = co.userSeq " +
