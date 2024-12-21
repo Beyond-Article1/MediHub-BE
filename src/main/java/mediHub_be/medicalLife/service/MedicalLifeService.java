@@ -30,9 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -47,11 +45,11 @@ public class MedicalLifeService {
     private final KeywordRepository keywordRepository;
     private final CommentRepository commentRepository;
     private final ViewCountManager viewCountManager;
-    private FlagService flagService;
-    private KeywordService keywordService;
-    private PictureService pictureService;
-    private PictureRepository pictureRepository;
-    private AmazonS3Service amazonS3Service;
+    private final FlagService flagService;
+    private final KeywordService keywordService;
+    private final PictureService pictureService;
+    private final PictureRepository pictureRepository;
+    private final AmazonS3Service amazonS3Service;
 
 
     private static final String MEDICAL_LIFE_FLAG = "MEDICAL_LIFE";
@@ -176,26 +174,35 @@ public class MedicalLifeService {
     // 댓글 조회
     @Transactional(readOnly = true)
     public List<MedicalLifeCommentListDTO> getMedicalLifeCommentList(Long medicalLifeSeq, Long userSeq) {
-
+        // 현재 사용자 확인 (로그인 여부 확인 용도)
         userRepository.findById(userSeq).orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
         // 플래그 확인
         Flag flag = flagService.findFlag(MEDICAL_LIFE_FLAG, medicalLifeSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
+        // 댓글 목록 조회 및 DTO 변환
         return commentRepository.findByFlag_FlagSeqAndCommentIsDeletedFalse(flag.getFlagSeq()).stream()
                 .map(comment -> {
-                    User commentUser = comment.getUser();
+                    User commentUser = comment.getUser(); // 댓글 작성자 정보
+
+                    // 댓글 작성자의 부서 및 랭킹 정보 확인
+                    String partName = (commentUser.getPart() != null) ? commentUser.getPart().getPartName() : "정보 없음";
+                    String rankingName = (commentUser.getRanking() != null) ? commentUser.getRanking().getRankingName() : "정보 없음";
+
+                    // DTO 빌드
                     return MedicalLifeCommentListDTO.builder()
-                            .userName(commentUser.getUserName())
-                            .part(commentUser.getPart().getPartName())
-                            .rankingName(commentUser.getRanking().getRankingName())
-                            .commentContent(comment.getCommentContent())
-                            .createdAt(comment.getCreatedAt())
+                            .userName(commentUser.getUserName()) // 댓글 작성자 이름
+                            .part(partName) // 댓글 작성자 부서
+                            .rankingName(rankingName) // 댓글 작성자 랭킹
+                            .commentContent(comment.getCommentContent()) // 댓글 내용
+                            .createdAt(comment.getCreatedAt()) // 댓글 생성 시간
                             .build();
                 })
                 .collect(Collectors.toList());
     }
+
+
 
     // 메디컬 라이프 게시글 생성
     @Transactional
