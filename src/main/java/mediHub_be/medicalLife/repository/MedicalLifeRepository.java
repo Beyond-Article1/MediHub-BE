@@ -10,4 +10,8 @@ public interface MedicalLifeRepository extends JpaRepository<MedicalLife, Long> 
     MedicalLife findByMedicalLifeSeqAndMedicalLifeIsDeletedFalse(Long medicalLifeSeq);
 
     List<MedicalLife> findAllByMedicalLifeIsDeletedFalse();
+
+    List<MedicalLife> findByUser_UserSeqAndMedicalLifeIsDeletedFalse(Long userSeq);
+
+    List<MedicalLife> findTop3ByMedicalLifeIsDeletedFalseOrderByMedicalLifeViewCountDesc();
 }
