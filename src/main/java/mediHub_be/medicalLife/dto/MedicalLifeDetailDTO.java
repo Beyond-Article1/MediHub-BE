@@ -17,6 +17,8 @@ public class MedicalLifeDetailDTO {
     private Long userSeq;
     private String userName;
     private String rankingName;
+    private String medicalLifeTitle;
+    private String medicalLifeContent;
     private String medicalLifeViewCount;
     private LocalDateTime createdAt;
     private List<MedicalLifeKeywordDTO> keywords;

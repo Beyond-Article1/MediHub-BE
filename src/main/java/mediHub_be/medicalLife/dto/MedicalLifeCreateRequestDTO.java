@@ -15,7 +15,5 @@ public class MedicalLifeCreateRequestDTO {
 
     private String medicalLifeTitle;
     private String medicalLifeContent;
-    private List<String> keywords;;
-
-
+    private List<String> keywords;
 }

@@ -133,7 +133,8 @@ public class MedicalLifeService {
             HttpServletResponse response
     ) {
         // 유저 존재 확인
-        User user = userRepository.findById(userSeq).orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
         // 메디컬 라이프 게시글 확인
         MedicalLife medicalLife = medicalLifeRepository.findByMedicalLifeSeqAndMedicalLifeIsDeletedFalse(medicalLifeSeq);
@@ -151,7 +152,6 @@ public class MedicalLifeService {
             log.info("이미 조회한 적 있는 메디컬 라이프 게시글");
         }
 
-        // 키워드 가져오기
         List<Keyword> keywordList = keywordRepository.findByFlagTypeAndEntitySeq(
                 MEDICAL_LIFE_FLAG,
                 medicalLifeSeq
@@ -165,16 +165,22 @@ public class MedicalLifeService {
                         .build())
                 .toList();
 
-        // DTO 빌드
+        String rankingName = medicalLife.getUser().getRanking() != null
+                ? medicalLife.getUser().getRanking().getRankingName()
+                : "N/A";
+
         return MedicalLifeDetailDTO.builder()
                 .userSeq(medicalLife.getUser().getUserSeq())
                 .userName(medicalLife.getUser().getUserName())
-                .rankingName(medicalLife.getUser().getRanking().getRankingName())
-                .medicalLifeViewCount(medicalLife.getMedicalLifeContent())
+                .rankingName(rankingName)
+                .medicalLifeTitle(medicalLife.getMedicalLifeTitle())
+                .medicalLifeContent(medicalLife.getMedicalLifeContent())
+                .medicalLifeViewCount(String.valueOf(medicalLife.getMedicalLifeViewCount()))
                 .createdAt(medicalLife.getCreatedAt())
                 .keywords(medicalLifeKeywordDTOList)
                 .build();
     }
+
 
 
     // 댓글 조회
