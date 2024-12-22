@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.amazonS3.service.AmazonS3Service;
 import mediHub_be.board.Util.ViewCountManager;
 import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.entity.Flag;
@@ -15,19 +14,23 @@ import mediHub_be.board.service.KeywordService;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.case_sharing.dto.*;
 import mediHub_be.case_sharing.entity.CaseSharing;
-import mediHub_be.case_sharing.entity.Template;
 import mediHub_be.case_sharing.entity.CaseSharingGroup;
-import mediHub_be.case_sharing.repository.CaseSharingRepository;
+import mediHub_be.case_sharing.entity.Template;
 import mediHub_be.case_sharing.repository.CaseSharingGroupRepository;
+import mediHub_be.case_sharing.repository.CaseSharingRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.config.amazonS3.AmazonS3Service;
 import mediHub_be.user.entity.User;
-import mediHub_be.user.repository.UserRepository;
 import mediHub_be.user.service.UserService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,8 +50,7 @@ public class CaseSharingService {
     private final FlagService flagService;
     private final TemplateService templateService;
 
-    private static final String CASE_SHARING_FLAG = "case_sharing";
-
+    private static final String CASE_SHARING_FLAG = "CASE_SHARING";
 
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
@@ -87,12 +89,15 @@ public class CaseSharingService {
                 .caseAuthor(caseSharing.getUser().getUserName())
                 .caseAuthorRankName(caseSharing.getUser().getRanking().getRankingName())
                 .keywords(keywordDTOs)
+                .createdAt(caseSharing.getCreatedAt())
                 .caseSharingGroupSeq(caseSharing.getCaseSharingGroup().getCaseSharingGroupSeq())
+                .templateSeq(caseSharing.getTemplate().getTemplateSeq())
                 .isLatestVersion(caseSharing.getCaseSharingIsLatest())
                 .caseSharingViewCount(caseSharing.getCaseSharingViewCount())
                 .caseAuthorUrl(pictureService.getUserProfileUrl(user.getUserSeq()))
                 .build();
     }
+
 
     //3. 케이스 공유 등록
     @Transactional
@@ -109,6 +114,8 @@ public class CaseSharingService {
         CaseSharingGroup group = CaseSharingGroup.createNewGroup();
         caseSharingGroupRepository.save(group);
 
+        String content = requestDTO.getContent();
+
         // 케이스 공유 생성
         CaseSharing caseSharing = CaseSharing.createNewCaseSharing(
                 user,
@@ -116,14 +123,13 @@ public class CaseSharingService {
                 template,
                 group,
                 requestDTO.getTitle(),
-                requestDTO.getContent(),
+                null,
                 false
         );
         caseSharingRepository.save(caseSharing);
+        log.info("호출확인");
         saveKeywordsAndFlag(requestDTO.getKeywords(), caseSharing.getCaseSharingSeq());
-
-        // 이미지 업로드 및 본문 변환 처리
-        updateContentWithImages(caseSharing, images, requestDTO.getContent());
+        updateContentWithImages(caseSharing,content);
         return caseSharing.getCaseSharingSeq();
     }
 
@@ -149,17 +155,18 @@ public class CaseSharingService {
                 existingCaseSharing.getTemplate(),
                 existingCaseSharing.getCaseSharingGroup(), // 기존 그룹 유지 (그룹 객체 전달)
                 requestDTO.getTitle(),
-                requestDTO.getContent(),
+               null,
                 false // 임시 저장 여부 기본값 설정 (예: false)
         );
+
+        String content = requestDTO.getContent();
 
         newCaseSharing.markAsLatest(); // 새 버전을 최신으로 설정
         caseSharingRepository.save(newCaseSharing);
 
         saveKeywordsAndFlag(requestDTO.getKeywords(), newCaseSharing.getCaseSharingSeq());
 
-        // 이미지 업로드 및 본문 변환 처리
-        updateContentWithImages(newCaseSharing, images, requestDTO.getContent());
+        updateContentWithImages(newCaseSharing, content);
 
         return newCaseSharing.getCaseSharingSeq();
     }
@@ -184,11 +191,11 @@ public class CaseSharingService {
 
             // 바로 이전 버전을 최신으로 설정
             CaseSharing previousVersion = caseSharingRepository
-                    .findTopByCaseSharingGroupCaseSharingGroupSeqAndCaseSharingSeqNotAndIsDraftFalseAndDeletedAtIsNullOrderByCreatedAtDesc(
+                    .findTopByCaseSharingGroup_CaseSharingGroupSeqAndCaseSharingSeqNotAndCaseSharingIsDraftFalseAndDeletedAtIsNullOrderByCreatedAtDesc(
                             caseSharingGroup.getCaseSharingGroupSeq(),
                             caseSharingSeq
                     ).orElse(null);
-
+            log.info("seq값"+previousVersion.getCaseSharingSeq());
             if (previousVersion != null) {
                 previousVersion.markAsLatest();
                 caseSharingRepository.save(previousVersion);
@@ -259,12 +266,14 @@ public class CaseSharingService {
                 template,
                 group,
                 requestDTO.getTitle(),
-                requestDTO.getContent(),
+                null,
                 true // 임시 저장 여부 설정
         );
+
+        String content = requestDTO.getContent();
         caseSharingRepository.save(draftCaseSharing);
         saveKeywordsAndFlag(requestDTO.getKeywords(), draftCaseSharing.getCaseSharingSeq());
-        updateContentWithImages(draftCaseSharing, images, requestDTO.getContent());
+        updateContentWithImages(draftCaseSharing, content);
         return draftCaseSharing.getCaseSharingSeq();
     }
 
@@ -309,7 +318,7 @@ public class CaseSharingService {
         validateAuthor(draft, user);
 
         // 제목 및 내용 업데이트
-        draft.updateContent(requestDTO.getCaseSharingTitle(), requestDTO.getCaseSharingContent());
+        draft.updateContent(requestDTO.getCaseSharingTitle(), null);
         caseSharingRepository.save(draft);
         // 키워드 수정
         Flag flag = flagService.findFlag(CASE_SHARING_FLAG, draft.getCaseSharingSeq())
@@ -319,7 +328,7 @@ public class CaseSharingService {
 
         // 4. 새로운 사진 업로드 및 저장
         if (newImages != null && !newImages.isEmpty()) {
-            String updatedContent = pictureService.replacePlaceHolderWithUrls(requestDTO.getCaseSharingContent(), newImages, flag.getFlagType(), flag.getFlagEntitySeq());
+            String updatedContent = pictureService.replaceBase64WithUrls(requestDTO.getCaseSharingContent(),flag.getFlagType(), flag.getFlagEntitySeq());
             draft.updateContent(requestDTO.getCaseSharingTitle(), updatedContent);
             caseSharingRepository.save(draft);
         }
@@ -398,17 +407,17 @@ public class CaseSharingService {
 
     }
 
-    private void updateContentWithImages(CaseSharing caseSharing, List<MultipartFile> images, String content) {
-        if (images != null && !images.isEmpty()) {
-            String updatedContent = pictureService.replacePlaceHolderWithUrls(
-                    content,
-                    images,
-                    CASE_SHARING_FLAG,
-                    caseSharing.getCaseSharingSeq()
-            );
-            caseSharing.updateContent(caseSharing.getCaseSharingTitle(), updatedContent);
-            caseSharingRepository.save(caseSharing);
-        }
+
+
+    private void updateContentWithImages(CaseSharing caseSharing, String content) {
+        // Base64 이미지 -> S3 URL 변환
+        String updatedContent = pictureService.replaceBase64WithUrls(
+                content,
+                CASE_SHARING_FLAG,
+                caseSharing.getCaseSharingSeq()
+        );
+        caseSharing.updateContent(caseSharing.getCaseSharingTitle(), updatedContent);
+        caseSharingRepository.save(caseSharing);
     }
 
     private void validateAuthor(CaseSharing caseSharing, User user) {
@@ -437,8 +446,10 @@ public class CaseSharingService {
     }
 
     private void saveKeywordsAndFlag(List<String> keywords, Long entitySeq) {
+        Flag flag = flagService.createFlag(CASE_SHARING_FLAG, entitySeq);
+        log.info("flag정보 " + flag.getFlagSeq() + flag.getFlagEntitySeq());
         if (keywords != null && !keywords.isEmpty()) {
-            Flag flag = flagService.createFlag(CASE_SHARING_FLAG, entitySeq);
+            log.info("키워드"+ keywords.get(0));
             keywordService.saveKeywords(keywords, flag.getFlagSeq());
         }
     }
@@ -457,5 +468,25 @@ public class CaseSharingService {
     }
 
 
+    @Transactional(readOnly = true)
+    public List<CaseSharingMain3DTO> getTop3Cases() {
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusDays(7);
+        Pageable top3 = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "caseSharingViewCount"));
 
+        List<CaseSharing> topCases = caseSharingRepository.findTop3ByCreatedAtAfterOrderByCaseSharingViewCountDesc(oneWeekAgo, top3);
+
+        return topCases.stream()
+                .map(caseSharing -> {
+                    String url = pictureService.getCaseSharingFirstImageUrl(caseSharing.getCaseSharingSeq()); // caseSharingSeq 전달
+                    return new CaseSharingMain3DTO(
+                            caseSharing.getCaseSharingSeq(),
+                            caseSharing.getCaseSharingTitle(),
+                            caseSharing.getUser().getUserName(),
+                            caseSharing.getPart().getPartName(),
+                            caseSharing.getUser().getRanking().getRankingName(),
+                            url // 대표 이미지 URL
+                    );
+                })
+                .toList();
+    }
 }

@@ -1,61 +1,66 @@
 package mediHub_be.security.handler;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.security.securitycustom.CustomUserDetails;
+import mediHub_be.security.service.TokenService;
+import mediHub_be.security.util.JwtUtil;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
+    private final JwtUtil jwtUtil;
     private final Environment env;
+    private final TokenService tokenService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        log.info("로그인 성공 후 security가 관리하는 principal 객체 : {}", authentication);
+        log.info("로그인 성공 - Security 관리 객체 정보: {}", authentication);
 
-        /* 권한을 꺼내 List<String> 으로 변환 */
-        List<String> authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
+        try {
+            // 사용자 정보 추출
+            CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userSeq = customUserDetails.getUserSeq();
+            String userId = customUserDetails.getUserId();
+            String auth = String.join(",", authentication.getAuthorities().stream()
+                    .map(grantedAuthority -> grantedAuthority.getAuthority())
+                    .toList());
 
-        // CustomUserDetails에서 userSeq와 username 가져오기
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        Long userSeq = customUserDetails.getUserSeq();
-        String username = customUserDetails.getUserId();
+            log.info("userSeq: {}", userSeq);
+            log.info("userId: {}", userId);
+            log.info("권한: {}", auth);
 
-        log.info("userSeq : {}", userSeq);
-        log.info("userName : {}", username);
+            // 만료 시간 가져오기
+            long accessTokenExpiration = Long.parseLong(env.getProperty("token.expiration_time", "3600000")); // 1시간
+            long refreshTokenExpiration = Long.parseLong(env.getProperty("refresh.token.expiration_time", "604800000")); // 7일
 
-        /* Token에 들어갈 claim 생성 */
-        Claims claims = Jwts.claims().setSubject(authentication.getName());
-        claims.put("userSeq", userSeq);
-        claims.put("userName", username);
-        claims.put("auth", authorities);
+            // 토큰 생성
+            String accessToken = jwtUtil.generateAccessToken(userId, userSeq, auth, accessTokenExpiration);
+            String refreshToken = jwtUtil.generateRefreshToken(userId, refreshTokenExpiration);
 
+            // Refresh Token 저장
+            tokenService.saveRefreshToken(userId, refreshToken, refreshTokenExpiration);
+            log.info("Refresh Token 저장 완료 (userId: {}, expiration: {}ms)", userId, refreshTokenExpiration);
 
-        String token = Jwts.builder()
-                .setClaims(claims) // userSeq 포함
-                .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(env.getProperty("token.expiration_time"))))
-                .signWith(SignatureAlgorithm.HS512, env.getProperty("token.secret"))
-                .compact();
+            // 응답 처리
+            response.setHeader("Access-Token", accessToken);
+            response.setHeader("Refresh-Token", refreshToken);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(String.format("{\"userSeq\": %d, \"refreshToken\": \"%s\"}", userSeq, refreshToken));
 
-        response.setHeader("Authorization", "Bearer " + token);
-
-
+            log.info("토큰이 응답 헤더에 추가되었습니다.");
+        } catch (Exception e) {
+            log.error("토큰 생성 또는 저장 중 예외 발생: {}", e.getMessage(), e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "토큰 발급 실패");
+        }
     }
 }

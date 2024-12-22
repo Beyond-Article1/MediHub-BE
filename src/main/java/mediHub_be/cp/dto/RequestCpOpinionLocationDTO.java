@@ -7,4 +7,5 @@ public class RequestCpOpinionLocationDTO {
 
     private double cpOpinionLocationX;
     private double cpOpinionLocationY;
+    private long cpOpinionLocationPageNum;
 }

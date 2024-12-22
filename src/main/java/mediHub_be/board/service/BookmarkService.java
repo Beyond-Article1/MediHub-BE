@@ -27,60 +27,67 @@ public class BookmarkService {
 
     @Transactional
     public boolean toggleBookmark(String flagType, Long entitySeq, String userId) {
+
         User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
-
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
         Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq)
-                .orElseThrow(() -> new IllegalArgumentException("게시글 정보를 찾을 수 없습니다."));
-
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
         // 기존 북마크 존재 여부 확인
         Optional<Bookmark> existingBookmark = bookmarkRepository.findByUserAndFlag(user, flag);
 
         if (existingBookmark.isPresent()) {
+
             // 북마크 해제 (삭제)
             bookmarkRepository.delete(existingBookmark.get());
-            return false; // 북마크 해제 상태 반환
+
+            // 북마크 해제 상태 반환
+            return false;
         } else {
+
             // 북마크 설정 (생성)
             Bookmark bookmark = Bookmark.builder()
                     .user(user)
                     .flag(flag)
                     .build();
+
             bookmarkRepository.save(bookmark);
-            return true; // 북마크 설정 상태 반환
+
+            // 북마크 설정 상태 반환
+            return true;
         }
     }
 
     public boolean isBookmarked(String flagType, Long entitySeq, String userId) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요한 서비스입니다."));
 
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
         Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq)
-                .orElseThrow(() -> new IllegalArgumentException("게시글 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
         // 북마크 존재 여부 반환
         return bookmarkRepository.existsByUserAndFlag(user, flag);
     }
 
-    // 게시판 식별과 유저로 본인이 북마크한 해당 게시판 종류의 북마크들 찾기
+    // 직원과 식별 번호로 본인이 북마크 한 해당 게시판 종류 북마크 찾기
     public List<BookmarkDTO> findByUserAndFlagType(User user, String flagType) {
 
         return bookmarkRepository.findByUserAndFlagType(user, flagType);
     }
 
-    // 게시판이 삭제되었을 때 해당 게시판과 연결된 북마크 삭제
+    // 게시글이 삭제되었을 때, 해당 게시글과 연결된 북마크 삭제
     public void deleteBookmarkByFlag(Flag flag) {
+
         bookmarkRepository.deleteAllByFlagSeq(flag.getFlagSeq());
     }
 
-    // 플래그를 찾아서 게시판이 삭제되었을 때 해당 게시판과 연결된 북마크 삭제
-    public void deleteBookmarkByFlag(String flagType, long entitySeq) {
-        // 1. flag 조회
-        Flag flag = flagService.findFlag(flagType, entitySeq).orElseThrow(() -> {
-            return new CustomException(ErrorCode.NOT_FOUND_FLAG);
-        });
+    // 식별 번호를 찾아서 게시글이 삭제되었을 때, 해당 게시글과 연결된 북마크 삭제
+    public void deleteBookmarkByFlag(String flagType, Long entitySeq) {
 
-        // 2. flag 북마크 삭제
+        // 1. flag 조회
+        Flag flag = flagService.findFlag(flagType, entitySeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
+
+        // 2. 북마크 삭제
         deleteBookmarkByFlag(flag);
     }
 }

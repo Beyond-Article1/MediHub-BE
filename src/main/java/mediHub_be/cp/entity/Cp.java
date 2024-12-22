@@ -1,11 +1,14 @@
 package mediHub_be.cp.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "cp")
 @Getter
+@NoArgsConstructor
 public class Cp {
 
     @Id
@@ -23,6 +26,20 @@ public class Cp {
 
     @Column
     private long cpViewCount;       // cp 조회수
+
+    @Builder
+    public Cp(
+            long cpSeq,
+            long userSeq,
+            String cpName,
+            String cpDescription,
+            long cpViewCount) {
+        this.cpSeq = cpSeq;
+        this.userSeq = userSeq;
+        this.cpName = cpName;
+        this.cpDescription = cpDescription;
+        this.cpViewCount = cpViewCount;
+    }
 
     public void increaseCpViewCount() {
         this.cpViewCount++;

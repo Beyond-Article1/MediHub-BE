@@ -35,25 +35,21 @@ public class CaseSharingComment extends BaseFullEntity {
 
     private String caseSharingCommentContent;
 
-    private Integer caseSharingCommentStartOffset;
-
-    private Integer caseSharingCommentEndOffset;
+    private String caseSharingBlockId;
 
     // 빌더 메서드를 통해 객체 생성
     @Builder
     public CaseSharingComment(User user, CaseSharing caseSharing, String caseSharingCommentContent,
-                              Integer caseSharingCommentStartOffset, Integer caseSharingCommentEndOffset) {
+                             String caseSharingBlockId) {
         this.user = user;
         this.caseSharing = caseSharing;
         this.caseSharingCommentContent = caseSharingCommentContent;
-        this.caseSharingCommentStartOffset = caseSharingCommentStartOffset;
-        this.caseSharingCommentEndOffset = caseSharingCommentEndOffset;
+        this.caseSharingBlockId = caseSharingBlockId;
     }
 
-    public void updateComment(String content, Integer startOffset, Integer endOffset) {
+    public void updateComment(String content, String caseSharingBlockId) {
         this.caseSharingCommentContent = content;
-        this.caseSharingCommentStartOffset = startOffset;
-        this.caseSharingCommentEndOffset = endOffset;
+        this.caseSharingBlockId = caseSharingBlockId;
     }
 
     public void markAsDeleted() {

@@ -5,6 +5,7 @@ import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.FlagService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.common.response.JournalResponse;
 import mediHub_be.journal.dto.ResponseAbstractDTO;
 import mediHub_be.journal.dto.ResponseJournalLogDTO;
 import mediHub_be.journal.dto.ResponseJournalRankDTO;
@@ -82,7 +83,8 @@ public class JournalServiceImpl implements JournalService{
      * @param naturalRequest
      * @return
      */
-    public List<ResponsePubmedDTO> getPubmedKeywords(String naturalRequest){
+    public JournalResponse<?> getPubmedKeywords(String naturalRequest){
+
         Map<String, Object> requestBody = Map.of(
                 "model", model,
                 "messages", List.of(
@@ -107,11 +109,29 @@ public class JournalServiceImpl implements JournalService{
             log.info("choices {}", choices);
             log.info("message {}", message);
 
+            List<ResponsePubmedDTO> content =
+                    exchangeResponsePubmedDTO((String) message.get("content"));
 
-            return exchangeResponsePubmedDTO((String) message.get("content"));
+            if (content.isEmpty()){
+                return new JournalResponse<>((String) message.get("content"));
+            } else{
+                return new JournalResponse<>(content);
+            }
 
-        } catch (WebClientResponseException e){
-            throw new CustomException(ErrorCode.INTERNAL_OPENAI_ERROR);
+        } catch (WebClientResponseException e) {
+            int statusCode = e.getStatusCode().value();
+            String errorBody = e.getResponseBodyAsString();
+
+            log.error("OpenAI API Error - Status: {}, Body: {}", statusCode, errorBody);
+
+            // 더 자세하게 예외 처리하기
+            if (statusCode == 401) {
+                throw new CustomException(ErrorCode.UNAUTHORIZED_OPENAI_API);
+            } else if (statusCode == 429) {
+                throw new CustomException(ErrorCode.RATE_LIMIT_EXCEEDED);
+            } else {
+                throw new CustomException(ErrorCode.INTERNAL_OPENAI_ERROR);
+            }
         }
     }
 
@@ -135,6 +155,8 @@ public class JournalServiceImpl implements JournalService{
                     .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                     .block();
 
+            log.info("response {}", response);
+
             // orElseGet 사용해서 코드 간략화
             Journal savedJournal = journalRepository.findByJournalPmid(journalPmid)
                     .orElseGet(() -> journalRepository.save(requestDTO.toEntity()));
@@ -149,6 +171,9 @@ public class JournalServiceImpl implements JournalService{
                             () -> {
                                 journalSearchRepository.save(new JournalSearch(savedJournal, user));
                             });
+
+            // journal flag 생성
+            flagService.createFlag(journalFlagName, savedJournal.getJournalSeq());
             
             // "choices" 가져오기
             List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
@@ -189,10 +214,8 @@ public class JournalServiceImpl implements JournalService{
         if (userSeq != null && !content.isEmpty()) {
             User user = userService.findUser(userSeq);
             content.forEach(journal -> journal.isBookmark(bookmarkService.isBookmarked(journalFlagName, journal.getJournalSeq(), user.getUserId())));
-            return content;
-        } else {
-            return content;
         }
+        return content;
     }
 
     /**
@@ -205,6 +228,9 @@ public class JournalServiceImpl implements JournalService{
         // 논문 데이터들 \n\n으로 구분
         String[] journals = content.split("\n\n");
         log.info("journals {}", journals);
+        if (!journals[0].startsWith("해당하는 논문들"))
+            return pubmedDTOS;
+
         // 각 논문들 파싱
         for (String journal : journals) {
             log.info("journal {}", journal);

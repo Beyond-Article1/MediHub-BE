@@ -28,6 +28,7 @@ public class Template extends BaseFullEntity {
 
     private String templateTitle;
 
+    @Column(columnDefinition = "LONGTEXT")
     private String templateContent;
 
     @Enumerated(EnumType.STRING)

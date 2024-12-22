@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class AdminUpdateDTO {
+    private Long userSeq;
     private Long partSeq;
     private Long rankingSeq;
     private String userEmail;

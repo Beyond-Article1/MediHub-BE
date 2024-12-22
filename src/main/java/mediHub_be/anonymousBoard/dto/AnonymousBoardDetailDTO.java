@@ -14,12 +14,10 @@ import java.util.List;
 @Builder
 public class AnonymousBoardDetailDTO {
 
-    private Long anonymousBoardSeq;
-    private String userId;
+    private String userName;
     private String anonymousBoardTitle;
     private String anonymousBoardContent;
     private Long anonymousBoardViewCount;
     private LocalDateTime createdAt;
-    private List<AnonymousBoardPictureDTO> anonymousBoardPictureList;
     private List<AnonymousBoardKeywordDTO> keywords;
 }

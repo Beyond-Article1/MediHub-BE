@@ -30,7 +30,8 @@ public class ChatroomController {
     @Operation(summary = "채팅방 생성", description = "새로운 채팅방 생성")
     @PostMapping
     public ResponseEntity<ApiResponse<Long>> createChatroom(@RequestBody ChatroomDTO chatroomDTO) {
-        Long chatroomSeq = chatroomService.createChatroom(chatroomDTO);
+        Long myUserSeq = SecurityUtil.getCurrentUserSeq();
+        Long chatroomSeq = chatroomService.createChatroom(myUserSeq, chatroomDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(chatroomSeq));
     }
 
@@ -58,7 +59,7 @@ public class ChatroomController {
     }
 
     @Operation(summary = "채팅방 목록 조회", description = "채팅방 목록 조회")
-    @GetMapping("/list")
+    @GetMapping
     public ResponseEntity<ApiResponse<List<ResponseChatroomDTO>>> getChatroomListByUserSeq() {
         Long userSeq = SecurityUtil.getCurrentUserSeq();
         List<ResponseChatroomDTO> chatrooms = chatroomService.getChatroomListByUserSeq(userSeq);
@@ -74,7 +75,7 @@ public class ChatroomController {
     }
 
     @Operation(summary = "채팅방 참여자 조회", description = "특정 채팅방 참여자 조회")
-    @GetMapping("/{chatroomSeq}/user")
+    @GetMapping("/{chatroomSeq}/users")
     public ResponseEntity<ApiResponse<List<ResponseChatUserDTO>>> getChatUsers(@PathVariable Long chatroomSeq) {
         Long userSeq = SecurityUtil.getCurrentUserSeq();
         List<ResponseChatUserDTO> users = chatroomService.getChatUsers(userSeq, chatroomSeq);

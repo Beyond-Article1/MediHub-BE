@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class TemplateListDTO {
     private Long templateSeq;
     private String templateTitle;
+    private String templatePreviewImgUrl;
 }

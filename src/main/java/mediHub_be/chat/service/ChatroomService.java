@@ -18,12 +18,12 @@ import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.part.entity.Part;
 import mediHub_be.ranking.entity.Ranking;
 import mediHub_be.user.entity.User;
-import mediHub_be.user.repository.UserRepository;
 import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,7 +40,20 @@ public class ChatroomService {
 
     /* 채팅방 생성 */
     @Transactional
-    public Long createChatroom(ChatroomDTO chatroomDTO) {
+    public Long createChatroom(Long myUserSeq, ChatroomDTO chatroomDTO) {
+
+        List<Long> allUserSeqs = new ArrayList<>(chatroomDTO.getUsers());
+        allUserSeqs.add(myUserSeq);
+
+        // 1:1 채팅방 생성일 경우 중복 확인
+        if(allUserSeqs.size() == 2) {
+            List<Long> existingChatroomSeq = chatRepository.findExistingChatroom(allUserSeqs);
+            if(!existingChatroomSeq.isEmpty()) {
+                log.info("기존 1:1 채팅방이 존재합니다. chatroomSeq: {}", existingChatroomSeq.get(0));
+                return existingChatroomSeq.get(0);
+            }
+            log.info("기존 1:1 채팅방이 존재하지 않습니다.");
+        }
 
         Chatroom chatroom = Chatroom.builder()
                 .chatroomDefaultName("채팅방")
@@ -50,7 +63,7 @@ public class ChatroomService {
 
         // Chat 테이블에 사용자 정보 추가, 채팅방 기본 이름 설정
         StringBuilder usersInChatGroup = new StringBuilder();
-        for (Long userSeq : chatroomDTO.getUsers()) {
+        for (Long userSeq : allUserSeqs) {
 
             User user = userService.findUser(userSeq);
             usersInChatGroup.append(user.getUserName()).append(" ");    // 채팅방 참여자 이름 나열

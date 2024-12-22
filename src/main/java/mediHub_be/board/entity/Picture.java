@@ -5,10 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import mediHub_be.anonymousBoard.dto.AnonymousBoardPictureRequestDTO;
 import mediHub_be.common.aggregate.entity.BaseCreateDeleteEntity;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "picture")
@@ -34,21 +31,6 @@ public class Picture extends BaseCreateDeleteEntity {
 
     // 작성일은 BaseFullEntity에서 상속
     // 삭제일은 BaseFullEntity에서 상속
-
-    public void markAsDeleted() {
-        this.deletedAt = LocalDateTime.now();
-    }
-
-    public void create(Flag flag, AnonymousBoardPictureRequestDTO requestPicture) {
-
-        this.flag = flag;
-        this.pictureName = requestPicture.getPictureName();
-        this.pictureChangedName = requestPicture.getPictureChangedName();
-        this.pictureUrl = requestPicture.getPictureUrl();
-        this.pictureType = requestPicture.getPictureType();
-        this.pictureIsDeleted = false;
-        this.deletedAt = null;
-    }
 
     public void setDeleted() {
 

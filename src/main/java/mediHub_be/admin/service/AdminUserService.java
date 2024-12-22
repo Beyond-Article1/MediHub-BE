@@ -1,13 +1,11 @@
 package mediHub_be.admin.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import mediHub_be.admin.dto.AdminResponseDTO;
 import mediHub_be.admin.dto.AdminUpdateDTO;
 import mediHub_be.admin.dto.AdminUserDetailResponseDTO;
 import mediHub_be.admin.dto.UserCreateDTO;
-import mediHub_be.amazonS3.service.AmazonS3Service;
+import mediHub_be.config.amazonS3.AmazonS3Service;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
 import mediHub_be.board.repository.FlagRepository;
@@ -18,6 +16,7 @@ import mediHub_be.part.entity.Part;
 import mediHub_be.part.repository.PartRepository;
 import mediHub_be.ranking.entity.Ranking;
 import mediHub_be.ranking.repository.RankingRepository;
+import mediHub_be.user.dto.UserSearchDTO;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.entity.UserAuth;
 import mediHub_be.user.entity.UserStatus;
@@ -123,6 +122,7 @@ public class AdminUserService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_RANKING));
 
         user.updateUserDetails(
+                adminUpdateDTO.getUserSeq(),
                 adminUpdateDTO.getUserEmail(),
                 adminUpdateDTO.getUserPhone(),
                 part,
@@ -179,7 +179,6 @@ public class AdminUserService {
 
     @Transactional(readOnly = true)
     public List<AdminResponseDTO> getAllUsers() {
-
         // 모든 사용자 조회
         List<User> users = userRepository.findAll();
 
@@ -189,25 +188,28 @@ public class AdminUserService {
                     // USER Flag 조회
                     Optional<Flag> optionalFlag = flagRepository.findByFlagTypeAndFlagEntitySeq("USER", user.getUserSeq());
 
-                    String profileImage = null;
-                    if (optionalFlag.isPresent()) {
-                        Long flagSeq = optionalFlag.get().getFlagSeq();
-                        Optional<Picture> picture = pictureRepository.findByFlag_FlagSeqAndDeletedAtIsNull(flagSeq);
-                        profileImage = picture.map(Picture::getPictureUrl).orElse(null);
-                    }
+                    // 프로필 이미지 URL 가져오기
+                    String profileImage = optionalFlag.flatMap(flag ->
+                            pictureRepository.findByFlag_FlagSeqAndDeletedAtIsNull(flag.getFlagSeq())
+                    ).map(Picture::getPictureUrl).orElse(null);
 
+                    // AdminResponseDTO 생성 (빌더 패턴 사용)
                     return AdminResponseDTO.builder()
+                            .userSeq(user.getUserSeq())
+                            .userId(user.getUserId())
                             .userName(user.getUserName())
-                            .rankingName(user.getRanking().getRankingName())
-                            .partName(user.getPart().getPartName())
                             .userEmail(user.getUserEmail())
                             .userPhone(user.getUserPhone())
+                            .rankingName(user.getRanking() != null ? user.getRanking().getRankingName() : null)
+                            .partName(user.getPart() != null ? user.getPart().getPartName() : null)
+                            .deptName(user.getPart() != null && user.getPart().getDept() != null
+                                    ? user.getPart().getDept().getDeptName() : null)
                             .profileImage(profileImage)
                             .build();
                 })
-
                 .collect(Collectors.toList());
     }
+
 
     // 특정 유저 조회
     @Transactional(readOnly = true)
@@ -229,6 +231,7 @@ public class AdminUserService {
         }
 
         return AdminUserDetailResponseDTO.builder()
+                .userSeq(user.getUserSeq())
                 .userName(user.getUserName())
                 .userId(user.getUserId())
                 .userEmail(user.getUserEmail())
@@ -237,6 +240,7 @@ public class AdminUserService {
                 .userStatus(UserStatus.valueOf(user.getUserStatus().name()))
                 .rankingName(user.getRanking().getRankingName())
                 .partName(user.getPart().getPartName())
+                .deptSeq(user.getPart().getDept().getDeptSeq())
                 .profileImage(profileImage)
                 .build();
     }

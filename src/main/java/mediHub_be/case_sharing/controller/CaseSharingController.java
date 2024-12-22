@@ -45,6 +45,15 @@ public class CaseSharingController {
         return ResponseEntity.ok(ApiResponse.ok(caseSharingDetailDTO));
     }
 
+    @Operation(summary = "케이스 공유 메인 top3 조회", description = "메인 화면에 들어갈 일주일 내 작성된 게시글 중 조회수 top3 조회")
+    @GetMapping("/top3")
+    public ResponseEntity<ApiResponse<List<CaseSharingMain3DTO>>> getCaseTop3() {
+        List<CaseSharingMain3DTO> top3Cases = caseSharingService.getTop3Cases();
+        return ResponseEntity.ok(ApiResponse.ok(top3Cases));
+    }
+
+
+
     @Operation(summary = "케이스 공유 파트 별 조회", description = "파트에 따른 최신 버전 케이스 공유 글 목록 조회")
     @GetMapping("/part/{partSeq}")
     public ResponseEntity<ApiResponse<List<CaseSharingListDTO>>> getCasesByPart(@PathVariable("partSeq") Long partSeq) {

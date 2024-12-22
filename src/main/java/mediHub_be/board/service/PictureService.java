@@ -1,13 +1,16 @@
 package mediHub_be.board.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.amazonS3.service.AmazonS3Service;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
 import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.config.amazonS3.AmazonS3Service;
 import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,71 @@ public class PictureService {
     private final PictureRepository pictureRepository;
     private final AmazonS3Service amazonS3Service;
     private final FlagService flagService;
+
+    @Transactional
+    public String replaceBase64WithUrls(String content, String flagType, Long entitySeq) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode contentNode = objectMapper.readTree(content);
+
+            Flag flag = flagService.findFlag(flagType, entitySeq).orElse(null);
+
+            // Base64 이미지 처리
+            List<String> uploadedUrls = new ArrayList<>();
+            for (JsonNode block : contentNode.get("blocks")) {
+                if ("image".equals(block.get("type").asText())) {
+                    JsonNode fileNode = block.get("data").get("file");
+                    String base64Url = fileNode.get("url").asText();
+
+                    if (base64Url.startsWith("data:image")) {
+                        String uploadedUrl = uploadBase64Image(base64Url, flag);
+                        uploadedUrls.add(uploadedUrl);
+
+                        // JSON 노드 URL 교체
+                        ((ObjectNode) fileNode).put("url", uploadedUrl);
+                    }
+                }
+            }
+
+            // 트랜잭션 롤백 시 S3에서 삭제 처리
+            registerRollbackHandler(uploadedUrls);
+
+            return objectMapper.writeValueAsString(contentNode);
+        } catch (IOException e) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_IO_UPLOAD_ERROR);
+        }
+    }
+
+    private String uploadBase64Image(String base64Data, Flag flag) {
+        try {
+            // Base64 데이터를 디코딩
+            String[] parts = base64Data.split(",");
+            String base64Image = parts[1];
+            String fileExtension = parts[0].split(";")[0].split("/")[1];
+
+            byte[] decodedBytes = java.util.Base64.getDecoder().decode(base64Image);
+            String fileName = "uploaded_image_" + System.currentTimeMillis() + "." + fileExtension;
+
+            // S3 업로드
+            AmazonS3Service.MetaData metaData = amazonS3Service.uploadFromByteArray(decodedBytes, fileName, fileExtension);
+
+            // Picture 엔티티 저장
+            Picture pic = Picture.builder()
+                    .flag(flag)
+                    .pictureName(fileName)
+                    .pictureChangedName(metaData.getChangeFileName())
+                    .pictureUrl(metaData.getUrl())
+                    .pictureType(fileExtension)
+                    .pictureIsDeleted(false)
+                    .build();
+            pictureRepository.save(pic);
+
+            return metaData.getUrl();
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_IO_UPLOAD_ERROR);
+        }
+    }
+
 
     // 이미지 업로드 및 Picture 엔터티 생성
     @Transactional
@@ -61,14 +129,24 @@ public class PictureService {
     public String replacePlaceHolderWithUrls(String content, List<MultipartFile> images, String flagType, Long entitySeq) {
         List<String> urls = uploadPictureWithFlag(flagType, entitySeq, images);
 
-        // 태그와 URL 매핑
-        for (int i = 0; i < urls.size(); i++) {
-            String placeholder = "[img-" + (i + 1) + "]"; // `[img-1]`, `[img-2]`, ...
-            content = content.replace(placeholder, "<img src='" + urls.get(i) + "' />");
-        }
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode contentNode = objectMapper.readTree(content);
 
-        return content;
+            int imageIndex = 0;
+            for (JsonNode block : contentNode.get("blocks")) {
+                if ("image".equals(block.get("type").asText()) && imageIndex < urls.size()) {
+                    ((ObjectNode) block.get("data")).put("file", urls.get(imageIndex));
+                    imageIndex++;
+                }
+            }
+
+            return objectMapper.writeValueAsString(contentNode);
+        } catch (IOException e) {
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_IO_UPLOAD_ERROR);
+        }
     }
+
 
     @Transactional
     public String uploadPicture(MultipartFile picture, Flag flag) {
@@ -108,6 +186,16 @@ public class PictureService {
         return pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeqAndPictureIsDeletedIsNotNull(flagType, entitySeq);
     }
 
+    @Transactional
+    public List<String> getPicturesURLByFlagTypeAndEntitySeqAndIsDeletedIsNotNull(String flagType, Long entitySeq) {
+        List<Picture> pictures =  pictureRepository.findByFlagFlagTypeAndFlagFlagEntitySeqAndPictureIsDeletedIsNotNull(flagType, entitySeq);
+        List<String> urls = new ArrayList<>();
+        for(Picture picture : pictures) {
+            urls.add(picture.getPictureUrl());
+        }
+        return urls;
+    }
+
     private void cleanupUploadedFiles(List<String> uploadedUrls) {
         uploadedUrls.forEach(url -> {
             try {
@@ -130,6 +218,21 @@ public class PictureService {
                     }
                 }
             });
+        }
+    }
+    @Transactional(readOnly = true)
+    public String getCaseSharingFirstImageUrl(Long caseSharingSeq ){
+        Flag flag = flagService.findFlag("case_sharing", caseSharingSeq).orElse(null);
+        if (flag != null) {
+            Picture profile = pictureRepository.findFirstByFlag_FlagSeqOrderByCreatedAtDesc(flag.getFlagSeq()).orElse(null);
+
+            if (profile != null) {
+                return profile.getPictureUrl();
+            } else {
+                return null;
+            }
+        } else {
+            return null;
         }
     }
 

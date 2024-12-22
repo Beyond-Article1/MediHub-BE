@@ -4,7 +4,6 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import mediHub_be.security.securitycustom.CustomUserDetails;
 import mediHub_be.security.securitycustom.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.util.Date;
 
 @Slf4j
 @Component
@@ -33,9 +33,44 @@ public class JwtUtil {
         this.customUserDetailsService = customUserDetailsService;
     }
 
-    /* Token 검증(Bearer 토큰이 넘어왔고, 우리 사이트의 secret key로 만들어 졌는가, 만료되었는지와 내용이 비어있진 않은지) */
-    public boolean validateToken(String token) {
+    // Access Token 생성
+    public String generateAccessToken(String userId, Long userSeq, String auth, long expirationTime) {
+        Claims claims = Jwts.claims().setSubject(userId);
+        claims.put("userSeq", userSeq);
+        claims.put("auth", auth);
 
+        return Jwts.builder()
+                .setClaims(claims)
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    // Refresh Token 생성
+    public String generateRefreshToken(String userId, long expirationTime) {
+        return Jwts.builder()
+                .setSubject(userId)
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    /* 토큰 만료 시간 추출 */
+    public long getExpiration(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+            return claims.getExpiration().getTime();
+        } catch (ExpiredJwtException e) {
+            log.info("만료된 토큰에서 만료 시간을 가져옵니다.");
+            return e.getClaims().getExpiration().getTime();
+        } catch (Exception e) {
+            log.error("토큰 만료 시간 확인 중 오류 발생: {}", e.getMessage());
+            throw new RuntimeException("토큰 만료 시간 확인 실패");
+        }
+    }
+
+    /* Token 검증 */
+    public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             log.info("Token is valid: {}", token);
@@ -49,35 +84,25 @@ public class JwtUtil {
         } catch (IllegalArgumentException e) {
             log.info("JWT Token claims empty {}", e);
         }
-
         return false;
     }
 
-    /* 넘어온 AccessToken으로 인증 객체 추출 */
+    /* Authentication 객체 추출 */
     public Authentication getAuthentication(String token) {
         Claims claims = parseClaims(token);
         String userId = claims.getSubject();
-        Long userSeq = claims.get("userSeq", Long.class);
-
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(userId);
-        if (userDetails instanceof CustomUserDetails customUserDetails) {
-            // CustomUserDetails에 userSeq 설정 확인
-            log.info("Loaded userSeq from token: {}", customUserDetails.getUserSeq());
-        }
 
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
-
-    /* Token에서 Claims 추출 */
+    /* Claims 추출 */
     public Claims parseClaims(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
 
-    /* Token에서 사용자의 id(subject 클레임) 추출 */
+    /* Token에서 사용자 ID 추출 */
     public String getUserId(String token) {
         return parseClaims(token).getSubject();
     }
-
-
 }

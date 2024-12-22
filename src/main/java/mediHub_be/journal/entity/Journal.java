@@ -27,7 +27,7 @@ public class Journal {
 
     // 논문 한글 제목
     @Column(name = "journal_korean_title", nullable = false)
-    private String journalKorean;
+    private String journalKoreanTitle;
 
     // 저자들 (List 컨버터로 변환 후 저장)
     @Convert(converter = StringListConverter.class)
@@ -56,7 +56,7 @@ public class Journal {
                    String journalSize, String journalDoi) {
         this.journalPmid = journalPmid;
         this.journalTitle = journalTitle;
-        this.journalKorean = journalKorean;
+        this.journalKoreanTitle = journalKorean;
         this.journalAuthors = journalAuthors;
         this.journalJournal = journalJournal;
         this.journalDate = journalDate;

@@ -1,4 +1,4 @@
-package mediHub_be.config;
+package mediHub_be.config.amazonS3;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

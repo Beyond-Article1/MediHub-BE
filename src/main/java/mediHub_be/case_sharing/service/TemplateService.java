@@ -33,8 +33,8 @@ public class TemplateService {
     private final PictureService pictureService;
     private final FlagService flagService;
 
-    private static final String TEMPLATE_FLAG = "template";
-    private static final String TEMPLATE_PREVIEW_FLAG = "template_preview";
+    private static final String TEMPLATE_FLAG = "TEMPLATE";
+    private static final String TEMPLATE_PREVIEW_FLAG = "TEMPLATE_PREVIEW";
 
     // 회원이 볼 수 있는 템플릿 전체 조회
     @Transactional(readOnly = true)
@@ -42,8 +42,17 @@ public class TemplateService {
         User user = userService.findByUserId(userId);
 
         return templateRepository.findByDeletedAtIsNull().stream()
-                .filter(template -> isTemplateAccessible(template, user))
-                .map(this::toTemplateListDTO)
+                .filter(template -> isTemplateAccessible(template, user)) // 접근 가능한 템플릿 필터링
+                .map(template -> {
+                    // 각 템플릿에 대한 URL 가져오기
+                    List<String> urls = pictureService.getPicturesURLByFlagTypeAndEntitySeqAndIsDeletedIsNotNull(
+                            TEMPLATE_PREVIEW_FLAG,
+                            template.getTemplateSeq()
+                    );
+
+                    // TemplateListDTO 생성
+                    return toTemplateListDTO(template, urls.isEmpty() ? null : urls.get(0));
+                })
                 .collect(Collectors.toList());
     }
 
@@ -61,7 +70,16 @@ public class TemplateService {
         };
 
         return filteredTemplates.stream()
-                .map(this::toTemplateListDTO)
+                .map(template -> {
+                    // 각 템플릿에 대한 URL 가져오기
+                    List<String> urls = pictureService.getPicturesURLByFlagTypeAndEntitySeqAndIsDeletedIsNotNull(
+                            TEMPLATE_PREVIEW_FLAG,
+                            template.getTemplateSeq()
+                    );
+
+                    // TemplateListDTO 생성
+                    return toTemplateListDTO(template, urls.isEmpty() ? null : urls.get(0));
+                })
                 .collect(Collectors.toList());
     }
 
@@ -85,12 +103,12 @@ public class TemplateService {
     public Long createTemplate(String userId, List<MultipartFile> images, MultipartFile previewImage, TemplateRequestDTO requestDTO) {
         User user = userService.findByUserId(userId);
         validateUserPart(user);
-
+        String content = requestDTO.getTemplateContent();
         Template template = Template.builder()
                 .user(user)
                 .part(user.getPart())
                 .templateTitle(requestDTO.getTemplateTitle())
-                .templateContent(requestDTO.getTemplateContent())
+                .templateContent(null)
                 .openScope(OpenScope.valueOf(requestDTO.getOpenScope()))
                 .build();
 
@@ -101,19 +119,17 @@ public class TemplateService {
             Flag previewFlag = flagService.createFlag(TEMPLATE_PREVIEW_FLAG, template.getTemplateSeq());
             pictureService.uploadPicture(previewImage, previewFlag);
         }
-
-        // 본문 이미지 저장 및 내용 치환
-        if (images != null && !images.isEmpty()) {
             flagService.createFlag(TEMPLATE_FLAG, template.getTemplateSeq());
-            String updatedContent = pictureService.replacePlaceHolderWithUrls(
-                    requestDTO.getTemplateContent(),
-                    images,
+            String updatedContent = pictureService.replaceBase64WithUrls(
+                    content,
                     TEMPLATE_FLAG,
                     template.getTemplateSeq()
             );
             template.updateTemplate(requestDTO.getTemplateTitle(), updatedContent, OpenScope.valueOf(requestDTO.getOpenScope()));
+
+            log.info("내용"+ updatedContent);
             templateRepository.save(template);
-        }
+
 
         return template.getTemplateSeq();
     }
@@ -175,14 +191,14 @@ public class TemplateService {
 
             pictureService.deletePictures(flag);
 
-            String updatedContent = pictureService.replacePlaceHolderWithUrls(
+            String updatedContent = pictureService.replaceBase64WithUrls(
                     requestDTO.getTemplateContent(),
-                    contentImages,
                     TEMPLATE_FLAG,
                     template.getTemplateSeq()
             );
 
             template.updateTemplate(requestDTO.getTemplateTitle(), updatedContent, OpenScope.valueOf(requestDTO.getOpenScope()));
+
         }
     }
 
@@ -212,10 +228,11 @@ public class TemplateService {
         };
     }
 
-    private TemplateListDTO toTemplateListDTO(Template template) {
+    private TemplateListDTO toTemplateListDTO(Template template, String url) {
         return TemplateListDTO.builder()
                 .templateSeq(template.getTemplateSeq())
                 .templateTitle(template.getTemplateTitle())
+                .templatePreviewImgUrl(url)
                 .build();
     }
 }

@@ -44,7 +44,6 @@ public class CpOpinionDTO {
                 .cpOpinionLocationSeq(cpOpinion.getCpOpinionLocationSeq())
                 .cpOpinionContent(cpOpinion.getCpOpinionContent())
                 .cpOpinionViewCount(cpOpinion.getCpOpinionViewCount())
-                .keywordSeq(cpOpinion.getKeywordSeq())
                 .createdAt(cpOpinion.getCreatedAt())
                 .updatedAt(cpOpinion.getUpdatedAt())
                 .deletedAt(cpOpinion.getDeletedAt())

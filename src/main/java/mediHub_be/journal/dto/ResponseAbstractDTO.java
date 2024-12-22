@@ -38,7 +38,7 @@ public class ResponseAbstractDTO {
         this.pmid = pmid;
         this.source = pubmedDTO.getSource();
         this.title = pubmedDTO.getTitle();
-        this.koreanTitle = pubmedDTO.getKoreanTtile();
+        this.koreanTitle = pubmedDTO.getKoreanTitle();
         this.pubDate = pubmedDTO.getPubDate();
         this.size = pubmedDTO.getSize();
         this.authors = pubmedDTO.getAuthors();

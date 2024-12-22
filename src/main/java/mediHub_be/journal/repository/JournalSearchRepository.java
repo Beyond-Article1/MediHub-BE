@@ -33,11 +33,15 @@ public interface JournalSearchRepository extends JpaRepository<JournalSearch, Lo
     List<ResponseJournalLogDTO> findJournalLogs(User user);
 
     // 북마크 순으로 상위 100개 조회 및 북마크 수 입력
-    @Query("SELECT new mediHub_be.journal.dto.ResponseJournalRankDTO(js.journal, COUNT(b)) " +
+    @Query("SELECT new mediHub_be.journal.dto.ResponseJournalRankDTO(js.journal, bm.bookmarkCount) " +
             "FROM JournalSearch js " +
-            "LEFT JOIN Bookmark b ON b.flag.flagType = 'JOURNAL' AND b.flag.flagEntitySeq = js.journal.journalSeq " +
-            "GROUP BY js.journal " +
-            "ORDER BY COUNT(b) DESC")
+            "LEFT JOIN (SELECT b.flag.flagEntitySeq AS journalSeq, COUNT(b) AS bookmarkCount " +
+            "           FROM Bookmark b " +
+            "           WHERE b.flag.flagType = 'JOURNAL' " +
+            "           GROUP BY b.flag.flagEntitySeq) bm " +
+            "ON bm.journalSeq = js.journal.journalSeq " +
+            "GROUP BY js.journal, bm.bookmarkCount " +
+            "ORDER BY bm.bookmarkCount DESC")
     Page<ResponseJournalRankDTO> findTopJournalsWithBookmarkCount(Pageable pageable);
 
 }

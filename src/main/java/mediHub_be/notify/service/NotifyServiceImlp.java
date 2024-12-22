@@ -1,5 +1,6 @@
 package mediHub_be.notify.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.entity.Flag;
@@ -28,8 +29,12 @@ public class NotifyServiceImlp implements NotifyService{
     // 연결 지속시간
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     private final SseRepositoryImpl sseRepository;
     private final NotifyRepository notifyRepository;
+
+
 
     public SseEmitter subscribe(String userId, String lastEventId) {
 
@@ -59,10 +64,13 @@ public class NotifyServiceImlp implements NotifyService{
     // 알림 보내기
     private void sendNotification(SseEmitter emitter, String eventId, String emitterId, Object data) {
         try {
+            // 데이터를 JSON 문자열로 직렬화
+            String jsonData = objectMapper.writeValueAsString(data);
+
             emitter.send(SseEmitter.event()
                     .id(eventId)
                     .name("sse")
-                    .data(data)
+                    .data(jsonData)
             );
         } catch (IOException exception) {
             sseRepository.deleteById(emitterId);

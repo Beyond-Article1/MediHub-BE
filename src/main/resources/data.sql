@@ -59,16 +59,23 @@ INSERT INTO ranking (dept_seq, ranking_num, ranking_name) VALUES
                                                               (10, 10, '직급 10');
 
 INSERT INTO part (dept_seq, part_name) VALUES
-                                           (1, 'Interventional Cardiology'),
-                                           (2, 'Neuro Surgery'),
-                                           (3, 'Child Care'),
-                                           (4, '부서 4'),
-                                           (5, '부서 5'),
-                                           (6, '부서 6'),
-                                           (7, '부서 7'),
-                                           (8, '부서 8'),
-                                           (9, '부서 9'),
-                                           (10, '부서 10');
+                                           (1, '내과'),
+                                           (1, '응급의학과'),
+                                           (1, '외과'),
+                                           (1, '마취통증의학과'),
+                                           (1, '소아청소년과'),
+                                           (1, '비뇨의학과'),
+                                           (1, '산부인과'),
+                                           (1, '피부과'),
+                                           (1, '재활의학과'),
+                                           (1, '진단검산의학과'),
+                                           (1, '이비인후과'),
+                                           (1, '병리과'),
+                                           (1, '치과'),
+                                           (1, '영상의학과'),
+                                           (1, '가정의학과'),
+                                           (1, '안과');
+
 
 INSERT INTO flag (flag_type, flag_entity_seq) VALUES
                                                       ('CASE_SHARING', 1),
@@ -260,17 +267,17 @@ INSERT INTO cp_search_data (cp_version_seq, cp_search_category_data_seq) VALUES
                                                                              (5, 1),
                                                                              (5, 2);
 
-INSERT INTO cp_opinion_location (cp_version_seq, cp_opinion_location_x, cp_opinion_location_y) VALUES
-                                                                                                   (1, 37.5665, 126.978),
-                                                                                                   (1, 35.1796, 129.0756),
-                                                                                                   (2, 35.9078, 127.7669),
-                                                                                                   (2, 37.4563, 126.7052),
-                                                                                                   (3, 35.1595, 129.0555),
-                                                                                                   (3, 36.3504, 127.3845),
-                                                                                                   (4, 37.5326, 126.995),
-                                                                                                   (4, 35.1595, 129.0555),
-                                                                                                   (5, 37.5665, 126.978),
-                                                                                                   (5, 35.1796, 129.0756);
+INSERT INTO cp_opinion_location (cp_version_seq, cp_opinion_location_page_num ,cp_opinion_location_x, cp_opinion_location_y) VALUES
+                                                                                                   (1, 1, 37.5665, 126.978),
+                                                                                                   (1, 1, 35.1796, 129.0756),
+                                                                                                   (2, 1, 35.9078, 127.7669),
+                                                                                                   (2, 1, 37.4563, 126.7052),
+                                                                                                   (3, 1, 35.1595, 129.0555),
+                                                                                                   (3, 1, 36.3504, 127.3845),
+                                                                                                   (4, 1, 37.5326, 126.995),
+                                                                                                   (4, 1, 35.1595, 129.0555),
+                                                                                                   (5, 1, 37.5665, 126.978),
+                                                                                                   (5, 1, 35.1796, 129.0756);
 
 INSERT INTO keyword (flag_seq, keyword_name) VALUES
                                                  (1, 'Orthopedics'),

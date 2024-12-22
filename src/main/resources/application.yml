@@ -34,6 +34,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
   servlet:
     multipart:
       enabled: true
@@ -48,14 +49,54 @@ spring:
       username: ${db.name}
       password: ${db.password}
 
-  #    redis:
-#      host: ${db.name}
-#      port: 6379
-#      password: ${db.password}
+    redis:
+      host: ${mariadb.host}
+      port: ${redis.port}
+      password: ${db.password}
+
+    elasticsearch:
+      repositories:
+        enabled: true
 
   web:
     resources:
       add-mappings: false # Disable static resource mapping (For NoHandlerFoundException), 스태틱 파일을 뒤져 보는 것을 방지
+
+    # 엘라스틱서치 최초 설치 시 기본 계정
+  elasticsearch:
+    uris: ${elastic_uris}
+    username: ${elastic_user}
+    password: ${elastic_password}
+    anonymous-board:
+      index:
+        name: anonymous_board
+    case-sharing:
+      index:
+        name: case_sharing
+    cp:
+      index:
+        name: cp
+    journal:
+      index:
+        name: journal
+    medical-life:
+      index:
+        name: medical_life
+    user:
+      index:
+        name: user
+
+  logstash:
+    enabled: false
+    destination:
+      host: localhost
+      port: 5000
+
+  #  logback.xml 사용 여부 결정
+  logging:
+    use-logback: false
+    level:
+      mediHub_be: DEBUG
 
 #logging:
 #  level:
@@ -64,6 +105,7 @@ spring:
 
 token:
   expiration_time: 7200000
+  refresh.token.expiration_time: 604800000
   secret: ${SECRET_KEY}
 
 user:
