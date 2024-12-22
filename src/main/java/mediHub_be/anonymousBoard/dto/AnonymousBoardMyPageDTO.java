@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AnonymousBoardMyListDTO {
+public class AnonymousBoardMyPageDTO {
 
     private Long anonymousBoardSeq;
     private String anonymousBoardTitle;
