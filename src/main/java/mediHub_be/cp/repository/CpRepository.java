@@ -29,5 +29,4 @@ public interface CpRepository extends JpaRepository<Cp, Long> {
             "                   FROM CpVersion AS cv2 " +
             "                   WHERE cv2.cpVersionSeq = :cpVersionSeq)")
     List<ResponseCpVersionDTO> findJoinCpVersionOnCpVersionSeq(@Param("cpVersionSeq") long cpVersionSeq);
-
 }
