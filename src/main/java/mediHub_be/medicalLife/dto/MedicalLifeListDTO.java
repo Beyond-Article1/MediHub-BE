@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,4 +23,7 @@ public class MedicalLifeListDTO {
     private String medicalLifeContent;
     private Boolean medicalLifeIsDeleted;
     private Long medicalLifeViewCount;
+    private LocalDateTime createdAt;
+    private List<String> keywords;
+    private String rankingName;
 }

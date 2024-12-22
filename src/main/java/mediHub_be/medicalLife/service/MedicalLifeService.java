@@ -23,6 +23,8 @@ import mediHub_be.medicalLife.dto.*;
 import mediHub_be.medicalLife.entity.MedicalLife;
 import mediHub_be.medicalLife.repository.MedicalLifeRepository;
 import mediHub_be.part.entity.Part;
+import mediHub_be.ranking.entity.Ranking;
+import mediHub_be.ranking.repository.RankingRepository;
 import mediHub_be.security.util.SecurityUtil;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
@@ -52,16 +54,15 @@ public class MedicalLifeService {
     private final AmazonS3Service amazonS3Service;
     private final BookmarkService bookmarkService;
     private final PreferService preferService;
+    private final RankingRepository rankingRepository;;
 
 
     private static final String MEDICAL_LIFE_FLAG = "MEDICAL_LIFE";
 
-
-    // 전체 회원 조회
+    // 전체 게시물 조회
     @Transactional(readOnly = true)
-
     public List<MedicalLifeListDTO> getMedicalLifeList(Long userSeq) {
-        // 유저 존재 확인
+
         userRepository.findById(userSeq).orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
         // 플래그 데이터 가져오기
@@ -73,7 +74,6 @@ public class MedicalLifeService {
                         .build())
                 .toList();
 
-        // 키워드 데이터 가져오기
         List<MedicalLifeKeywordDTO> medicalLifeKeywordDTOList = keywordRepository.findAll().stream()
                 .map(keyword -> MedicalLifeKeywordDTO.builder()
                         .keywordSeq(keyword.getKeywordSeq())
@@ -83,24 +83,26 @@ public class MedicalLifeService {
                 .toList();
 
 
-        List<MedicalLifeListDTO> medicalLifeListDTOList = medicalLifeRepository.findAllByMedicalLifeIsDeletedFalse().stream()
+        List<Ranking> rankings = rankingRepository.findAll();
+
+        return medicalLifeRepository.findAllByMedicalLifeIsDeletedFalse().stream()
                 .map(medicalLife -> {
-
-                    // 해당 게시물에 연결된 플래그 조회
-                    List<MedicalLifeFlagDTO> flagsForMedicalLife = medicalLifeFlagDTOList.stream()
-                            .filter(flag -> flag.getFlagType().equals(MEDICAL_LIFE_FLAG))
-                            .filter(flag -> flag.getFlagEntitySeq().equals(medicalLife.getMedicalLifeSeq()))
-                            .toList();
-
-                    // 플래그를 통해 해당 게시물의 키워드 조회
-                    List<MedicalLifeKeywordDTO> keywordsForFlag = medicalLifeKeywordDTOList.stream()
-                            .filter(keyword -> flagsForMedicalLife.stream()
+                    List<String> keywordsForMedicalLife = medicalLifeKeywordDTOList.stream()
+                            .filter(keyword -> medicalLifeFlagDTOList.stream()
+                                    .filter(flag -> flag.getFlagType().equals(MEDICAL_LIFE_FLAG))
+                                    .filter(flag -> flag.getFlagEntitySeq().equals(medicalLife.getMedicalLifeSeq()))
                                     .anyMatch(flag -> Objects.equals(flag.getFlagSeq(), keyword.getFlagSeq())))
+                            .map(MedicalLifeKeywordDTO::getKeywordName)
                             .toList();
 
-                    // 작성자의 부서와 파트 정보 조회
                     Dept dept = medicalLife.getUser().getPart().getDept();
                     Part part = medicalLife.getUser().getPart();
+
+                    String rankingName = rankings.stream()
+                            .filter(r -> r.getDeptSeq() == dept.getDeptSeq())
+                            .map(Ranking::getRankingName)
+                            .findFirst()
+                            .orElse("N/A");
 
                     return MedicalLifeListDTO.builder()
                             .medicalLifeSeq(medicalLife.getMedicalLifeSeq())
@@ -113,12 +115,14 @@ public class MedicalLifeService {
                             .medicalLifeContent(medicalLife.getMedicalLifeContent())
                             .medicalLifeIsDeleted(medicalLife.getMedicalLifeIsDeleted())
                             .medicalLifeViewCount(medicalLife.getMedicalLifeViewCount())
+                            .createdAt(medicalLife.getCreatedAt())
+                            .keywords(keywordsForMedicalLife)
+                            .rankingName(rankingName)
                             .build();
                 })
                 .collect(Collectors.toList());
-
-        return medicalLifeListDTOList;
     }
+
 
     // 메디컬 라이프 상세 조회
     @Transactional
