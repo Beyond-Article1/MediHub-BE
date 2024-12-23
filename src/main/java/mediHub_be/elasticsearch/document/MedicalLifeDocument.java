@@ -2,7 +2,7 @@ package mediHub_be.elasticsearch.document;
 
 import lombok.*;
 import mediHub_be.config.elasticsearch.BaseSearchDocument;
-import mediHub_be.medical_life.entity.MedicalLife;
+import mediHub_be.medicalLife.entity.MedicalLife;
 import org.springframework.data.elasticsearch.annotations.*;
 
 @Getter
