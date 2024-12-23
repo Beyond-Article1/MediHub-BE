@@ -225,7 +225,7 @@ public class NotifyServiceImlp implements NotifyService{
         Notify notify = notifyRepository.findById(notiSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_NOTIFY));
 
-        if (userId.equals(notify.getReceiver().getUserId())){
+        if (!userId.equals(notify.getReceiver().getUserId())){
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
