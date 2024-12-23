@@ -182,7 +182,6 @@ public class MedicalLifeService {
     }
 
 
-
     // 댓글 조회
     @Transactional(readOnly = true)
     public List<MedicalLifeCommentListDTO> getMedicalLifeCommentList(Long medicalLifeSeq, Long userSeq) {
@@ -208,8 +207,6 @@ public class MedicalLifeService {
                 })
                 .collect(Collectors.toList());
     }
-
-
 
     // 메디컬 라이프 게시글 생성
     @Transactional
