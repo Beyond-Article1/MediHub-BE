@@ -11,12 +11,13 @@ import mediHub_be.chat.service.KafkaProducerService;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.security.util.SecurityUtil;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -31,12 +32,11 @@ public class ChatController {
     private final KafkaProducerService kafkaProducerService;
 
     @MessageMapping("/{chatroomSeq}")
-    @SendTo("/subscribe/{chatroomSeq}")
+//    @SendTo("/subscribe/{chatroomSeq}")
     public ResponseChatMessageDTO sendMessage(@Payload ChatMessageDTO message, @DestinationVariable Long chatroomSeq) {
         log.info("Message sent to room {}: {}", chatroomSeq, message);
 
         // MongoDB에 message 저장
-        message.setChatroomSeq(chatroomSeq);
         ResponseChatMessageDTO savedMessage = chatService.saveMessage(message);
         log.info("SavedMessage: {}", savedMessage);
 
@@ -44,6 +44,22 @@ public class ChatController {
         kafkaProducerService.sendMessageToKafka(savedMessage);
 
         return savedMessage;
+    }
+
+    @Operation(summary = "첨부파일 업로드", description = "첨부파일 업로드")
+    @PostMapping(value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseChatMessageDTO sendFile(
+            @RequestPart(value = "message") ChatMessageDTO message, @RequestPart(value = "file") MultipartFile file
+    ) {
+        log.info("File sent to room {}: {}", message.getChatroomSeq(), file.getOriginalFilename());
+
+        // S3에 파일 저장 및 mongoDB에 message 저장
+        ResponseChatMessageDTO savedFileMessage = chatService.saveFileMessage(message, file);
+
+        // Kafka로 메시지 전송
+        kafkaProducerService.sendMessageToKafka(savedFileMessage);
+
+        return savedFileMessage;
     }
 
     @Operation(summary = "채팅 메시지 삭제", description = "채팅 메시지 삭제")
