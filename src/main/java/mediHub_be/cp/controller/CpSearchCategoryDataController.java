@@ -82,12 +82,12 @@ public class CpSearchCategoryDataController {
     public ResponseEntity<ApiResponse<ResponseCpSearchCategoryDataDTO>> updateCpSearchCategoryData(
             @PathVariable long cpSearchCategorySeq,
             @PathVariable long cpSearchCategoryDataSeq,
-            @RequestBody String cpSearchCategoryDataName) {
+            @RequestBody String requestBody) {
 
         logger.info("CP 검색 카테고리 데이터 업데이트 요청: cpSearchCategorySeq={}, cpSearchCategoryDataSeq={}, 새 이름={}",
-                cpSearchCategorySeq, cpSearchCategoryDataSeq, cpSearchCategoryDataName);
+                cpSearchCategorySeq, cpSearchCategoryDataSeq, requestBody);
 
-        ResponseCpSearchCategoryDataDTO dto = cpSearchCategoryDataService.updateCpSearchCategoryDataData(cpSearchCategoryDataSeq, cpSearchCategoryDataName);
+        ResponseCpSearchCategoryDataDTO dto = cpSearchCategoryDataService.updateCpSearchCategoryDataData(cpSearchCategoryDataSeq, requestBody);
         logger.info("CP 검색 카테고리 데이터 업데이트 성공: ID={}", cpSearchCategoryDataSeq);
 
         // 성공적으로 수정된 경우 200 OK 응답 반환

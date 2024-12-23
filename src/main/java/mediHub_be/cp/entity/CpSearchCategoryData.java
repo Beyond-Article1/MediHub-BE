@@ -3,11 +3,13 @@ package mediHub_be.cp.entity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 
 @Entity
 @Table(name = "cp_search_category_data")
 @Getter
+@NoArgsConstructor
 public class CpSearchCategoryData extends BaseFullEntity {
 
     @Id

@@ -26,7 +26,7 @@ public class CpSearchCategoryController {
     // Service
     private final CpSearchCategoryService cpSearchCategoryService;
 
-    private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpController"); // Logger
+    private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.cpSearchCategoryController"); // Logger
 
     // CP 검색 카테고리 전체 조회
     @GetMapping
