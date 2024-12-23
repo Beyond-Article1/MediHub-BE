@@ -25,7 +25,7 @@ public class PartService {
     // 과 등록
     @Transactional(readOnly = true)
     public List<PartDTO> getAllParts() {
-        return partRepository.findAll()
+        return partRepository.findByDeletedAtIsNull()
                 .stream()
                 .map(part -> PartDTO.builder()
                         .partSeq(part.getPartSeq())

@@ -27,18 +27,22 @@ public class CpOpinionVoteService {
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpOpinionVoteService");    // Logger
 
     /**
-     * 주어진 CP 버전 번호와 투표 정보를 사용하여 새로운 CP 의견 투표를 생성합니다.
+     * 주어진 CP 의견 번호와 투표 정보를 사용하여 새로운 CP 의견 투표를 생성합니다.
      *
-     * @param cpVersionSeq  CP 버전 번호
+     * @param cpOpinionSeq  CP 의견 번호
      * @param cpOpinionVote CP 의견 투표 여부 (true: 찬성, false: 반대)
      * @return 생성된 CP 의견 투표의 DTO
      * @throws CustomException 데이터베이스 처리 중 오류가 발생한 경우
      */
     @Transactional
-    public CpOpinionVoteDTO createCpOpinionVote(long cpVersionSeq, boolean cpOpinionVote) {
-        logger.info("CP 버전 번호: {}로 CP 의견 투표를 생성합니다. 투표 여부: {}", cpVersionSeq, cpOpinionVote);
+    public CpOpinionVoteDTO createCpOpinionVote(long cpOpinionSeq, boolean cpOpinionVote) {
+        logger.info("CP 의견 번호: {}로 CP 의견 투표를 생성합니다. 투표 여부: {}", cpOpinionSeq, cpOpinionVote);
 
-        CpOpinionVote entity = CpOpinionVote.toEntity(cpVersionSeq, SecurityUtil.getCurrentUserSeq(), cpOpinionVote);
+        if (SecurityUtil.getCurrentUserSeq() == null) {
+            throw new RuntimeException("로그인해야 합니다.");
+        }
+
+        CpOpinionVote entity = CpOpinionVote.toEntity(cpOpinionSeq, SecurityUtil.getCurrentUserSeq(), cpOpinionVote);
         CpOpinionVoteDTO dto;
 
         try {
@@ -66,7 +70,7 @@ public class CpOpinionVoteService {
      */
     @Transactional
     public void deleteCpOpinionVote(long cpOpinionVoteSeq) {
-        logger.info("CP 의견 투표 삭제 요청. 투표 ID: {}", cpOpinionVoteSeq);
+        logger.info("CP 의견 투표 삭제 요청. 투표 Seq: {}", cpOpinionVoteSeq);
 
         try {
             // 삭제 시도
@@ -94,7 +98,7 @@ public class CpOpinionVoteService {
             List<CpOpinionVote> entityList = cpOpinionVoteRepository.findByCpOpinionSeq(cpOpinionSeq);
 
             return entityList.stream()
-                    .map(CpOpinionVote::getCpOpinionSeq)
+                    .map(CpOpinionVote::getCpOpinionVoteSeq)
                     .toList();
         } catch (DataAccessException e) {
             logger.error("CP 의견 투표 정보를 가져오는 중 오류 발생: {}", e.getMessage());

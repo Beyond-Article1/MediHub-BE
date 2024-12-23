@@ -31,7 +31,6 @@ public class KeywordService {
         }
     }
 
-
     // 키워드 수정
     @Transactional
     public void updateKeywords(List<String> newKeywords, String flagType, Long entitySeq) {
@@ -64,6 +63,13 @@ public class KeywordService {
 //        flagService.deleteFlag(flag.getFlagSeq());
     }
 
+    // Keyword 목록 조회
+    @Transactional(readOnly = true)
+    public List<Keyword> findAllKeyword() {
+
+        return keywordRepository.findAll();
+    }
+
     // 특정 게시물의 키워드 조회
     @Transactional
     public List<CaseSharingKeywordDTO> getKeywords(String flagType, Long entitySeq) {
@@ -76,5 +82,9 @@ public class KeywordService {
                 ))
                 .collect(Collectors.toList());
     }
-}
 
+    @Transactional(readOnly = true)
+    public List<Keyword> getKeywordList(String flagType, Long entitySeq) {
+        return keywordRepository.findByFlagTypeAndEntitySeq(flagType, entitySeq);
+    }
+}

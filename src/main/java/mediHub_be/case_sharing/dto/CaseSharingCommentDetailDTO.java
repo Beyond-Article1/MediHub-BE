@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CaseSharingCommentDetailDTO {
@@ -16,8 +15,6 @@ public class CaseSharingCommentDetailDTO {
     private String userName; // 댓글 작성자명
     private String userRankName; //댓글 작성자 직위명
     private String content; // 댓글 내용
-    private Integer startOffset; // 본문 시작 위치
-    private Integer endOffset; // 본문 끝 위치
     private LocalDateTime createdAt; // 작성일
     private String userProfileURL; // 댓글 작성자 이미지 url
 

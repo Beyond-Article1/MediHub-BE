@@ -9,6 +9,7 @@ import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.dept.entity.Dept;
 import mediHub_be.user.dto.UserResponseDTO;
 import mediHub_be.user.dto.UserSearchDTO;
 import mediHub_be.user.dto.UserUpdateRequestDTO;
@@ -53,10 +54,13 @@ public class UserService {
         // 프로필 이미지 URL 조회
         String profileImage = null;
         if (flag != null) {
-            profileImage = pictureRepository.findByFlag_FlagSeq(flag.getFlagSeq())
+            profileImage = pictureRepository.findByFlag_FlagSeqAndDeletedAtIsNull(flag.getFlagSeq())
                     .map(Picture::getPictureUrl)
                     .orElse(null);
         }
+
+        String deptName = user.getPart() != null && user.getPart().getDept() != null
+                ? user.getPart().getDept().getDeptName() : null;
 
         return UserResponseDTO.builder()
                 .userId(user.getUserId())
@@ -64,7 +68,8 @@ public class UserService {
                 .userEmail(user.getUserEmail())
                 .userPhone(user.getUserPhone())
                 .rankingName(user.getRanking().getRankingName())
-                .partName(user.getPart().getPartName())
+                .partName(user.getPart() != null ? user.getPart().getPartName() : null)
+                .deptName(deptName)
                 .profileImage(profileImage)
                 .build();
     }
@@ -135,6 +140,7 @@ public class UserService {
 
                     // UserSearchDTO 생성
                     UserSearchDTO dto = new UserSearchDTO();
+                    dto.setUserSeq(user.getUserSeq());
                     dto.setUserName(user.getUserName());
                     dto.setUserEmail(user.getUserEmail());
                     dto.setUserPhone(user.getUserPhone());

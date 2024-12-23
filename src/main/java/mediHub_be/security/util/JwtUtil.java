@@ -34,9 +34,13 @@ public class JwtUtil {
     }
 
     // Access Token 생성
-    public String generateAccessToken(String userId, long expirationTime) {
+    public String generateAccessToken(String userId, Long userSeq, String auth, long expirationTime) {
+        Claims claims = Jwts.claims().setSubject(userId);
+        claims.put("userSeq", userSeq);
+        claims.put("auth", auth);
+
         return Jwts.builder()
-                .setSubject(userId)
+                .setClaims(claims)
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();

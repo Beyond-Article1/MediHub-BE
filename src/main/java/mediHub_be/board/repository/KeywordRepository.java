@@ -19,5 +19,6 @@ public interface KeywordRepository extends JpaRepository<Keyword, Long> {
 
 
     void deleteByFlagSeq(Long flagSeq);
+    
 }
 
