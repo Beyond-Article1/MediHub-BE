@@ -31,25 +31,57 @@ public class AnonymousBoardController {
 
     @Operation(summary = "익명 게시판 전체 목록 조회", description = "필터링 되지 않은 익명 게시판 전체 글 목록 조회")
     @GetMapping
-    public ResponseEntity<ApiResponse<List<AnonymousBoardListDTO>>> getAllBoards() {
+    public ResponseEntity<ApiResponse<List<AnonymousBoardDTO>>> getAllBoards() {
 
         Long userSeq = SecurityUtil.getCurrentUserSeq();
-        List<AnonymousBoardListDTO> anonymousBoardListDTOList = anonymousBoardService.getBoardList(userSeq);
+        List<AnonymousBoardDTO> anonymousBoardDTOList = anonymousBoardService.getBoardList(userSeq);
 
-        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardListDTOList));
+        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardDTOList));
+    }
+
+    @Operation(summary = "내가 작성한 익명 게시글 목록 조회", description = "내가 작성한, 삭제되지 않은 익명 게시글 목록 조회")
+    @GetMapping("/myPage")
+    public ResponseEntity<ApiResponse<List<AnonymousBoardMyPageDTO>>> getMyPageBoards() {
+
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        List<AnonymousBoardMyPageDTO> anonymousBoardMyPageDTOList = anonymousBoardService.getMyPageBoardList(userSeq);
+
+        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardMyPageDTOList));
+    }
+
+    @Operation(summary = "내가 북마크 한 익명 게시글 목록 조회", description = "내가 북마크 한, 삭제되지 않은 익명 게시글 목록 조회")
+    @GetMapping("/myPage/bookmark")
+    public ResponseEntity<ApiResponse<List<AnonymousBoardDTO>>> getBookMarkedBoards() {
+
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        List<AnonymousBoardDTO> anonymousBoardDTOList = anonymousBoardService.getBookMarkedBoardList(userSeq);
+
+        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardDTOList));
+    }
+
+    @Operation(
+            summary = "익명 게시판 메인 TOP 3 조회",
+            description = "메인 페이지에 들어갈 일주일 내 작성된 게시글 중 조회 수 TOP 3 조회"
+    )
+    @GetMapping("/top3")
+    public ResponseEntity<ApiResponse<List<AnonymousBoardTop3DTO>>> getBoardsTop3() {
+
+        List<AnonymousBoardTop3DTO> top3BoardsList = anonymousBoardService.getTop3Boards();
+
+        return ResponseEntity.ok(ApiResponse.ok(top3BoardsList));
     }
 
     @Operation(summary = "익명 게시판 댓글 전체 목록 조회", description = "필터링 되지 않은 익명 게시판 전체 댓글 목록 조회")
     @GetMapping(value = "/{anonymousBoardSeq}/comment")
-    public ResponseEntity<ApiResponse<List<AnonymousBoardCommentListDTO>>> getAllBoardComments(
+    public ResponseEntity<ApiResponse<List<AnonymousBoardCommentDTO>>> getAllBoardComments(
             @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq
     ) {
 
         Long userSeq = SecurityUtil.getCurrentUserSeq();
-        List<AnonymousBoardCommentListDTO> anonymousBoardCommentListDTOList = anonymousBoardService
+        List<AnonymousBoardCommentDTO> anonymousBoardCommentDTOList = anonymousBoardService
                 .getBoardCommentList(anonymousBoardSeq, userSeq);
 
-        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardCommentListDTOList));
+        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardCommentDTOList));
     }
 
     @Operation(
@@ -74,7 +106,7 @@ public class AnonymousBoardController {
         return ResponseEntity.ok(ApiResponse.ok(anonymousBoardDetailDTO));
     }
 
-    @Operation(summary = "익명 게시글 등록", description = "글 작성 및 등록")
+    @Operation(summary = "익명 게시글 등록", description = "익명 게시판 글 작성 및 등록")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Long>> createAnonymousBoard(
             @RequestPart("data") AnonymousBoardCreateRequestDTO anonymousBoardCreateRequestDTO,
@@ -91,7 +123,7 @@ public class AnonymousBoardController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(anonymousBoardSeq));
     }
 
-    @Operation(summary = "익명 게시글 댓글 등록", description = "익명 게시글 댓글 작성 및 등록")
+    @Operation(summary = "익명 게시글 댓글 등록", description = "익명 게시판 댓글 작성 및 등록")
     @PostMapping(value = "/{anonymousBoardSeq}/comment")
     public ResponseEntity<ApiResponse<Long>> createAnonymousBoardComment(
             @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq,
@@ -108,26 +140,26 @@ public class AnonymousBoardController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(commentSeq));
     }
 
-    @Operation(summary = "익명 게시글 수정", description = "익명 게시글의 제목과 내용, 키워드 등을 수정")
+    @Operation(summary = "익명 게시판 내용 수정", description = "익명 게시판 글의 제목과 내용, 키워드 등을 수정")
     @PutMapping(value = "/{anonymousBoardSeq}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Long>> updateAnonymousBoard(
             @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq,
             @RequestPart AnonymousBoardUpdateRequestDTO anonymousBoardUpdateRequestDTO,
-            @RequestPart(value = "images", required = false) List<MultipartFile> newImageList
+            @RequestPart(value = "images", required = false) List<MultipartFile> newPictureList
     ) {
 
         Long userSeq = SecurityUtil.getCurrentUserSeq();
         Long updatedAnonymousBoardSeq = anonymousBoardService.updateAnonymousBoard(
                 anonymousBoardSeq,
                 anonymousBoardUpdateRequestDTO,
-                newImageList,
+                newPictureList,
                 userSeq
         );
 
         return ResponseEntity.ok(ApiResponse.ok(updatedAnonymousBoardSeq));
     }
 
-    @Operation(summary = "익명 게시글 댓글 수정", description = "익명 게시글 댓글의 내용을 수정")
+    @Operation(summary = "익명 게시판 댓글 내용 수정", description = "익명 게시판 댓글 글의 내용을 수정")
     @PutMapping(value = "/{anonymousBoardSeq}/comment/{commentSeq}")
     public ResponseEntity<ApiResponse<Long>> updateAnonymousBoardComment(
             @PathVariable("anonymousBoardSeq") Long anonymousBoardSeq,
@@ -146,7 +178,7 @@ public class AnonymousBoardController {
         return ResponseEntity.ok(ApiResponse.ok(updatedCommentSeq));
     }
 
-    @Operation(summary = "익명 게시글 삭제", description = "익명 게시글 소프트 삭제")
+    @Operation(summary = "익명 게시글 삭제", description = "익명 게시글 삭제")
     @DeleteMapping(value = "/{anonymousBoardSeq}")
     public ResponseEntity<ApiResponse<String>> deleteAnonymousBoard(@PathVariable Long anonymousBoardSeq) {
 
@@ -161,7 +193,7 @@ public class AnonymousBoardController {
         ));
     }
 
-    @Operation(summary = "익명 게시글 댓글 삭제", description = "익명 게시글 댓글 소프트 삭제")
+    @Operation(summary = "익명 게시글 댓글 삭제", description = "익명 게시글 댓글 삭제")
     @DeleteMapping(value = "/{anonymousBoardSeq}/comment/{commentSeq}")
     public ResponseEntity<ApiResponse<String>> deleteAnonymousBoardComment(
             @PathVariable Long anonymousBoardSeq,
@@ -179,7 +211,7 @@ public class AnonymousBoardController {
         ));
     }
 
-    @Operation(summary = "익명 게시글 북마크", description = "익명 게시글 북마크를 등록/해제")
+    @Operation(summary = "익명 게시글 북마크", description = "익명 게시글 북마크 등록/해제")
     @PatchMapping("/{anonymousBoardSeq}/bookmark")
     public ResponseEntity<ApiResponse<Boolean>> toggleBookmark(@PathVariable Long anonymousBoardSeq) {
 
@@ -201,7 +233,7 @@ public class AnonymousBoardController {
         return ResponseEntity.ok(ApiResponse.ok(isBookmarked));
     }
 
-    @Operation(summary = "익명 게시글 좋아요", description = "익명 게시글 좋아요를 등록/해제")
+    @Operation(summary = "익명 게시글 좋아요", description = "익명 게시글 좋아요 등록/해제")
     @PatchMapping("/{anonymousBoardSeq}/prefer")
     public ResponseEntity<ApiResponse<Boolean>> togglePrefer(@PathVariable Long anonymousBoardSeq) {
 
@@ -221,25 +253,5 @@ public class AnonymousBoardController {
         boolean isPreferred = anonymousBoardService.isPreferred(anonymousBoardSeq, userId);
 
         return ResponseEntity.ok(ApiResponse.ok(isPreferred));
-    }
-
-    @Operation(summary = "내가 작성한 익명 게시글 목록 조회", description = "내가 작성한, 삭제되지 않은 익명 게시글 목록 조회")
-    @GetMapping("/mypage")
-    public ResponseEntity<ApiResponse<List<AnonymousBoardMyListDTO>>> getMyBoards() {
-
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        List<AnonymousBoardMyListDTO> anonymousBoardMyDTOList = anonymousBoardService.getMyBoardList(userSeq);
-
-        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardMyDTOList));
-    }
-
-    @Operation(summary = "내가 북마크 한 익명 게시글 목록 조회", description = "내가 북마크 한, 삭제되지 않은 익명 게시글 목록 조회")
-    @GetMapping("/mypage/bookmark")
-    public ResponseEntity<ApiResponse<List<AnonymousBoardListDTO>>> getBookMarkedBoards() {
-
-        Long userSeq = SecurityUtil.getCurrentUserSeq();
-        List<AnonymousBoardListDTO> anonymousBoardListDTOList = anonymousBoardService.getBookMarkedBoardList(userSeq);
-
-        return ResponseEntity.ok(ApiResponse.ok(anonymousBoardListDTOList));
     }
 }
