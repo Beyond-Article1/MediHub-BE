@@ -6,6 +6,7 @@ import mediHub_be.board.repository.FlagRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -13,6 +14,13 @@ import java.util.Optional;
 public class FlagService {
 
     private final FlagRepository flagRepository;
+
+    // Flag 목록 조회
+    @Transactional(readOnly = true)
+    public List<Flag> findAllFlag() {
+
+        return flagRepository.findAll();
+    }
 
     // Flag 조회 (존재하지 않으면 빈 Optional 반환)
     @Transactional(readOnly = true)
@@ -35,4 +43,3 @@ public class FlagService {
         flagRepository.deleteById(flagSeq);
     }
 }
-

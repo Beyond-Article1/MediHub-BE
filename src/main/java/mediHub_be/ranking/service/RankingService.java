@@ -1,6 +1,8 @@
 package mediHub_be.ranking.service;
 
 import lombok.RequiredArgsConstructor;
+import mediHub_be.common.exception.CustomException;
+import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.ranking.dto.RankingDTO;
 import mediHub_be.ranking.entity.Ranking;
 import mediHub_be.ranking.repository.RankingRepository;
@@ -16,6 +18,7 @@ public class RankingService {
 
     private final RankingRepository rankingRepository;
 
+    // 직급 조회
     @Transactional(readOnly = true)
     public List<RankingDTO> getAllRankings() {
         return rankingRepository.findAll()
@@ -29,6 +32,7 @@ public class RankingService {
                 .collect(Collectors.toList());
     }
 
+    // 직급 등록
     @Transactional
     public RankingDTO createRanking(RankingDTO rankingDTO) {
         Ranking ranking = Ranking.builder()
@@ -37,20 +41,21 @@ public class RankingService {
                 .rankingName(rankingDTO.getRankingName())
                 .build();
 
-        ranking = rankingRepository.save(ranking);
+        Ranking savedRanking = rankingRepository.save(ranking);
 
         return RankingDTO.builder()
-                .rankingSeq(ranking.getRankingSeq())
-                .deptSeq(ranking.getDeptSeq())
-                .rankingNum(ranking.getRankingNum())
-                .rankingName(ranking.getRankingName())
+                .rankingSeq(savedRanking.getRankingSeq())
+                .deptSeq(savedRanking.getDeptSeq())
+                .rankingNum(savedRanking.getRankingNum())
+                .rankingName(savedRanking.getRankingName())
                 .build();
     }
 
+    // 직급 수정
     @Transactional
     public RankingDTO updateRanking(long rankingSeq, RankingDTO rankingDTO) {
         Ranking ranking = rankingRepository.findById(rankingSeq)
-                .orElseThrow(() -> new RuntimeException("Ranking not found"));
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_RANKING));
 
         ranking.updateRanking(rankingDTO.getDeptSeq(), rankingDTO.getRankingNum(), rankingDTO.getRankingName());
 
@@ -62,10 +67,11 @@ public class RankingService {
                 .build();
     }
 
+    // 직급 삭제
     @Transactional
     public void deleteRanking(long rankingSeq) {
         if (!rankingRepository.existsById(rankingSeq)) {
-            throw new RuntimeException("Ranking not found");
+            throw new CustomException(ErrorCode.NOT_FOUND_RANKING);
         }
         rankingRepository.deleteById(rankingSeq);
     }

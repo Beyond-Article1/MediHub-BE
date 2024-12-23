@@ -46,7 +46,7 @@ public class NotifyServiceImlp implements NotifyService{
 
         // 503 에러를 방지하기 위한 더미 이벤트 전송
         String eventId = makeTimeIncludeId(userId);
-        sendNotification(emitter, eventId, emitterId, "EventStream Created. [userId=" + userId + "]");
+        sendNotification("sse", emitter, eventId, emitterId, "EventStream Created. [userId=" + userId + "]");
 
         // 클라이언트가 미수신한 Event 목록이 존재할 경우 전송하여 Event 유실을 예방
         if (hasLostData(lastEventId)) {
@@ -62,14 +62,14 @@ public class NotifyServiceImlp implements NotifyService{
     }
 
     // 알림 보내기
-    private void sendNotification(SseEmitter emitter, String eventId, String emitterId, Object data) {
+    private void sendNotification(String eventName, SseEmitter emitter, String eventId, String emitterId, Object data) {
         try {
             // 데이터를 JSON 문자열로 직렬화
             String jsonData = objectMapper.writeValueAsString(data);
 
             emitter.send(SseEmitter.event()
                     .id(eventId)
-                    .name("sse")
+                    .name(eventName)
                     .data(jsonData)
             );
         } catch (IOException exception) {
@@ -87,7 +87,7 @@ public class NotifyServiceImlp implements NotifyService{
         Map<String, Object> eventCaches = sseRepository.findAllEventCacheStartWithByMemberId(String.valueOf(userId));
         eventCaches.entrySet().stream()
                 .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
-                .forEach(entry -> sendNotification(emitter, entry.getKey(), emitterId, entry.getValue()));
+                .forEach(entry -> sendNotification("sse", emitter, entry.getKey(), emitterId, entry.getValue()));
     }
 
     // 받는 사람이 한명인 경우 (ex. 게시글에 대한 댓글 발생 -> 게시글 작성자에게만 알림 생성)
@@ -105,7 +105,7 @@ public class NotifyServiceImlp implements NotifyService{
         emitters.forEach(
                 (key, emitter) -> {
                     sseRepository.saveEventCache(key, notification);
-                    sendNotification(emitter, eventId, key, NotifyDTO.createResponse(notification, sender.getUserName(), sender.getPart().getPartName()));
+                    sendNotification("sse", emitter, eventId, key, NotifyDTO.createResponse(notification, sender.getUserName(), sender.getPart().getPartName()));
                 }
         );
     }
@@ -126,11 +126,33 @@ public class NotifyServiceImlp implements NotifyService{
             emitters.forEach(
                     (key, emitter) -> {
                         sseRepository.saveEventCache(key, notification);
-                        sendNotification(emitter, eventId, key, NotifyDTO.createResponse(notification, sender.getUserName(), sender.getPart().getPartName()));
+                        sendNotification("sse", emitter, eventId, key, NotifyDTO.createResponse(notification, sender.getUserName(), sender.getPart().getPartName()));
                     }
             );
         }
 
+    }
+
+    /**
+     * 채팅방 생성시 알림 발생시키는 로직
+     */
+    @Override
+    public void sendChat(List<User> receivers) {
+
+        log.debug("채팅방 생성");
+
+        for (User receiver : receivers) {
+
+            String receiverUserId = receiver.getUserId();
+            String eventId = receiverUserId + "_" + System.currentTimeMillis();
+            Map<String, SseEmitter> emitters = sseRepository.findAllEmitterStartWithByMemberId(receiverUserId);
+            emitters.forEach(
+                    (key, emitter) -> {
+                        sseRepository.saveEventCache(key, "newChat");
+                        sendNotification("newChat", emitter, eventId, key, "newChat");
+                    }
+            );
+        }
     }
 
     // 알림 생성 로직

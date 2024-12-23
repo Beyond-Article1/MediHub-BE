@@ -1,5 +1,4 @@
-package mediHub_be.medical_life.dto;
-
+package mediHub_be.medicalLife.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class MedicalLifeKeywordDTO {
-
     private Long keywordSeq;
+    private Long flagSeq;
     private String keywordName;
 }
