@@ -406,8 +406,28 @@ public class CaseSharingService {
                 .collect(Collectors.toList());
 
     }
+    // 17. 일주일 내 조회수 top3 케이스 공유 리스트 반환
+    @Transactional(readOnly = true)
+    public List<CaseSharingMain3DTO> getTop3Cases() {
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusDays(7);
+        Pageable top3 = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "caseSharingViewCount"));
 
+        List<CaseSharing> topCases = caseSharingRepository.findTop3ByCreatedAtAfterOrderByCaseSharingViewCountDesc(oneWeekAgo, top3);
 
+        return topCases.stream()
+                .map(caseSharing -> {
+                    String url = pictureService.getCaseSharingFirstImageUrl(caseSharing.getCaseSharingSeq()); // caseSharingSeq 전달
+                    return new CaseSharingMain3DTO(
+                            caseSharing.getCaseSharingSeq(),
+                            caseSharing.getCaseSharingTitle(),
+                            caseSharing.getUser().getUserName(),
+                            caseSharing.getPart().getPartName(),
+                            caseSharing.getUser().getRanking().getRankingName(),
+                            url // 대표 이미지 URL
+                    );
+                })
+                .toList();
+    }
 
     private void updateContentWithImages(CaseSharing caseSharing, String content) {
         // Base64 이미지 -> S3 URL 변환
@@ -468,25 +488,5 @@ public class CaseSharingService {
     }
 
 
-    @Transactional(readOnly = true)
-    public List<CaseSharingMain3DTO> getTop3Cases() {
-        LocalDateTime oneWeekAgo = LocalDateTime.now().minusDays(7);
-        Pageable top3 = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "caseSharingViewCount"));
 
-        List<CaseSharing> topCases = caseSharingRepository.findTop3ByCreatedAtAfterOrderByCaseSharingViewCountDesc(oneWeekAgo, top3);
-
-        return topCases.stream()
-                .map(caseSharing -> {
-                    String url = pictureService.getCaseSharingFirstImageUrl(caseSharing.getCaseSharingSeq()); // caseSharingSeq 전달
-                    return new CaseSharingMain3DTO(
-                            caseSharing.getCaseSharingSeq(),
-                            caseSharing.getCaseSharingTitle(),
-                            caseSharing.getUser().getUserName(),
-                            caseSharing.getPart().getPartName(),
-                            caseSharing.getUser().getRanking().getRankingName(),
-                            url // 대표 이미지 URL
-                    );
-                })
-                .toList();
-    }
 }

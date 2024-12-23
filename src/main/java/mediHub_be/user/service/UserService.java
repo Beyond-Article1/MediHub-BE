@@ -165,6 +165,16 @@ public class UserService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
 
+    public boolean isDoctor(Long userSeq) {
+        User user = userRepository.findByUserSeq(userSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+
+        if ("진료과".equals(user.getPart().getDept().getDeptName())) {
+            return true;
+        }
+        return false;
+    }
+
     public boolean validateAdmin(User user){
         return !user.getUserAuth().equals(UserAuth.ADMIN);
     }
