@@ -474,6 +474,7 @@ public class MedicalLifeService {
         return preferService.isPreferred(MEDICAL_LIFE_FLAG, medicalLifeSeq, userId);
     }
 
+    // 나의 게시물 조회
     @Transactional(readOnly = true)
     public List<MedicalLifeMyListDTO> getMyMedicalLifeList(Long userSeq) {
 
@@ -481,15 +482,44 @@ public class MedicalLifeService {
 
         List<MedicalLife> medicalLifeList = medicalLifeRepository.findByUser_UserSeqAndMedicalLifeIsDeletedFalse(userSeq);
 
+        List<MedicalLifeFlagDTO> medicalLifeFlagDTOList = flagRepository.findAll().stream()
+                .map(flag -> MedicalLifeFlagDTO.builder()
+                        .flagSeq(flag.getFlagSeq())
+                        .flagType(flag.getFlagType())
+                        .flagEntitySeq(flag.getFlagEntitySeq())
+                        .build())
+                .toList();
+
+        List<MedicalLifeKeywordDTO> medicalLifeKeywordDTOList = keywordRepository.findAll().stream()
+                .map(keyword -> MedicalLifeKeywordDTO.builder()
+                        .keywordSeq(keyword.getKeywordSeq())
+                        .flagSeq(keyword.getFlagSeq())
+                        .keywordName(keyword.getKeywordName())
+                        .build())
+                .toList();
+
         return medicalLifeList.stream()
-                .map(medicalLife -> new MedicalLifeMyListDTO(
-                        medicalLife.getMedicalLifeSeq(),
-                        medicalLife.getMedicalLifeTitle(),
-                        medicalLife.getMedicalLifeViewCount(),
-                        medicalLife.getCreatedAt()
-                ))
+                .map(medicalLife -> {
+                    List<String> keywordsForMedicalLife = medicalLifeFlagDTOList.stream()
+                            .filter(flag -> flag.getFlagType().equals(MEDICAL_LIFE_FLAG) &&
+                                    flag.getFlagEntitySeq().equals(medicalLife.getMedicalLifeSeq()))
+                            .flatMap(flag -> medicalLifeKeywordDTOList.stream()
+                                    .filter(keyword -> keyword.getFlagSeq().equals(flag.getFlagSeq()))
+                                    .map(MedicalLifeKeywordDTO::getKeywordName))
+                            .toList();
+
+                    return new MedicalLifeMyListDTO(
+                            medicalLife.getMedicalLifeSeq(),
+                            medicalLife.getMedicalLifeTitle(),
+                            medicalLife.getMedicalLifeViewCount(),
+                            keywordsForMedicalLife, // 키워드 추가
+                            medicalLife.getUser().getUserName(),
+                            medicalLife.getCreatedAt()
+                    );
+                })
                 .toList();
     }
+
 
     @Transactional(readOnly = true)
     public List<MedicalLifeListDTO> getBookMarkedMedicalLifeList(Long userSeq) {
