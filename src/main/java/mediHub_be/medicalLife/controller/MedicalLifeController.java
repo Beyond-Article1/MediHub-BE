@@ -119,6 +119,11 @@ public class MedicalLifeController {
             @PathVariable("commentSeq") Long commentSeq,
             @RequestBody MedicalLifeCommentRequestDTO medicalLifeCommentRequestDTO
     ) {
+
+        log.info("Received request to update comment");
+        log.info("medicalLifeSeq: {}, commentSeq: {}, commentContent: {}",
+                medicalLifeSeq, commentSeq, medicalLifeCommentRequestDTO.getCommentContent());
+
         Long userSeq = SecurityUtil.getCurrentUserSeq();
 
         Long updatedCommentSeq = medicalLifeService.updateMedicalLifeComment(

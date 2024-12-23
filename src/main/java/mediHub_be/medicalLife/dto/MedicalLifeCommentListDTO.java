@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class MedicalLifeCommentListDTO {
 
+    private Long commentSeq;
     private String userName;
     private String part;
     private String rankingName;

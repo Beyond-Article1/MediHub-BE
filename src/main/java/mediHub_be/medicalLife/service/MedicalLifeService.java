@@ -212,6 +212,7 @@ public class MedicalLifeService {
                     String rankingName = (commentUser.getRanking() != null) ? commentUser.getRanking().getRankingName() : "정보 없음";
 
                     return MedicalLifeCommentListDTO.builder()
+                            .commentSeq(comment.getCommentSeq())
                             .userName(commentUser.getUserName())
                             .part(partName)
                             .rankingName(rankingName)
@@ -354,7 +355,9 @@ public class MedicalLifeService {
             throw new CustomException(ErrorCode.NOT_FOUND_COMMENT);
         }
 
+        log.info("User attempting update - User ID: {}, Comment Owner ID: {}", user.getUserSeq(), comment.getUser().getUserSeq());
         if (!comment.getUser().equals(user)) {
+            log.error("Unauthorized access - User ID: {}, Comment Owner ID: {}", user.getUserSeq(), comment.getUser().getUserSeq());
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
