@@ -26,7 +26,13 @@ public class CpSearchCategoryData extends BaseFullEntity {
     private String cpSearchCategoryDataName;        // cp 검색카테고리 데이터명
 
     @Builder
-    public CpSearchCategoryData(long userSeq, long cpSearchCategorySeq, String cpSearchCategoryDataName) {
+    public CpSearchCategoryData(
+            long userSeq,
+            long cpSearchCategorySeq,
+            String cpSearchCategoryDataName) {
+        this.userSeq = userSeq;
+        this.cpSearchCategorySeq = cpSearchCategorySeq;
+        this.cpSearchCategoryDataName = cpSearchCategoryDataName;
     }
 
     public void updateUserSeq(long userSeq) {

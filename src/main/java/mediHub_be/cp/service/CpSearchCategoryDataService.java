@@ -109,6 +109,7 @@ public class CpSearchCategoryDataService {
     public ResponseCpSearchCategoryDataDTO createCpSearchCategoryData(long cpSearchCategorySeq, String cpSearchCategoryDataName) {
         // 1. 유효성 검사 및 중복 검사
         cpSearchCategoryDataName = validateAndCheckDuplicateData(cpSearchCategoryDataName);
+        logger.info("유효성 검사 및 중복 검사 통과");
 
         // 2. 데이터 저장
         CpSearchCategoryData entity = CpSearchCategoryData.builder()
@@ -116,9 +117,11 @@ public class CpSearchCategoryDataService {
                 .cpSearchCategorySeq(cpSearchCategorySeq)
                 .cpSearchCategoryDataName(cpSearchCategoryDataName)
                 .build();
+        logger.info("생성할 정보 = {}", entity);
 
         try {
             entity = cpSearchCategoryDataRepository.save(entity); // 저장 후 반환된 엔티티를 업데이트
+            logger.info("생성 완료");
         } catch (DataAccessException e) {
             logger.error("CP 검색 카테고리 데이터 저장 중 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
