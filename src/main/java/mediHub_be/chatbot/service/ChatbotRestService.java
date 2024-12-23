@@ -1,5 +1,6 @@
 package mediHub_be.chatbot.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.chatbot.entity.ChatbotMessage;
@@ -12,11 +13,13 @@ import mediHub_be.common.utils.DateTimeUtil;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import mediHub_be.user.service.UserService;
+import org.springdoc.core.service.OpenAPIService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,9 @@ public class ChatbotRestService {
     private final ChatbotSessionRepository chatbotSessionRepository;
     private final ChatbotMessageRepository chatbotMessageRepository;
     private final UserService userService;
+    private final EmbeddingService embeddingService;
+    private final VectorDatabase vectorDatabase;
+    private final OpenAIService openAIService;
 
     // 1. 새로운 채팅 세션 생성
     @Transactional
@@ -120,4 +126,27 @@ public class ChatbotRestService {
                 .orElseThrow(()-> new CustomException(ErrorCode.NOT_FOUND_CHATBOT_SESSION));
     }
 
+    public String answerQuestion(String question) {
+        try {
+            // 1. 질문을 벡터화
+            List<Float> questionEmbedding = embeddingService.getEmbedding(question);
+
+            // 2. 벡터 데이터베이스에서 검색
+            List<Map<String, String>> searchResults = vectorDatabase.search(convertToFloatArray(questionEmbedding), 5);
+
+            // 3. OpenAI Chat API 호출
+            return openAIService.generateAnswer(question, searchResults);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "질문에 대한 답변을 생성하지 못했습니다.";
+        }
+    }
+
+    private float[] convertToFloatArray(List<Float> list) {
+        float[] array = new float[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            array[i] = list.get(i);
+        }
+        return array;
+    }
 }
