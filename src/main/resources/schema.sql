@@ -62,20 +62,17 @@ CREATE TABLE cp_opinion
     PRIMARY KEY (cp_opinion_seq)
 );
 
-CREATE TABLE medical_life
-(
-    medical_life_seq        bigint       NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
-    user_seq                bigint       NOT NULL,
-    dept_seq                bigint       NOT NULL,
-    part_seq                bigint       NOT NULL,
-    medical_life_title      varchar(255) NOT NULL,
-    medical_life_content    text         NOT NULL,
-    medical_life_is_deleted boolean      NOT NULL DEFAULT FALSE,
-    medical_life_view_count bigint       NOT NULL DEFAULT 0,
-    created_at              datetime     NOT NULL DEFAULT NOW(),
-    updated_at              datetime     NULL,
-    deleted_at              datetime     NULL,
-    PRIMARY KEY (medical_life_seq)
+CREATE TABLE medical_life (
+                              medical_life_seq	bigint	NOT NULL AUTO_INCREMENT COMMENT 'AUTO_INCREMENT',
+                              user_seq	bigint	NOT NULL,
+                              medical_life_title	varchar(255)	NOT NULL,
+                              medical_life_content	text	NOT NULL,
+                              medical_life_is_deleted boolean NOT NULL DEFAULT FALSE,
+                              medical_life_view_count bigint NOT NULL DEFAULT 0,
+                              created_at	datetime	NOT NULL	DEFAULT NOW(),
+                              updated_at	datetime	NULL,
+                              deleted_at	datetime	NULL,
+                              PRIMARY KEY (medical_life_seq)
 );
 
 CREATE TABLE journal_search
