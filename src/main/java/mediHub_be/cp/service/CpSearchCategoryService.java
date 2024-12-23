@@ -49,6 +49,7 @@ public class CpSearchCategoryService {
         // DB 조회
         try {
             dtoList = cpSearchCategoryRepository.findJoinUserOnUserSeq();
+//            logger.info("조회된 결과 = {}", dtoList);
         } catch (DataAccessException e) {
             logger.error("데이터 접근 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
@@ -57,12 +58,12 @@ public class CpSearchCategoryService {
             throw new RuntimeException("CP 검색 카테고리 리스트 조회 과정에서 예상치 못한 에러가 발생했습니다.", e);
         }
 
-        if (dtoList.isEmpty()) {
-            logger.info("CP 검색 카테고리 조회 결과가 비어 있습니다.");
-            throw new CustomException(ErrorCode.NOT_FOUND_CP_SEARCH_CATEGORY);
-        }
+//        if (dtoList.isEmpty()) {
+//            logger.info("CP 검색 카테고리 조회 결과가 비어 있습니다.");
+//            throw new CustomException(ErrorCode.NOT_FOUND_CP_SEARCH_CATEGORY);
+//        }
 
-        logger.info("CP 검색 카테고리 조회 성공: {} 카테고리", dtoList.size());
+        logger.info("CP 검색 카테고리 조회 성공! 크기: {} ", dtoList.size());
         return dtoList;
     }
 
@@ -111,16 +112,19 @@ public class CpSearchCategoryService {
     public ResponseCpSearchCategoryDTO createCpSearchCategory(String cpSearchCategoryName) {
         // 1. 유효성 검사 및 중복 검사
         cpSearchCategoryName = validateAndCheckDuplicate(cpSearchCategoryName);
+        logger.info("유효성 검사 및 중복 검사 성공");
 
         // 2. 데이터 생성
         CpSearchCategory entity = CpSearchCategory.builder()
                 .userSeq(SecurityUtil.getCurrentUserSeq())
                 .cpSearchCategoryName(cpSearchCategoryName)
                 .build();
+        logger.info("생성된 데이터 = {}", entity);
 
         try {
             // 3. 데이터 저장
             entity = cpSearchCategoryRepository.save(entity); // 저장 후 반환된 엔티티를 업데이트
+            logger.info("저장 성공");
         } catch (DataAccessException e) {
             logger.error("CP 검색 카테고리 저장 중 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
