@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.cp.dto.ResponseCpSearchCategoryDataDTO;
 import mediHub_be.cp.service.CpSearchCategoryDataService;
@@ -33,15 +34,15 @@ public class CpSearchCategoryDataController {
             description = "주어진 CP 검색 카테고리 ID에 대한 모든 데이터를 조회하여 리스트로 반환합니다.")
     public ResponseEntity<ApiResponse<List<ResponseCpSearchCategoryDataDTO>>> getCpSearchCategoryDataList(@PathVariable long cpSearchCategorySeq) {
 
-        List<ResponseCpSearchCategoryDataDTO> dtoList;
-
         logger.info("CP 검색 카테고리 데이터 조회 요청: ID={}", cpSearchCategorySeq);
 
-        dtoList = cpSearchCategoryDataService.getCpSearchCategoryDataListByCpSearchCategorySeq(cpSearchCategorySeq);
-        logger.info("CP 검색 카테고리 데이터 조회 성공: ID={} 데이터 수={}", cpSearchCategorySeq, dtoList.size());
+        // 예외 처리 없이 서비스 호출
+        List<ResponseCpSearchCategoryDataDTO> dtoList = cpSearchCategoryDataService.getCpSearchCategoryDataListByCpSearchCategorySeq(cpSearchCategorySeq);
 
-        return ResponseEntity.ok(ApiResponse.ok(dtoList));
+        logger.info("CP 검색 카테고리 데이터 조회 성공: ID={} 데이터 수={}", cpSearchCategorySeq, dtoList.size());
+        return ResponseEntity.ok(ApiResponse.ok(dtoList)); // 성공적으로 조회된 데이터 반환
     }
+
 
     // CP 검색 카테고리 데이터 단일 조회
     @GetMapping(value = "/{cpSearchCategoryDataSeq}")

@@ -45,12 +45,13 @@ public class CpSearchCategoryDataService {
         try {
             dtoList = cpSearchCategoryDataRepository.findByCpSearchCategorySeq(cpSearchCategorySeq); // 데이터 조회
 
-            if (dtoList.isEmpty()) {
-                logger.warn("CP 검색 카테고리 데이터 조회 결과가 비어 있습니다: ID={}", cpSearchCategorySeq);
-                throw new CustomException(ErrorCode.NOT_FOUND_CP_SEARCH_CATEGORY_DATA);
-            }
+//            if (dtoList.isEmpty()) {
+//                logger.info("CP 검색 카테고리 데이터 조회 결과가 비어 있습니다: ID={}", cpSearchCategorySeq);
+//                throw new CustomException(ErrorCode.NOT_FOUND_CP_SEARCH_CATEGORY_DATA);
+//            }
 
             logger.info("CP 검색 카테고리 데이터 조회 성공: ID={} 데이터 수={}", cpSearchCategorySeq, dtoList.size());
+
         } catch (DataAccessException e) {
             logger.error("데이터 접근 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
@@ -59,8 +60,9 @@ public class CpSearchCategoryDataService {
             throw new RuntimeException("CP 검색 카테고리 데이터 조회 중 예상치 못한 에러가 발생했습니다.", e);
         }
 
-        return dtoList;
+        return dtoList; // 정상적으로 조회된 데이터 반환
     }
+
 
     /**
      * 주어진 CP 검색 카테고리 ID와 데이터 ID에 대한 카테고리 데이터를 조회합니다.
@@ -136,8 +138,8 @@ public class CpSearchCategoryDataService {
      * <p>주어진 ID에 해당하는 CP 검색 카테고리 데이터를 찾아 이름을 업데이트합니다.
      * 유효성 검사 및 중복 확인을 수행하며, 업데이트된 데이터의 정보를 반환합니다.</p>
      *
-     * @param cpSearchCategoryDataSeq  수정할 CP 검색 카테고리 데이터의 ID
-     * @param requestBody 새로운 CP 검색 카테고리 데이터 이름
+     * @param cpSearchCategoryDataSeq 수정할 CP 검색 카테고리 데이터의 ID
+     * @param requestBody             새로운 CP 검색 카테고리 데이터 이름
      * @return ResponseCpSearchCategoryDataDTO 업데이트된 CP 검색 카테고리 데이터의 정보
      * @throws CustomException 유효성 검사 실패, 카테고리 데이터 없음, 또는 데이터베이스 오류 발생 시 예외
      */
