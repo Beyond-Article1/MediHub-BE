@@ -155,6 +155,8 @@ public class JournalServiceImpl implements JournalService{
                     .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                     .block();
 
+            log.info("response {}", response);
+
             // orElseGet 사용해서 코드 간략화
             Journal savedJournal = journalRepository.findByJournalPmid(journalPmid)
                     .orElseGet(() -> journalRepository.save(requestDTO.toEntity()));
@@ -169,6 +171,9 @@ public class JournalServiceImpl implements JournalService{
                             () -> {
                                 journalSearchRepository.save(new JournalSearch(savedJournal, user));
                             });
+
+            // journal flag 생성
+            flagService.createFlag(journalFlagName, savedJournal.getJournalSeq());
             
             // "choices" 가져오기
             List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");

@@ -1,4 +1,4 @@
-package mediHub_be.anonymousBoard.dto;
+package mediHub_be.medicalLife.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,10 +9,10 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AnonymousBoardMyListDTO {
+public class MedicalLifeMyListDTO {
 
-    private Long anonymousBoardSeq;
-    private String anonymousBoardTitle;
-    private Long anonymousBoardViewCount;
+    private Long medicalLifeSeq;
+    private String medicalLifeTitle;
+    private Long medicalLifeViewCount;
     private LocalDateTime createdAt;
 }

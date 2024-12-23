@@ -18,4 +18,9 @@ public interface NotifyService {
      * - 게시글 작성시 팔로워들에게 알림 발생
      */
     public void send(User sender, List<User> receivers, Flag flag, NotiType notiType, String url);
+
+    /**
+     * 채팅방 생성 알림
+     */
+    public void sendChat(List<User> receivers);
 }

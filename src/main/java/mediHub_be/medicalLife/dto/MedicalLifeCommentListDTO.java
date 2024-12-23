@@ -1,4 +1,4 @@
-package mediHub_be.anonymousBoard.dto;
+package mediHub_be.medicalLife.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,9 +11,11 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AnonymousBoardCommentListDTO {
+public class MedicalLifeCommentListDTO {
 
     private String userName;
+    private String part;
+    private String rankingName;
     private String commentContent;
     private LocalDateTime createdAt;
 }
