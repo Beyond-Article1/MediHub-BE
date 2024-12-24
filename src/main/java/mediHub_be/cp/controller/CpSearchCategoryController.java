@@ -26,7 +26,7 @@ public class CpSearchCategoryController {
     // Service
     private final CpSearchCategoryService cpSearchCategoryService;
 
-    private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.CpController"); // Logger
+    private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.controller.cpSearchCategoryController"); // Logger
 
     // CP 검색 카테고리 전체 조회
     @GetMapping
@@ -37,7 +37,8 @@ public class CpSearchCategoryController {
         logger.info("CP 검색 카테고리 조회 요청");
 
         List<ResponseCpSearchCategoryDTO> dtoList = cpSearchCategoryService.getCpSearchCategoryList();
-        logger.info("CP 검색 카테고리 조회 성공: {} 카테고리", dtoList.size());
+        logger.info("CP 검색 카테고리 조회 성공! 크기: {}", dtoList.size());
+//        logger.info("조회된 결과: {}", dtoList);
 
         return ResponseEntity.ok(ApiResponse.ok(dtoList));
     }

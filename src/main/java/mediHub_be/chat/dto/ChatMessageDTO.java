@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -18,5 +17,4 @@ public class ChatMessageDTO {
     private String type;                // 메시지 타입(text, file, image 등)
     private String message;
     private LocalDateTime createdAt;
-    private List<String> attachments;   // 첨부파일 url
 }

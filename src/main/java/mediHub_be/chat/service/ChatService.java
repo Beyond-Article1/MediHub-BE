@@ -10,13 +10,17 @@ import mediHub_be.chat.repository.ChatMessageRepository;
 import mediHub_be.chat.repository.ChatRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.config.amazonS3.AmazonS3Service;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,6 +35,7 @@ public class ChatService {
     private final UserService userService;
     private final UserRepository userRepository;
     private final PictureService pictureService;
+    private final AmazonS3Service amazonS3Service;
 
     /* 채팅 메시지 저장 */
     public ResponseChatMessageDTO saveMessage(ChatMessageDTO message) {
@@ -41,7 +46,6 @@ public class ChatService {
                 .type(message.getType())
                 .message(message.getMessage())
                 .createdAt(message.getCreatedAt())
-                .attachments(message.getAttachments())
                 .build();
         chatMessageRepository.save(newMessage);
 
@@ -58,9 +62,72 @@ public class ChatService {
                 .type(newMessage.getType())
                 .message(newMessage.getMessage())
                 .createdAt(newMessage.getCreatedAt().minusHours(9))
-                .attachments(message.getAttachments())
                 .build();
+    }
 
+    /* 첨부파일 메시지 저장 */
+    public ResponseChatMessageDTO saveFileMessage(ChatMessageDTO message, MultipartFile file) {
+
+        try {
+            // S3에 파일 업르도 및 메타데이터 반환
+            AmazonS3Service.MetaData metaData = amazonS3Service.upload(file);
+
+            // 파일 이름에서 확장자 추출
+            String originalFileName = file.getOriginalFilename();
+            String extension = getFileExtension(originalFileName);
+            String type = isImageExtension(extension) ? "image" : "file";
+
+            // 첨부파일 객체 생성
+            ChatMessage.Attachment attachment = ChatMessage.Attachment.builder()
+                    .originName(metaData.getOriginalFileName())
+                    .url(metaData.getUrl())
+                    .build();
+
+            // Message 생성 및 저장
+            ChatMessage newMessage = ChatMessage.builder()
+                    .chatroomSeq(message.getChatroomSeq())
+                    .senderUserSeq(message.getSenderUserSeq())
+                    .type(type)
+                    .message(type.equals("image") ? "이미지" : "첨부파일")
+                    .createdAt(message.getCreatedAt())
+                    .attachment(attachment)
+                    .build();
+            chatMessageRepository.save(newMessage);
+
+            // ChatMessage -> ResponseChatMessageDTO 변환
+            User senderUser = userService.findUser(message.getSenderUserSeq());
+            String profileUrl = pictureService.getUserProfileUrl(senderUser.getUserSeq());
+
+            return ResponseChatMessageDTO.builder()
+                    .messageSeq(newMessage.getId())
+                    .chatroomSeq(newMessage.getChatroomSeq())
+                    .senderUserSeq(newMessage.getSenderUserSeq())
+                    .senderUserName(senderUser.getUserName())
+                    .senderUserProfileUrl(profileUrl)
+                    .type(newMessage.getType())
+                    .message(newMessage.getMessage())
+                    .createdAt(newMessage.getCreatedAt().minusHours(9))
+                    .attachment(newMessage.getAttachment())
+                    .build();
+        } catch(IOException e) {
+            log.error("[채팅] 첨부파일 저장 중 오류 발생", e);
+            throw new RuntimeException("첨부파일 저장 실패");
+        }
+    }
+
+    // 파일 이름에서 확장자 추출
+    private String getFileExtension(String fileName) {
+        if(fileName == null || !fileName.contains(".")) {
+            return "";  // 확장자가 없는 경우 빈 문자열 반환
+        }
+        return fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+    }
+
+    // 이미지 확장자인지 확인
+    private boolean isImageExtension(String extension) {
+        // 이미지 확장자 목록 정의
+        List<String> imageExtensions = Arrays.asList("png", "jpg", "jpeg", "gif", "bmp", "webp");
+        return imageExtensions.contains(extension);
     }
 
     /* 채팅 메시지 삭제 */
@@ -109,7 +176,7 @@ public class ChatService {
                             .type(message.getType())
                             .message(message.getMessage())
                             .createdAt(message.getCreatedAt().minusHours(9))  // 시간대 조정
-                            .attachments(message.getAttachments())
+                            .attachment(message.getAttachment())
                             .build();
                 })
                 .collect(Collectors.toList());
