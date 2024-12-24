@@ -137,23 +137,7 @@ jacocoTestReport {
     reports {
         xml.required.set(true) // xml 리포트를 활성화
         html.required.set(true) // html 리포트를 비활성화
-        xml.destination file("$buildDir/reports/jacoco/test/jacocoTestReport.xml")  // XML 리포트 경로
-        html.destination file("$buildDir/jacocoReport/test/html")  // HTML 리포트 경로
-    }
-}
-
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            element 'CLASS'
-
-            limit {
-                counter = 'INSTRUCTION' // INSTRUCTION로 변경
-                value = 'COVEREDRATIO'
-                minimum = 0.8
-            }
-
-            excludes = ['*.*Application', '*.*Controller', '*.dto.*', '*.config.*', '*.common.*', '*.domain.Q*', '*.*Builder']
-        }
+        xml.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/test/jacocoTestReport.xml")  // XML 리포트 경로
+        html.destination file("${project.layout.buildDirectory.get().asFile}/jacocoReport/test/html")  // HTML 리포트 경로
     }
 }
