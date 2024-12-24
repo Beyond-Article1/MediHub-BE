@@ -141,3 +141,19 @@ jacocoTestReport {
         html.destination file("$buildDir/jacocoReport/test/html")  // HTML 리포트 경로
     }
 }
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element 'CLASS'
+
+            limit {
+                counter = 'INSTRUCTION' // INSTRUCTION로 변경
+                value = 'COVEREDRATIO'
+                minimum = 0.8
+            }
+
+            excludes = ['*.*Application', '*.*Controller', '*.dto.*', '*.config.*', '*.common.*', '*.domain.Q*', '*.*Builder']
+        }
+    }
+}
