@@ -136,6 +136,8 @@ jacocoTestReport {
     dependsOn test // 리포트 생성 전에 test를 반드시 수행해야 한다!
     reports {
         xml.required.set(true) // xml 리포트를 활성화
-        html.required.set(false) // html 리포트를 비활성화
+        html.required.set(true) // html 리포트를 비활성화
+        xml.destination file("$buildDir/reports/jacoco/test/jacocoTestReport.xml")  // XML 리포트 경로
+        html.destination file("$buildDir/jacocoReport/test/html")  // HTML 리포트 경로
     }
 }
