@@ -133,7 +133,22 @@ jacoco {
 }
 
 jacocoTestReport {
-    dependsOn test // 리포트 생성 전에 test를 반드시 수행해야 한다!
+    dependsOn test // 리포트 생성 전에 test를 반드시 수행
+
+    classDirectories.setFrom(files(classDirectories.files.collect{
+        fileTree(dir: it, excludes: [
+                '**/*Application*',      // Application 클래스 제외
+                '**/exception/**',        // 예외 처리 관련 클래스 제외
+                '**/config/**',           // 설정 관련 클래스 제외
+                '**/dto/**',              // DTO 관련 클래스 제외
+                '**/s3/**',               // S3 관련 클래스 제외
+                '**/security/**',         // 보안 관련 클래스 제외
+                '**/util/**',             // 유틸리티 관련 클래스 제외
+                '**/model/**',            // 모델 관련 클래스 제외
+                '**/*Builder*',           // 빌더 클래스 제외
+                '**/repository/**'        // 리포지토리 관련 클래스 제외
+        ])
+    }))
     reports {
         xml.required.set(true) // xml 리포트를 활성화
         html.required.set(true) // html 리포트를 비활성화
