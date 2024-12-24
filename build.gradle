@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.6'
     id 'com.google.cloud.tools.jib' version '3.3.2' // Jib 플러그인
+    id 'jacoco'     // jacoco 생성
 }
 
 group = 'org.example'
@@ -124,4 +125,17 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport // test가 끝나면 jacocoTestReport 동작
+}
+
+jacoco {
+    toolVersion = "0.8.10"
+}
+
+jacocoTestReport {
+    dependsOn test // 리포트 생성 전에 test를 반드시 수행해야 한다!
+    reports {
+        xml.required.set(true) // xml 리포트를 활성화
+        html.required.set(false) // html 리포트를 비활성화
+    }
 }
