@@ -213,6 +213,7 @@ public class MedicalLifeService {
 
                     return MedicalLifeCommentListDTO.builder()
                             .commentSeq(comment.getCommentSeq())
+                            .userSeq(comment.getUser().getUserSeq())
                             .userName(commentUser.getUserName())
                             .part(partName)
                             .rankingName(rankingName)
