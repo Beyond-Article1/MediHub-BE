@@ -33,10 +33,7 @@ jobs:
           cache-read-only: ${{ github.ref != 'refs/heads/master' && github.ref != 'refs/heads/dev' }}
 
       - name: Run Tests
-        run: ./gradlew test
-
-      - name: Generate JaCoCo Report
-        run: ./gradlew jacocoTestReport
+        run: ./gradlew test jacocoTestReport
 
       - name: Jacoco Report to PR
         id: jacoco
