@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Keyword;
-import mediHub_be.board.repository.KeywordRepository;
 import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.FlagService;
 import mediHub_be.board.service.KeywordService;
@@ -48,7 +47,6 @@ public class CpOpinionService {
 
     // Repository
     private final CpOpinionRepository cpOpinionRepository;
-    private final KeywordRepository keywordRepository;
     private final CpOpinionVoteRepository cpOpinionVoteRepository;
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpOpinionService");    // Logger
@@ -651,5 +649,25 @@ public class CpOpinionService {
 
         logger.info("사용자 {}의 북마크된 CP 의견 조회가 완료되었습니다.", user.getUserId());
         return responseCpOpinionDTOList;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResponseCpOpinionDTO> getMyCpOpinionList() {
+        logger.info("컨트롤 클래스가 요청한 사용자가 작성한 CP 조회 요청이 수신되었습니다.");
+
+        if (SecurityUtil.getCurrentUserSeq() == null) {
+            logger.error("로그인이 필요합니다.");
+            throw new CustomException(ErrorCode.NEED_LOGIN);
+        }
+
+        long currentUserSeq = SecurityUtil.getCurrentUserSeq();
+        logger.info("회원조회 성공, 회원번호: {}", currentUserSeq);
+
+        List<ResponseCpOpinionDTO> dtoList = cpOpinionRepository.findByUserSeq(currentUserSeq);
+        logger.info("작성한 CP 의견 조회 성공");
+
+        dtoList = setKeywordListForCpOpinions(dtoList);
+
+        return dtoList;
     }
 }
