@@ -35,7 +35,6 @@ public class CpService {
 
     // Service
     private final BookmarkService bookmarkService;
-    private final PictureService pictureService;
     private final UserService userService;
 
     // Repository
