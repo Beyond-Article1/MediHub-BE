@@ -125,7 +125,6 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    finalizedBy 'jacocoTestReport'
 }
 
 jacoco {
