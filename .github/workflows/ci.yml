@@ -23,17 +23,19 @@ jobs:
           java-version: 17
           distribution: 'temurin'
 
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.8'  # 사용하려는 Gradle 버전 명시
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          arguments: build
-          cache-read-only: ${{ github.ref != 'refs/heads/master' && github.ref != 'refs/heads/dev' }}
-
-      - name: Run Tests
-        run: ./gradlew test jacocoTestReport
+      - name: Run Gradle build and tests
+        run: |
+          ./gradlew build
+          ./gradlew test
+          ./gradlew jacocoTestReport
 
       - name: Jacoco Report to PR
         id: jacoco
