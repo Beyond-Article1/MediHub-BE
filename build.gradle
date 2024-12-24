@@ -154,8 +154,7 @@ jacocoTestReport {
                 '**/*ViewCountManager*',
 
                 '**/repository/**',
-                '**/service/**',
-                '**/controller/**'
+
         ])
     }))
     reports {
