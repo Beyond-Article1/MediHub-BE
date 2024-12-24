@@ -651,6 +651,16 @@ public class CpOpinionService {
         return responseCpOpinionDTOList;
     }
 
+    /**
+     * 현재 로그인한 사용자가 작성한 CP 의견 목록을 조회합니다.
+     * <p>
+     * 이 메서드는 사용자의 시퀀스를 확인하고, 해당 사용자가 작성한 CP 의견을 데이터베이스에서 조회합니다.
+     * 사용자가 로그인하지 않은 경우, 예외를 발생시킵니다.
+     * </p>
+     *
+     * @return 사용자가 작성한 CP 의견 DTO 목록
+     * @throws CustomException {@link ErrorCode#NEED_LOGIN} 사용자가 로그인하지 않은 경우
+     */
     @Transactional(readOnly = true)
     public List<ResponseCpOpinionDTO> getMyCpOpinionList() {
         logger.info("컨트롤 클래스가 요청한 사용자가 작성한 CP 조회 요청이 수신되었습니다.");
