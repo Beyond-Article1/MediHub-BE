@@ -125,7 +125,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    finalizedBy 'jacocoTestReport' // test가 끝나면 jacocoTestReport 동작
+    finalizedBy 'jacocoTestReport'
 }
 
 jacoco {
@@ -145,10 +145,18 @@ jacocoTestReport {
                 '**/security/**',
                 '**/util/**',
                 '**/*Builder*',
-                '**/repository/**',
                 '**/entity/**',
                 '**/component/**',
-                '**/response/**'
+                '**/response/**',
+                '**/*PasswordEncryptor*',
+                '**/elasticsearch/**',
+                '**/*KafkaConstants*',
+                '**/*Handler*',
+                '**/*ViewCountManager*',
+
+                '**/repository/**',
+                '**/service/**',
+                '**/controller/**'
         ])
     }))
     reports {
