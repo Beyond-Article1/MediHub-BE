@@ -228,6 +228,7 @@ public class CpOpinionService {
                     logger.warn("조회된 CP 의견이 없습니다. CP 의견 번호: {}", cpOpinionSeq);
                     return new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
                 });
+        logger.info("조회된 CP 의견: {}", entity);
 
         if (entity.getDeletedAt() == null) {
             // 활성 상태
@@ -277,8 +278,8 @@ public class CpOpinionService {
      * @return 관리자 권한 여부
      */
     private boolean isAdminUser() {
-        boolean isAdmin = SecurityUtil.getCurrentUserAuthorities().equals(UserAuth.ADMIN);
-        logger.info("현재 사용자는 관리자 권한: {}", isAdmin);
+        boolean isAdmin = SecurityUtil.getCurrentUserAuthorities().equals(UserAuth.ADMIN.name());
+        logger.info("현재 사용자는 관리자 여부: {}", isAdmin);
         return isAdmin;
     }
 
