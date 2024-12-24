@@ -35,7 +35,6 @@ class CpOpinionLocationServiceTest {
     @MockBean
     CpOpinionLocationRepository cpOpinionLocationRepository;
 
-    private static List<ResponseCpOpinionLocationDTO> mockCpOpinionLocationDtoList;
     private static RequestCpOpinionLocationDTO requestBody;
 
     private static CpOpinionLocation entity;
@@ -57,8 +56,6 @@ class CpOpinionLocationServiceTest {
                 .cpOpinionLocationX(412.4)
                 .cpOpinionLocationY(70.4)
                 .build();
-
-        mockCpOpinionLocationDtoList = List.of(dto1, dto2);
 
         requestBody = RequestCpOpinionLocationDTO.builder()
                 .cpOpinionLocationPageNum(1L)
