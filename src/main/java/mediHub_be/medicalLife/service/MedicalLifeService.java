@@ -515,6 +515,7 @@ public class MedicalLifeService {
                     return new MedicalLifeMyListDTO(
                             medicalLife.getMedicalLifeSeq(),
                             medicalLife.getMedicalLifeTitle(),
+                            medicalLife.getMedicalLifeContent(),
                             medicalLife.getMedicalLifeViewCount(),
                             keywordsForMedicalLife, // 키워드 추가
                             medicalLife.getUser().getUserName(),

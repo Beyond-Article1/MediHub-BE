@@ -14,6 +14,7 @@ public class MedicalLifeMyListDTO {
 
     private Long medicalLifeSeq;
     private String medicalLifeTitle;
+    private String medicalLifeContent;
     private Long medicalLifeViewCount;
     private List<String> keywords;
     private String userName;
