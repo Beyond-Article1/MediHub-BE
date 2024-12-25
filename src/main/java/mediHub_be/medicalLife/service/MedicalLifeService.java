@@ -557,7 +557,7 @@ public class MedicalLifeService {
 
     // top3 조회
     @Transactional(readOnly = true)
-    public List<MedicalLifeListDTO> getTop3MedicalLifeByViewCount(Long userSeq) {
+    public List<MedicalLifeTop3DTO> getTop3MedicalLifeByViewCount(Long userSeq) {
         // 유저 로그인 여부 확인
         userRepository.findById(userSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
@@ -568,20 +568,17 @@ public class MedicalLifeService {
 
         // DTO 변환
         return top3MedicalLifeList.stream()
-                .map(medicalLife -> MedicalLifeListDTO.builder()
-                        .medicalLifeSeq(medicalLife.getMedicalLifeSeq())
-                        .userSeq(medicalLife.getUser().getUserSeq())
-                        .userName(medicalLife.getUser().getUserName())
-                        .PartSeq(medicalLife.getUser().getPart().getPartName())
-                        .DeptSeq(medicalLife.getUser().getPart().getDept().getDeptName())
-                        .medicalLifeName(medicalLife.getMedicalLifeTitle())
-                        .medicalLifeTitle(medicalLife.getMedicalLifeTitle())
-                        .medicalLifeContent(medicalLife.getMedicalLifeContent())
-                        .medicalLifeIsDeleted(medicalLife.getMedicalLifeIsDeleted())
-                        .medicalLifeViewCount(medicalLife.getMedicalLifeViewCount())
-                        .build())
+                .map(medicalLife -> new MedicalLifeTop3DTO(
+                        medicalLife.getMedicalLifeSeq(),
+                        medicalLife.getMedicalLifeTitle(),
+                        medicalLife.getUser().getUserName(),
+                        medicalLife.getUser().getPart().getPartName(),
+                        medicalLife.getUser().getRanking().getRankingName(),
+                        medicalLife.getCreatedAt()
+                ))
                 .toList();
     }
+
 
 
 
