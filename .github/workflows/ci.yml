@@ -1,0 +1,73 @@
+name: CI
+
+permissions:
+  pull-requests: write
+  contents: read
+  checks: write
+
+on:
+  pull_request:
+    types: [opened, synchronize, closed]
+    branches: [ "master", "develop" ]
+    paths:
+      - 'src/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: JDK 17 설정
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Gradle 설정
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.8'  # 사용하려는 Gradle 버전 명시
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run Gradle build and tests
+        run: |
+          ./gradlew build
+          ./gradlew test
+          ./gradlew jacocoTestReport
+
+      - name: Jacoco Report to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.6.1
+        with:
+          title: 📝 Code Coverage
+          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 0
+          min-coverage-changed-files: 60
+          update-comment: true
+
+      - name: Upload jacoco HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-html-report
+          path: ${{ github.workspace }}/build/jacocoReport/test/html
+
+      - name: Get the Coverage info
+        run: |
+          echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
+          echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
+
+      - name: 테스트 결과 PR 코멘트에 등록
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: '**/build/test-results/test/TEST-*.xml'
+
+      - name: 테스트 실패시 코드 라인에 대한 체크 추가
+        uses: mikepenz/action-junit-report@v3
+        if: always()
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.html'
