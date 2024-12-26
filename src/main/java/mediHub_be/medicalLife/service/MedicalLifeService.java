@@ -32,8 +32,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -148,38 +150,50 @@ public class MedicalLifeService {
             log.info("오늘 처음 조회한 메디컬 라이프 게시글");
             medicalLife.increaseViewCount();
             medicalLifeRepository.save(medicalLife);
-        } else {
-            log.info("이미 조회한 적 있는 메디컬 라이프 게시글");
         }
 
-        List<Keyword> keywordList = keywordRepository.findByFlagTypeAndEntitySeq(
-                MEDICAL_LIFE_FLAG,
-                medicalLifeSeq
-        );
+        // 키워드 목록 가져오기
+        List<Keyword> keywordList = keywordRepository.findByFlagTypeAndEntitySeq(MEDICAL_LIFE_FLAG, medicalLifeSeq);
+        List<MedicalLifeKeywordDTO> medicalLifeKeywordDTOList = new ArrayList<>();
+        for (Keyword keyword : keywordList) {
+            MedicalLifeKeywordDTO keywordDTO = new MedicalLifeKeywordDTO();
+            keywordDTO.setKeywordSeq(keyword.getKeywordSeq());
+            keywordDTO.setFlagSeq(keyword.getFlagSeq());
+            keywordDTO.setKeywordName(keyword.getKeywordName());
+            medicalLifeKeywordDTOList.add(keywordDTO);
+        }
 
-        List<MedicalLifeKeywordDTO> medicalLifeKeywordDTOList = keywordList.stream()
-                .map(keyword -> MedicalLifeKeywordDTO.builder()
-                        .keywordSeq(keyword.getKeywordSeq())
-                        .flagSeq(keyword.getFlagSeq())
-                        .keywordName(keyword.getKeywordName())
-                        .build())
-                .toList();
-
+        // 직급 이름 가져오기
         String rankingName = medicalLife.getUser().getRanking() != null
                 ? medicalLife.getUser().getRanking().getRankingName()
                 : "N/A";
 
-        return MedicalLifeDetailDTO.builder()
-                .userSeq(medicalLife.getUser().getUserSeq())
-                .userName(medicalLife.getUser().getUserName())
-                .rankingName(rankingName)
-                .medicalLifeTitle(medicalLife.getMedicalLifeTitle())
-                .medicalLifeContent(medicalLife.getMedicalLifeContent())
-                .medicalLifeViewCount(String.valueOf(medicalLife.getMedicalLifeViewCount()))
-                .createdAt(medicalLife.getCreatedAt())
-                .keywords(medicalLifeKeywordDTOList)
-                .build();
+        // USER Flag 조회
+        Optional<Flag> optionalFlag = flagRepository.findByFlagTypeAndFlagEntitySeq("USER", medicalLife.getUser().getUserSeq());
+
+        // 프로필 이미지 URL 가져오기
+        String profileImage = null;
+        if (optionalFlag.isPresent()) {
+            Long flagSeq = optionalFlag.get().getFlagSeq();
+            Optional<Picture> picture = pictureRepository.findByFlag_FlagSeqAndDeletedAtIsNull(flagSeq);
+            profileImage = picture.map(Picture::getPictureUrl).orElse(null);
+        }
+
+        // DTO 생성 및 값 설정
+        MedicalLifeDetailDTO dto = new MedicalLifeDetailDTO();
+        dto.setUserSeq(medicalLife.getUser().getUserSeq());
+        dto.setUserName(medicalLife.getUser().getUserName());
+        dto.setRankingName(rankingName);
+        dto.setMedicalLifeTitle(medicalLife.getMedicalLifeTitle());
+        dto.setMedicalLifeContent(medicalLife.getMedicalLifeContent());
+        dto.setMedicalLifeViewCount(String.valueOf(medicalLife.getMedicalLifeViewCount()));
+        dto.setCreatedAt(medicalLife.getCreatedAt());
+        dto.setKeywords(medicalLifeKeywordDTOList);
+        dto.setProfileImage(profileImage);
+
+        return dto;
     }
+
 
 
     // 댓글 조회
@@ -198,6 +212,8 @@ public class MedicalLifeService {
                     String rankingName = (commentUser.getRanking() != null) ? commentUser.getRanking().getRankingName() : "정보 없음";
 
                     return MedicalLifeCommentListDTO.builder()
+                            .commentSeq(comment.getCommentSeq())
+                            .userSeq(comment.getUser().getUserSeq())
                             .userName(commentUser.getUserName())
                             .part(partName)
                             .rankingName(rankingName)
@@ -340,7 +356,9 @@ public class MedicalLifeService {
             throw new CustomException(ErrorCode.NOT_FOUND_COMMENT);
         }
 
+        log.info("User attempting update - User ID: {}, Comment Owner ID: {}", user.getUserSeq(), comment.getUser().getUserSeq());
         if (!comment.getUser().equals(user)) {
+            log.error("Unauthorized access - User ID: {}, Comment Owner ID: {}", user.getUserSeq(), comment.getUser().getUserSeq());
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
@@ -460,6 +478,7 @@ public class MedicalLifeService {
         return preferService.isPreferred(MEDICAL_LIFE_FLAG, medicalLifeSeq, userId);
     }
 
+    // 나의 게시물 조회
     @Transactional(readOnly = true)
     public List<MedicalLifeMyListDTO> getMyMedicalLifeList(Long userSeq) {
 
@@ -467,15 +486,44 @@ public class MedicalLifeService {
 
         List<MedicalLife> medicalLifeList = medicalLifeRepository.findByUser_UserSeqAndMedicalLifeIsDeletedFalse(userSeq);
 
+        List<MedicalLifeFlagDTO> medicalLifeFlagDTOList = flagRepository.findAll().stream()
+                .map(flag -> MedicalLifeFlagDTO.builder()
+                        .flagSeq(flag.getFlagSeq())
+                        .flagType(flag.getFlagType())
+                        .flagEntitySeq(flag.getFlagEntitySeq())
+                        .build())
+                .toList();
+
+        List<MedicalLifeKeywordDTO> medicalLifeKeywordDTOList = keywordRepository.findAll().stream()
+                .map(keyword -> MedicalLifeKeywordDTO.builder()
+                        .keywordSeq(keyword.getKeywordSeq())
+                        .flagSeq(keyword.getFlagSeq())
+                        .keywordName(keyword.getKeywordName())
+                        .build())
+                .toList();
+
         return medicalLifeList.stream()
-                .map(medicalLife -> new MedicalLifeMyListDTO(
-                        medicalLife.getMedicalLifeSeq(),
-                        medicalLife.getMedicalLifeTitle(),
-                        medicalLife.getMedicalLifeViewCount(),
-                        medicalLife.getCreatedAt()
-                ))
+                .map(medicalLife -> {
+                    List<String> keywordsForMedicalLife = medicalLifeFlagDTOList.stream()
+                            .filter(flag -> flag.getFlagType().equals(MEDICAL_LIFE_FLAG) &&
+                                    flag.getFlagEntitySeq().equals(medicalLife.getMedicalLifeSeq()))
+                            .flatMap(flag -> medicalLifeKeywordDTOList.stream()
+                                    .filter(keyword -> keyword.getFlagSeq().equals(flag.getFlagSeq()))
+                                    .map(MedicalLifeKeywordDTO::getKeywordName))
+                            .toList();
+
+                    return new MedicalLifeMyListDTO(
+                            medicalLife.getMedicalLifeSeq(),
+                            medicalLife.getMedicalLifeTitle(),
+                            medicalLife.getMedicalLifeViewCount(),
+                            keywordsForMedicalLife, // 키워드 추가
+                            medicalLife.getUser().getUserName(),
+                            medicalLife.getCreatedAt()
+                    );
+                })
                 .toList();
     }
+
 
     @Transactional(readOnly = true)
     public List<MedicalLifeListDTO> getBookMarkedMedicalLifeList(Long userSeq) {

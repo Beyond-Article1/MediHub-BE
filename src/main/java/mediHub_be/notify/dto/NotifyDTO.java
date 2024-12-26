@@ -30,6 +30,8 @@ public class NotifyDTO {
     String createdAt;
     // 읽음 여부
     boolean isRead;
+    // url
+    String url;
 
     public NotifyDTO(Notify notify){
         this.notiSeq = notify.getNotiSeq();
@@ -41,6 +43,7 @@ public class NotifyDTO {
         this.boardType = notify.getNotiType().getMessage();
         this.createdAt = TimeFormatUtil.yearAndMonthDayHM(notify.getCreatedAt()).format(TimeFormatUtil.yMDHMFormatter);
         this.isRead = notify.getNoti_isRead() == NotiReadStatus.Y;
+        this.url = notify.getNotiUrl();
     }
 
     public static NotifyDTO createResponse(Notify notify, String senderUserName, String senderUserPart) {
@@ -49,6 +52,7 @@ public class NotifyDTO {
                 .notiSeq(notify.getNotiSeq())
                 .name(notify.getReceiver().getUserName())
                 .type(notify.getNotiType())
+                .url(notify.getNotiUrl())
                 .senderName(senderUserName)
                 .partName(senderUserPart)
                 .createdAt(TimeFormatUtil.yearAndMonthDayHM(notify.getCreatedAt()).format(TimeFormatUtil.yMDHMFormatter))

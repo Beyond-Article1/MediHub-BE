@@ -22,4 +22,5 @@ public class MedicalLifeDetailDTO {
     private String medicalLifeViewCount;
     private LocalDateTime createdAt;
     private List<MedicalLifeKeywordDTO> keywords;
+    private String profileImage;
 }
