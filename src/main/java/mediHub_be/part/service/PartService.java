@@ -84,7 +84,7 @@ public class PartService {
 
     @Transactional(readOnly = true)
     public List<PartDTO> getAllPartsByDept(Long deptSeq) {
-        return partRepository.findByDept_DeptSeqOrderByPartName(deptSeq)
+        return partRepository.findByDept_DeptSeq_AndDeletedAtIsNullOrderByPartName(deptSeq)
                 .stream()
                 .map(part -> PartDTO.builder()
                         .partSeq(part.getPartSeq())

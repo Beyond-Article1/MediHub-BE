@@ -29,4 +29,8 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     @Modifying
     @Query("DELETE FROM Bookmark b WHERE b.flag.flagSeq = :flagSeq")
     void deleteAllByFlagSeq(Long flagSeq);
+
+    // 특정 caseSharing을 북마크한 모든 사용자 조회
+    List<Bookmark> findByFlag_FlagTypeAndFlag_FlagEntitySeq(String flagType, Long flagEntitySeq);
+
 }
