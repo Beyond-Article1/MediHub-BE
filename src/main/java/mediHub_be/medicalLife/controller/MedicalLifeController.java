@@ -232,10 +232,10 @@ public class MedicalLifeController {
 
     @Operation(summary = "메디컬 라이프 Top 3 조회", description = "조회수가 가장 높은 메디컬 라이프 게시글 Top 3를 반환합니다.")
     @GetMapping("/top3")
-    public ResponseEntity<ApiResponse<List<MedicalLifeListDTO>>> getTop3MedicalLifeByViewCount() {
+    public ResponseEntity<ApiResponse<List<MedicalLifeTop3DTO>>> getTop3MedicalLifeByViewCount() {
         Long userSeq = SecurityUtil.getCurrentUserSeq();
 
-        List<MedicalLifeListDTO> top3MedicalLifeList = medicalLifeService.getTop3MedicalLifeByViewCount(userSeq);
+        List<MedicalLifeTop3DTO> top3MedicalLifeList = medicalLifeService.getTop3MedicalLifeByViewCount(userSeq);
 
         return ResponseEntity.ok(ApiResponse.ok(top3MedicalLifeList));
     }
