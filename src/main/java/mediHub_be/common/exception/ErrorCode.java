@@ -62,6 +62,7 @@ public enum ErrorCode {
     NOT_FOUND_CP_OPINION_VOTE(40406, HttpStatus.NOT_FOUND, "CP 의견 투표를 찾을 수 없습니다."),
     NOT_FOUND_CP_SEARCH_CATEGORY(40407, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
     NOT_FOUND_CP_SEARCH_CATEGORY_DATA(40408, HttpStatus.NOT_FOUND, "CP 의견 위치를 찾을 수 없습니다."),
+    NOT_FOUND_CP_SEARCH_DATA(40409, HttpStatus.NOT_FOUND, "CP 검색 데이터를 찾을 수 없습니다."),
 
     // 알림 (notify)
     NOT_FOUND_NOTIFY(40409, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
