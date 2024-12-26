@@ -35,14 +35,21 @@ public class Chat {
     @CreatedDate
     private LocalDateTime joinedAt;
 
+    private LocalDateTime lastVisitedAt;    // 마지막 방문 시간
+
     @Builder
-    public Chat(User user, Chatroom chatroom, String chatroomCustomName) {
+    public Chat(User user, Chatroom chatroom, String chatroomCustomName, LocalDateTime lastVisitedAt) {
         this.user = user;
         this.chatroom = chatroom;
         this.chatroomCustomName = chatroomCustomName;
+        this.lastVisitedAt = lastVisitedAt;
     }
 
     public void updateChatroomName(String chatroomCustomName) {
         this.chatroomCustomName = chatroomCustomName;
+    }
+
+    public void updateLastVisitedAt(LocalDateTime time) {
+        this.lastVisitedAt = time;
     }
 }

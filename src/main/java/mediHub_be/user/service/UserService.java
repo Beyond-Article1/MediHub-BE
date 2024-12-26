@@ -176,6 +176,11 @@ public class UserService {
         return false;
     }
 
+    // userSeqs로 Users 조회 (한번에 여러 사용자 정보 조회)
+    public List<User> findUsersBySeqs(List<Long> allUserSeqs) {
+        return userRepository.findAllById(allUserSeqs);
+    }
+
     public boolean validateAdmin(User user){
         return !user.getUserAuth().equals(UserAuth.ADMIN);
     }

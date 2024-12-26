@@ -88,7 +88,7 @@ public class ChatService {
                     .chatroomSeq(message.getChatroomSeq())
                     .senderUserSeq(message.getSenderUserSeq())
                     .type(type)
-                    .message(type.equals("image") ? "이미지" : "첨부파일")
+                    .message(message.getMessage())
                     .createdAt(message.getCreatedAt())
                     .attachment(attachment)
                     .build();
@@ -153,6 +153,7 @@ public class ChatService {
         // 모든 senderUserSeq를 추출하여 사용자 정보 한 번에 조회
         List<Long> userSeqs = messages.stream()
                 .map(ChatMessage::getSenderUserSeq)
+                .filter(seq -> seq != null) // null 값 제거
                 .distinct()  // 중복 제거
                 .collect(Collectors.toList());
 
@@ -165,14 +166,22 @@ public class ChatService {
         // 메시지를 변환할 때 사용자 정보를 조회
         return messages.stream()
                 .map(message -> {
-                    User senderUser = userMap.get(message.getSenderUserSeq()); // 미리 조회한 사용자 정보 사용
-                    String profileUrl = pictureService.getUserProfileUrl(senderUser.getUserSeq());
+                    String profileUrl = null; // 기본적으로 null 설정
+                    User senderUser = null;
+
+                    if(message.getSenderUserSeq() != null) {
+                        senderUser = userMap.get(message.getSenderUserSeq()); // 미리 조회한 사용자 정보 사용
+                        if(senderUser != null) {
+                            profileUrl = pictureService.getUserProfileUrl(senderUser.getUserSeq());
+                        }
+                    }
+
                     return ResponseChatMessageDTO.builder()
                             .messageSeq(message.getId())
                             .chatroomSeq(message.getChatroomSeq())
                             .senderUserSeq(message.getSenderUserSeq())
-                            .senderUserName(senderUser != null ? senderUser.getUserName() : "Unknown") // 사용자 이름 추가
-                            .senderUserProfileUrl(profileUrl)
+                            .senderUserName(senderUser != null ? senderUser.getUserName() : "System") // 사용자 이름 추가
+                            .senderUserProfileUrl(profileUrl != null ? profileUrl : "System")
                             .type(message.getType())
                             .message(message.getMessage())
                             .createdAt(message.getCreatedAt().minusHours(9))  // 시간대 조정

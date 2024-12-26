@@ -38,7 +38,8 @@ public class ChatroomController {
     @Operation(summary = "대화상대 초대", description = "기존에 있던 채팅방에 대화상대 초대(추가)")
     @PostMapping("/{chatroomSeq}")
     public ResponseEntity<ApiResponse<Long>> updateChatroomMember(@PathVariable Long chatroomSeq, @RequestBody ChatroomDTO chatroomDTO) {
-        chatroomService.updateChatroomMember(chatroomSeq, chatroomDTO);
+        Long myUserSeq = SecurityUtil.getCurrentUserSeq();
+        chatroomService.updateChatroomMember(myUserSeq, chatroomSeq, chatroomDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(chatroomSeq));
     }
 
@@ -58,7 +59,7 @@ public class ChatroomController {
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.ok(null));
     }
 
-    @Operation(summary = "채팅방 목록 조회", description = "채팅방 목록 조회")
+    @Operation(summary = "채팅방 목록 조회", description = "사용자별 채팅방 목록 조회")
     @GetMapping
     public ResponseEntity<ApiResponse<List<ResponseChatroomDTO>>> getChatroomListByUserSeq() {
         Long userSeq = SecurityUtil.getCurrentUserSeq();
@@ -80,6 +81,14 @@ public class ChatroomController {
         Long userSeq = SecurityUtil.getCurrentUserSeq();
         List<ResponseChatUserDTO> users = chatroomService.getChatUsers(userSeq, chatroomSeq);
         return ResponseEntity.ok(ApiResponse.ok(users));
+    }
+
+    @Operation(summary = "채팅방 마지막 방문일 업데이트", description = "사용자의 채팅방 마지막 방문일 업데이트")
+    @PutMapping("/{chatroomSeq}/visit")
+    public ResponseEntity<ApiResponse<Void>> updateLastVisitedTime(@PathVariable Long chatroomSeq) {
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        chatroomService.updateLastVisitedTime(userSeq, chatroomSeq);
+        return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
 }
