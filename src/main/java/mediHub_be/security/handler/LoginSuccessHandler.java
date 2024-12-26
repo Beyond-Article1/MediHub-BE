@@ -47,6 +47,12 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
             String accessToken = jwtUtil.generateAccessToken(userId, userSeq, auth, accessTokenExpiration);
             String refreshToken = jwtUtil.generateRefreshToken(userId, refreshTokenExpiration);
 
+            try {
+                tokenService.deleteRefreshToken(userId);
+            } catch (Exception e) {
+                log.warn("기존 RefreshToken 삭제 실패: {}", e.getMessage());
+            }
+
             // Refresh Token 저장
             tokenService.saveRefreshToken(userId, refreshToken, refreshTokenExpiration);
             log.info("Refresh Token 저장 완료 (userId: {}, expiration: {}ms)", userId, refreshTokenExpiration);
