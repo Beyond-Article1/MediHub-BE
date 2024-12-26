@@ -579,6 +579,7 @@ public class MedicalLifeService {
                         .medicalLifeContent(medicalLife.getMedicalLifeContent())
                         .medicalLifeIsDeleted(medicalLife.getMedicalLifeIsDeleted())
                         .medicalLifeViewCount(medicalLife.getMedicalLifeViewCount())
+                        .createdAt(medicalLife.getCreatedAt())
                         .build())
                 .toList();
     }
