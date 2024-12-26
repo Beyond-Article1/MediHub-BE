@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import mediHub_be.chat.entity.ChatMessage;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -21,5 +21,5 @@ public class ResponseChatMessageDTO {
     private String type;
     private String message;
     private LocalDateTime createdAt;
-    private List<String> attachments;
+    private ChatMessage.Attachment attachment;
 }

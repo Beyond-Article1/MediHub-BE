@@ -1,15 +1,11 @@
 package mediHub_be.chat.entity;
 
 import jakarta.persistence.Id;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import mediHub_be.common.utils.DateTimeUtil;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Document(collection = "chat.messages")
 @Getter
@@ -25,20 +21,29 @@ public class ChatMessage {
     private String message;
     private LocalDateTime createdAt;
     private boolean isDeleted;          // 메시지 삭제 여부
-    private List<String> attachments;   // 첨부파일 url
+    private Attachment attachment;      // 첨부파일
 
     @Builder
-    public ChatMessage(Long chatroomSeq, Long senderUserSeq, String type, String message, LocalDateTime createdAt, boolean isDeleted, List<String> attachments) {
+    public ChatMessage(Long chatroomSeq, Long senderUserSeq, String type, String message, LocalDateTime createdAt, boolean isDeleted, Attachment attachment) {
         this.chatroomSeq = chatroomSeq;
         this.senderUserSeq = senderUserSeq;
         this.type = type;
         this.message = message;
         this.createdAt = DateTimeUtil.localDateTimeToLocalDateTime(LocalDateTime.now());
         this.isDeleted = isDeleted;
-        this.attachments = attachments;
+        this.attachment = attachment;
     }
 
     public void setIsDeleted(boolean b) {
         this.isDeleted = b;
+    }
+
+    @Getter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Attachment {
+        private String originName;  // 원본 파일 이름
+        private String url;         // S3 URL
     }
 }

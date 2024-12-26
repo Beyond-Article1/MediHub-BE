@@ -22,7 +22,8 @@ public interface CpSearchCategoryRepository extends JpaRepository<CpSearchCatego
             "u.userName, " +
             "u.userId) " +
             "FROM CpSearchCategory AS csc " +
-            "LEFT JOIN User AS u ON csc.userSeq = u.userSeq")
+            "LEFT JOIN User AS u ON csc.userSeq = u.userSeq " +
+            "WHERE csc.deletedAt IS NULL")
     List<ResponseCpSearchCategoryDTO> findJoinUserOnUserSeq();
 
     @Query("SELECT new mediHub_be.cp.dto.ResponseCpSearchCategoryDTO( " +

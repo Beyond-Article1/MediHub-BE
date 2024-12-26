@@ -56,10 +56,11 @@ public class NotifyController {
     }
 
     @Operation(summary = "알림 단일 읽음", description = "알림을 읽음 처리 한다.")
-    @GetMapping("/{notiSeq}")
+    @GetMapping("/read")
     public ResponseEntity<ApiResponse<String>> readNoti(@RequestParam(name = "notiSeq") Long notiSeq){
 
         String userId = SecurityUtil.getCurrentUserId();
+
         notifyService.readNotify(userId, notiSeq);
 
         return ResponseEntity.ok(
@@ -68,7 +69,7 @@ public class NotifyController {
     }
 
     @Operation(summary = "알림 단일 삭제", description = "알림을 삭제 처리 한다.")
-    @DeleteMapping("/{notiSeq}")
+    @DeleteMapping
     public ResponseEntity<ApiResponse<String>> deleteNoti(@RequestParam(name = "notiSeq") Long notiSeq){
 
         String userId = SecurityUtil.getCurrentUserId();
@@ -80,7 +81,7 @@ public class NotifyController {
     }
 
     @Operation(summary = "알림 전체 읽음", description = "나한테 온 알림들을 전체 읽음처리한다.")
-    @GetMapping("/read")
+    @GetMapping("/read-all")
     public ResponseEntity<ApiResponse<String>> readAllNoti(){
 
         String userId = SecurityUtil.getCurrentUserId();
@@ -92,7 +93,7 @@ public class NotifyController {
     }
 
     @Operation(summary = "알림 전체 삭제", description = "나한테 온 알림들을 전체 삭제한다.")
-    @DeleteMapping
+    @DeleteMapping("/delete-all")
     public ResponseEntity<ApiResponse<String>> deleteAllNoti(){
 
         String userId = SecurityUtil.getCurrentUserId();

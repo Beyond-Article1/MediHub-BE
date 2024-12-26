@@ -45,12 +45,13 @@ public class CpSearchCategoryDataService {
         try {
             dtoList = cpSearchCategoryDataRepository.findByCpSearchCategorySeq(cpSearchCategorySeq); // 데이터 조회
 
-            if (dtoList.isEmpty()) {
-                logger.warn("CP 검색 카테고리 데이터 조회 결과가 비어 있습니다: ID={}", cpSearchCategorySeq);
-                throw new CustomException(ErrorCode.NOT_FOUND_CP_SEARCH_CATEGORY_DATA);
-            }
+//            if (dtoList.isEmpty()) {
+//                logger.info("CP 검색 카테고리 데이터 조회 결과가 비어 있습니다: ID={}", cpSearchCategorySeq);
+//                throw new CustomException(ErrorCode.NOT_FOUND_CP_SEARCH_CATEGORY_DATA);
+//            }
 
             logger.info("CP 검색 카테고리 데이터 조회 성공: ID={} 데이터 수={}", cpSearchCategorySeq, dtoList.size());
+
         } catch (DataAccessException e) {
             logger.error("데이터 접근 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
@@ -59,8 +60,9 @@ public class CpSearchCategoryDataService {
             throw new RuntimeException("CP 검색 카테고리 데이터 조회 중 예상치 못한 에러가 발생했습니다.", e);
         }
 
-        return dtoList;
+        return dtoList; // 정상적으로 조회된 데이터 반환
     }
+
 
     /**
      * 주어진 CP 검색 카테고리 ID와 데이터 ID에 대한 카테고리 데이터를 조회합니다.
@@ -107,6 +109,7 @@ public class CpSearchCategoryDataService {
     public ResponseCpSearchCategoryDataDTO createCpSearchCategoryData(long cpSearchCategorySeq, String cpSearchCategoryDataName) {
         // 1. 유효성 검사 및 중복 검사
         cpSearchCategoryDataName = validateAndCheckDuplicateData(cpSearchCategoryDataName);
+        logger.info("유효성 검사 및 중복 검사 통과");
 
         // 2. 데이터 저장
         CpSearchCategoryData entity = CpSearchCategoryData.builder()
@@ -114,9 +117,11 @@ public class CpSearchCategoryDataService {
                 .cpSearchCategorySeq(cpSearchCategorySeq)
                 .cpSearchCategoryDataName(cpSearchCategoryDataName)
                 .build();
+        logger.info("생성할 정보 = {}", entity);
 
         try {
             entity = cpSearchCategoryDataRepository.save(entity); // 저장 후 반환된 엔티티를 업데이트
+            logger.info("생성 완료");
         } catch (DataAccessException e) {
             logger.error("CP 검색 카테고리 데이터 저장 중 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
@@ -136,15 +141,17 @@ public class CpSearchCategoryDataService {
      * <p>주어진 ID에 해당하는 CP 검색 카테고리 데이터를 찾아 이름을 업데이트합니다.
      * 유효성 검사 및 중복 확인을 수행하며, 업데이트된 데이터의 정보를 반환합니다.</p>
      *
-     * @param cpSearchCategoryDataSeq  수정할 CP 검색 카테고리 데이터의 ID
-     * @param cpSearchCategoryDataName 새로운 CP 검색 카테고리 데이터 이름
+     * @param cpSearchCategoryDataSeq 수정할 CP 검색 카테고리 데이터의 ID
+     * @param requestBody             새로운 CP 검색 카테고리 데이터 이름
      * @return ResponseCpSearchCategoryDataDTO 업데이트된 CP 검색 카테고리 데이터의 정보
      * @throws CustomException 유효성 검사 실패, 카테고리 데이터 없음, 또는 데이터베이스 오류 발생 시 예외
      */
-    public ResponseCpSearchCategoryDataDTO updateCpSearchCategoryDataData(long cpSearchCategoryDataSeq, String cpSearchCategoryDataName) {
+    public ResponseCpSearchCategoryDataDTO updateCpSearchCategoryDataData(long cpSearchCategoryDataSeq, String requestBody) {
+        logger.info("CP 검색 카테고리 데이터 업데이트 요청: Seq={} 이름={}", cpSearchCategoryDataSeq, requestBody);
+
         // 1. 유효성 검사
-        cpSearchCategoryDataName = validateAndCheckDuplicateData(cpSearchCategoryDataName);
-        logger.info("CP 검색 카테고리 데이터 업데이트 요청: ID={} 이름={}", cpSearchCategoryDataSeq, cpSearchCategoryDataName);
+        requestBody = validateAndCheckDuplicateData(requestBody);
+        logger.info("유효성 검사 완료");
 
         // 2. 수정할 데이터 찾기
         CpSearchCategoryData entity = cpSearchCategoryDataRepository.findById(cpSearchCategoryDataSeq)
@@ -154,7 +161,7 @@ public class CpSearchCategoryDataService {
                 });
 
         // 카테고리 데이터 업데이트
-        updateCpSearchCategoryData(entity, cpSearchCategoryDataName);
+        updateCpSearchCategoryData(entity, requestBody);
 
         // 3. 데이터 저장
         try {
@@ -213,7 +220,6 @@ public class CpSearchCategoryDataService {
     /**
      * CP 검색 카테고리 데이터의 유효성을 검사하고 중복 여부를 확인합니다.
      *
-     * @param cpSearchCategorySeq      생성할 CP 검색 카테고리의 시퀀스
      * @param cpSearchCategoryDataName 생성할 CP 검색 카테고리 데이터의 이름
      * @throws CustomException 유효성 검사 실패 시 REQUIRED_FIELD_MISSING 예외 발생,
      *                         중복 데이터가 발견될 경우 DUPLICATE_CP_SEARCH_CATEGORY_DATA_NAME 예외 발생
