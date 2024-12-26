@@ -384,9 +384,7 @@ public class MedicalLifeService {
             throw new CustomException(ErrorCode.NOT_FOUND_COMMENT);
         }
 
-        log.info("User attempting update - User ID: {}, Comment Owner ID: {}", user.getUserSeq(), comment.getUser().getUserSeq());
         if (!comment.getUser().equals(user)) {
-            log.error("Unauthorized access - User ID: {}, Comment Owner ID: {}", user.getUserSeq(), comment.getUser().getUserSeq());
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
