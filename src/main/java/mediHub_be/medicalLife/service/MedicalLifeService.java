@@ -22,12 +22,14 @@ import mediHub_be.dept.entity.Dept;
 import mediHub_be.medicalLife.dto.*;
 import mediHub_be.medicalLife.entity.MedicalLife;
 import mediHub_be.medicalLife.repository.MedicalLifeRepository;
+import mediHub_be.notify.service.NotifyServiceImlp;
 import mediHub_be.part.entity.Part;
 import mediHub_be.ranking.entity.Ranking;
 import mediHub_be.ranking.repository.RankingRepository;
 import mediHub_be.security.util.SecurityUtil;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
+import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,6 +39,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static mediHub_be.notify.entity.NotiType.BOARD;
+import static mediHub_be.notify.entity.NotiType.COMMENT;
 
 @Service
 @RequiredArgsConstructor
@@ -57,9 +62,11 @@ public class MedicalLifeService {
     private final BookmarkService bookmarkService;
     private final PreferService preferService;
     private final RankingRepository rankingRepository;;
-
+    private final NotifyServiceImlp notifyServiceImlp;
+    private final UserService userService;
 
     private static final String MEDICAL_LIFE_FLAG = "MEDICAL_LIFE";
+
 
     // 전체 게시물 조회
     @Transactional(readOnly = true)
@@ -252,6 +259,18 @@ public class MedicalLifeService {
         // 이미지 처리
         updateMedicalLifeContentWithImages(medicalLife, medicalLifeContent);
 
+        // 알림 전송
+        Flag flag = flagService.findFlag(MEDICAL_LIFE_FLAG, medicalLife.getMedicalLifeSeq())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
+
+        notifyServiceImlp.send(
+                user,
+                userService.findFollowersByUser(user),
+                flag,
+                BOARD,
+                "/medicalLife/" + medicalLife.getMedicalLifeSeq()
+        );
+
         return medicalLife.getMedicalLifeSeq();
     }
 
@@ -262,8 +281,10 @@ public class MedicalLifeService {
             MedicalLifeCommentRequestDTO medicalLifeCommentRequestDTO,
             Long userSeq
     ) {
-        User user = userRepository.findById(userSeq)
-                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
+        User user = userService.findUser(userSeq);
+
+        MedicalLife medicalLife = medicalLifeRepository
+                .findByMedicalLifeSeqAndMedicalLifeIsDeletedFalse(medicalLifeSeq);
 
         Flag flag = flagService.findFlag(MEDICAL_LIFE_FLAG, medicalLifeSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
@@ -277,6 +298,13 @@ public class MedicalLifeService {
 
         // 댓글 저장
         commentRepository.save(comment);
+
+        notifyServiceImlp.send(
+                user,
+                medicalLife.getUser(),
+                flag,
+                COMMENT,
+                "/medicalLife/" + medicalLifeSeq);
 
         return comment.getCommentSeq();
     }

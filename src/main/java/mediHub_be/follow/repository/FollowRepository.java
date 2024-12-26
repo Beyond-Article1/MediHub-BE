@@ -27,4 +27,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     // 자신의 팔로워들 몇명인지 확인
     @Query("SELECT COUNT(*) FROM Follow f WHERE f.userTo = :toUser")
     Long countByToUser(User toUser);
+
+    @Query("SELECT f.userFrom FROM Follow f WHERE f.userTo = :user")
+    List<User> findFollowersByUser(User user);
 }
