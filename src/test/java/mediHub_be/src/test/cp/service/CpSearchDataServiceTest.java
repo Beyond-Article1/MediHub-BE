@@ -121,6 +121,7 @@ class CpSearchDataServiceTest {
 
         // Mocking: findById 메서드가 호출될 때 existingEntity를 반환하도록 설정
         Mockito.when(cpSearchDataRepository.findById(cpSearchDataSeq)).thenReturn(Optional.of(existingEntity));
+        Mockito.when(cpSearchDataRepository.existsById(cpSearchDataSeq)).thenReturn(true);
 
         // When
         try (MockedStatic<SecurityUtil> mockedSecurityUtil = Mockito.mockStatic(SecurityUtil.class)) {
