@@ -10,6 +10,8 @@ import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.dept.entity.Dept;
+import mediHub_be.follow.entity.Follow;
+import mediHub_be.follow.repository.FollowRepository;
 import mediHub_be.user.dto.UserResponseDTO;
 import mediHub_be.user.dto.UserSearchDTO;
 import mediHub_be.user.dto.UserUpdateRequestDTO;
@@ -36,10 +38,9 @@ public class UserService {
     private final PictureRepository pictureRepository;
     private final AmazonS3Service amazonS3Service;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final FollowRepository followRepository;
 
-    // ############################ 기본 프로필 사진 url(S3에 업로드 하면 주소 바꿔주세요!!!) ############################
-    public static final String DEFAULT_PROFILE_URL = "https://png.pngtree.com/png-clipart/20220112/ourmid/pngtree-cartoon-hand-drawn-default-avatar-png-image_4154232.png";
-    // ############################ 기본 프로필 사진 url(S3에 업로드 하면 주소 바꿔주세요!!!) ############################
+    public static final String DEFAULT_PROFILE_URL = "https://medihub.s3.ap-northeast-2.amazonaws.com/istockphoto-981306968-1024x1024.jpg";
 
     // 회원 자기 정보 조회
     @Transactional(readOnly = true)
@@ -179,5 +180,8 @@ public class UserService {
         return !user.getUserAuth().equals(UserAuth.ADMIN);
     }
 
+    public List<User> findFollowersByUser(User user) {
+        return followRepository.findFollowersByUser(user);
+    }
 }
 
