@@ -50,7 +50,7 @@ spring:
       password: ${db.password}
 
     redis:
-      host: ${mariadb.host}
+      host: ${redis.host}
       port: ${redis.port}
       password: ${db.password}
 
