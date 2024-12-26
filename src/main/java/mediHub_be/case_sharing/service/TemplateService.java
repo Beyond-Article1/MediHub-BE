@@ -139,7 +139,7 @@ public class TemplateService {
     public void updateTemplate(String userId, Long templateSeq, MultipartFile previewImage, List<MultipartFile> contentImages, TemplateRequestDTO requestDTO) {
         User user = userService.findByUserId(userId);
         Template template = getTemplate(templateSeq);
-        if(!userService.validateAdmin(user)) {
+        if(userService.validateAdmin(user)) {
             validateTemplateOwnership(template, user);
         }
         // 미리보기 이미지 업데이트
@@ -158,7 +158,7 @@ public class TemplateService {
     public void deleteTemplate(String userId, Long templateSeq) {
         User user = userService.findByUserId(userId);
         Template template = getTemplate(templateSeq);
-        if(!userService.validateAdmin(user)) {
+        if(userService.validateAdmin(user)) {
             validateTemplateOwnership(template, user);
         }
 

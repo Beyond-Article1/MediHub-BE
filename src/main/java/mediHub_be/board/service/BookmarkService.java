@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -89,5 +90,13 @@ public class BookmarkService {
 
         // 2. 북마크 삭제
         deleteBookmarkByFlag(flag);
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> getUsersWhoBookmarkedCaseSharing(Long caseSharingSeq) {
+        List<Bookmark> bookmarks = bookmarkRepository.findByFlag_FlagTypeAndFlag_FlagEntitySeq("case_sharing", caseSharingSeq);
+        return bookmarks.stream()
+                .map(Bookmark::getUser) // Bookmark에서 User를 추출
+                .collect(Collectors.toList());
     }
 }

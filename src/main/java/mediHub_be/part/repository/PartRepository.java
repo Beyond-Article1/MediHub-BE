@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface PartRepository extends JpaRepository<Part, Long> {
-    List<Part> findByDept_DeptSeqOrderByPartName(Long deptSeq);
+    List<Part> findByDept_DeptSeq_AndDeletedAtIsNullOrderByPartName(Long deptSeq);
     
     List<Part> findByDeletedAtIsNull();
 }

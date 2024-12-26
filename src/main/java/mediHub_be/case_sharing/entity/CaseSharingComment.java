@@ -37,16 +37,6 @@ public class CaseSharingComment extends BaseFullEntity {
 
     private String caseSharingBlockId;
 
-    // 빌더 메서드를 통해 객체 생성
-    @Builder
-    public CaseSharingComment(User user, CaseSharing caseSharing, String caseSharingCommentContent,
-                             String caseSharingBlockId) {
-        this.user = user;
-        this.caseSharing = caseSharing;
-        this.caseSharingCommentContent = caseSharingCommentContent;
-        this.caseSharingBlockId = caseSharingBlockId;
-    }
-
     public void updateComment(String content, String caseSharingBlockId) {
         this.caseSharingCommentContent = content;
         this.caseSharingBlockId = caseSharingBlockId;

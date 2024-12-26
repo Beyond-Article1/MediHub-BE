@@ -9,10 +9,12 @@ import mediHub_be.chatbot.entity.ChatbotSession;
 import mediHub_be.chatbot.service.ChatbotRestService;
 import mediHub_be.common.response.ApiResponse;
 import mediHub_be.security.util.SecurityUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/chatbot")
@@ -21,6 +23,19 @@ import java.util.List;
 @Tag(name = "챗봇 기능 API", description = "챗봇 관련 RESTFUL한 API")
 public class ChatbotRestController {
     private final ChatbotRestService chatbotRestService;
+
+    @Operation(summary = "챗봇 질문", description = "로그인 한 회원이 chatbot에 물어봄")
+    @PostMapping("/ask")
+    public ResponseEntity<String> askQuestion(@RequestBody Map<String, String> payload) {
+        String question = payload.get("question");
+        String answer = chatbotRestService.answerQuestion(question);
+
+        if (answer == null || answer.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("답변을 생성하지 못했습니다.");
+        }
+        return ResponseEntity.ok(answer);
+    }
 
     @Operation(summary = "챗봇 세션 생성", description = "로그인 한 회원과의 새로운 AI 채팅 세션 생성")
     @PostMapping("/sessions")
