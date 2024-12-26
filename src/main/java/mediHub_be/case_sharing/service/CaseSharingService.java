@@ -21,6 +21,7 @@ import mediHub_be.case_sharing.repository.CaseSharingRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.config.amazonS3.AmazonS3Service;
+import mediHub_be.notify.service.NotifyServiceImlp;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.service.UserService;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +34,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static mediHub_be.notify.entity.NotiType.*;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +54,7 @@ public class CaseSharingService {
     private final TemplateService templateService;
 
     private static final String CASE_SHARING_FLAG = "CASE_SHARING";
+    private final NotifyServiceImlp notifyServiceImlp;
 
     // 1. 케이스 공유 전체(목록) 조회
     @Transactional(readOnly = true)
@@ -127,9 +131,25 @@ public class CaseSharingService {
                 false
         );
         caseSharingRepository.save(caseSharing);
-        log.info("호출확인");
         saveKeywordsAndFlag(requestDTO.getKeywords(), caseSharing.getCaseSharingSeq());
         updateContentWithImages(caseSharing,content);
+
+        Flag flag = flagService.findFlag(CASE_SHARING_FLAG,caseSharing.getCaseSharingSeq())
+                        .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
+
+        List<User> users = userService.findFollowersByUser(user);
+        for(User user1: users){
+            log.info("팔로우 목록{}", user1.getUserName());
+        }
+
+        notifyServiceImlp.send(
+                user,
+                userService.findFollowersByUser(user),
+                flag,
+                CASE,
+                "/case_sharing/" + caseSharing.getCaseSharingSeq()
+        );
+
         return caseSharing.getCaseSharingSeq();
     }
 
@@ -167,6 +187,18 @@ public class CaseSharingService {
         saveKeywordsAndFlag(requestDTO.getKeywords(), newCaseSharing.getCaseSharingSeq());
 
         updateContentWithImages(newCaseSharing, content);
+
+
+        Flag flag = flagService.findFlag(CASE_SHARING_FLAG,existingCaseSharing.getCaseSharingSeq())
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
+
+        notifyServiceImlp.send(
+                user,
+                bookmarkService.getUsersWhoBookmarkedCaseSharing(caseSharingSeq),
+                flag,
+                CASE,
+                "/case_sharing/" + existingCaseSharing.getCaseSharingSeq()
+        );
 
         return newCaseSharing.getCaseSharingSeq();
     }

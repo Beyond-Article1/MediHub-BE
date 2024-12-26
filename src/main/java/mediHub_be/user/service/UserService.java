@@ -183,5 +183,6 @@ public class UserService {
     public List<User> findFollowersByUser(User user) {
         return followRepository.findFollowersByUser(user);
     }
+
 }
 
