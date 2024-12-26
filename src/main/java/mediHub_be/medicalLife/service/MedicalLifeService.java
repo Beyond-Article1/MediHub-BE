@@ -551,12 +551,15 @@ public class MedicalLifeService {
                 .toList();
     }
 
-
+    // 내가 북마크한 게시글
     @Transactional(readOnly = true)
-    public List<MedicalLifeListDTO> getBookMarkedMedicalLifeList(Long userSeq) {
+    public List<MedicalLifeBookMarkDTO> getBookMarkedMedicalLifeList(Long userSeq) {
 
-        User user = userRepository.findById(userSeq).orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
+        // 사용자 정보 가져오기
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
+        // 북마크 정보 가져오기
         List<BookmarkDTO> bookmarkDTOList = bookmarkService.findByUserAndFlagType(user, MEDICAL_LIFE_FLAG);
 
         List<Long> medicalLifeSeqList = bookmarkDTOList.stream()
@@ -566,16 +569,14 @@ public class MedicalLifeService {
         List<MedicalLife> medicalLifeList = medicalLifeRepository.findAllById(medicalLifeSeqList);
 
         return medicalLifeList.stream()
-                .map(medicalLife -> MedicalLifeListDTO.builder()
+                .map(medicalLife -> MedicalLifeBookMarkDTO.builder()
                         .medicalLifeSeq(medicalLife.getMedicalLifeSeq())
                         .userSeq(medicalLife.getUser().getUserSeq())
                         .userName(medicalLife.getUser().getUserName())
-                        .PartSeq(medicalLife.getUser().getPart().getPartName())
-                        .DeptSeq(medicalLife.getUser().getPart().getDept().getDeptName())
+                        .partName(medicalLife.getUser().getPart().getPartName())
                         .medicalLifeName(medicalLife.getMedicalLifeTitle())
                         .medicalLifeTitle(medicalLife.getMedicalLifeTitle())
                         .medicalLifeContent(medicalLife.getMedicalLifeContent())
-                        .medicalLifeIsDeleted(medicalLife.getMedicalLifeIsDeleted())
                         .medicalLifeViewCount(medicalLife.getMedicalLifeViewCount())
                         .createdAt(medicalLife.getCreatedAt())
                         .build())
