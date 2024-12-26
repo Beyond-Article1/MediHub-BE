@@ -12,7 +12,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    @Value("${mariadb.host}")
+    @Value("${local.host}")
     private String dbName;
 
     @Value("${db.password}")

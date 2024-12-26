@@ -142,7 +142,7 @@ jacocoTestReport {
                 '**/dto/**',
                 '**/s3/**',
                 '**/security/**',
-                '**/util/**',
+                '**/util/*JwtUtil*',
                 '**/*Builder*',
                 '**/entity/**',
                 '**/component/**',
