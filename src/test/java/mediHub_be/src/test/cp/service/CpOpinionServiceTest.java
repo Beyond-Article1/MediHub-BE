@@ -1,6 +1,8 @@
 package mediHub_be.src.test.cp.service;
 
+import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.FlagService;
+import mediHub_be.board.service.KeywordService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpOpinionDTO;
@@ -37,6 +39,12 @@ class CpOpinionServiceTest {
 
     @MockBean
     FlagService flagService;
+
+    @MockBean
+    BookmarkService bookmarkService;
+
+    @MockBean
+    KeywordService keywordService;
 
     private static List<ResponseCpOpinionDTO> responseCpOpinionDtoList;
     private static CpOpinion cpOpinion;
@@ -95,6 +103,9 @@ class CpOpinionServiceTest {
         Mockito.when(cpOpinionRepository.findByCpOpinionLocationSeqAndDeletedAtIsNull(cpOpinionLocationSeq))
                 .thenReturn(responseCpOpinionDtoList);
 
+        Mockito.when(bookmarkService.isBookmarked(Mockito.anyString(), Mockito.anyLong(), Mockito.anyString()))
+                .thenReturn(false);
+
         // When
         List<ResponseCpOpinionDTO> result = cpOpinionService.getCpOpinionListByCpVersionSeq(cpVersionSeq, cpOpinionLocationSeq, isDeleted);
 
@@ -140,6 +151,9 @@ class CpOpinionServiceTest {
         Mockito.when(cpOpinionRepository.findByCpOpinionLocationSeqAndDeletedAtIsNotNull(cpOpinionLocationSeq))
                 .thenReturn(responseCpOpinionDtoList);
 
+        Mockito.when(keywordService.getKeywordList(Mockito.anyString(), Mockito.anyLong()))
+                .thenReturn(null);
+
         // When
         List<ResponseCpOpinionDTO> result = cpOpinionService.getCpOpinionListByCpVersionSeq(cpVersionSeq, cpOpinionLocationSeq, isDeleted);
 
@@ -184,6 +198,9 @@ class CpOpinionServiceTest {
         // Mock 설정: 활성 상태의 의견이 없을 경우
         Mockito.when(cpOpinionRepository.findByCpOpinionLocationSeqAndDeletedAtIsNull(cpOpinionLocationSeq))
                 .thenReturn(new ArrayList<>()); // 빈 리스트 반환
+
+        Mockito.when(cpOpinionRepository.findByCpOpinionLocationSeqAndDeletedAtIsNotNull(cpOpinionLocationSeq))
+                .thenReturn(responseCpOpinionDtoList);
 
         // When & Then
         assertThrows(CustomException.class, () -> {
