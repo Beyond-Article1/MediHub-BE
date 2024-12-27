@@ -8,7 +8,6 @@ import mediHub_be.board.Util.ViewCountManager;
 import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.FlagService;
-import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpDTO;
@@ -19,6 +18,10 @@ import mediHub_be.cp.repository.CpVersionRepository;
 import mediHub_be.security.util.SecurityUtil;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.service.UserService;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -36,18 +39,17 @@ public class CpService {
     // Service
     private final BookmarkService bookmarkService;
     private final UserService userService;
+    private final FlagService flagService;
 
     // Repository
     private final CpRepository cpRepository;
     private final CpVersionRepository cpVersionRepository;
 
+    // etc
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpService");       // Logger
     private final ViewCountManager viewCountManager;        // 조회수 매니저
-
-    // FlagType
     private final String CP_VERSION_FLAG = "CP_VERSION";
-    private final FlagService flagService;
-
+    private final DSLContext dslContext;
 
     /**
      * 주어진 카테고리 시퀀스와 카테고리 데이터를 기준으로 CP 리스트를 조회하는 메서드입니다.
@@ -64,6 +66,45 @@ public class CpService {
             List<Long> cpSearchCategoryDataArray) {
 
         logger.info("CP 검색 카테고리 시퀀스: {}, 카테고리 데이터: {}", cpSearchCategorySeqArray, cpSearchCategoryDataArray);
+
+        // DB 조회
+//        Result<Record> result = dslContext
+//                .selectDistinct(
+//                        CP_VERSION.CP_VERSION_SEQ.as("cpVersionSeq"),
+//                        CP.CP_NAME.as("cpName"),
+//                        CP.CP_DESCRIPTION.as("cpDescription"),
+//                        CP.CP_VIEW_COUNT.as("cpViewCount"),
+//                        CP_VERSION.CP_VERSION.as("cpVersion"),
+//                        CP_VERSION.CP_VERSION_DESCRIPTION.as("cpVersionDescription"),
+//                        CP_VERSION.CREATED_AT.as("createdAt"),
+//                        CP_VERSION.CP_URL.as("cpUrl"),
+//                        USER.USER_NAME.as("userName"),
+//                        USER.USER_ID.as("userId"),
+//                        PART.PART_NAME.as("partName")
+//                )
+//                .from(CP_VERSION)
+//                .join(CP).on(CP_VERSION.CP_SEQ.eq(CP.CP_SEQ))
+//                .join(CP_SEARCH_DATA).on(CP_VERSION.CP_VERSION_SEQ.eq(CP_SEARCH_DATA.CP_VERSION_SEQ))
+//                .join(CP_SEARCH_CATEGORY_DATA).on(CP_SEARCH_DATA.CP_SEARCH_CATEGORY_DATA_SEQ.eq(CP_SEARCH_CATEGORY_DATA.CP_SEARCH_CATEGORY_DATA_SEQ))
+//                .join(USER).on(CP_VERSION.USER_SEQ.eq(USER.USER_SEQ))
+//                .join(PART).on(USER.PART_SEQ.eq(PART.PART_SEQ))
+//                .where(CP_SEARCH_CATEGORY_DATA.CP_SEARCH_CATEGORY_SEQ.in(cpSearchCategorySeqArray))
+//                .and(CP_SEARCH_CATEGORY_DATA.CP_SEARCH_CATEGORY_DATA_SEQ.in(cpSearchCategoryDataArray))
+//                .groupBy(
+//                        CP_VERSION.CP_VERSION_SEQ,
+//                        CP.CP_NAME,
+//                        CP.CP_DESCRIPTION,
+//                        CP.CP_VIEW_COUNT,
+//                        CP_VERSION.CP_VERSION,
+//                        CP_VERSION.CP_VERSION_DESCRIPTION,
+//                        CP_VERSION.CREATED_AT,
+//                        CP_VERSION.CP_URL,
+//                        USER.USER_NAME,
+//                        USER.USER_ID,
+//                        PART.PART_NAME
+//                )
+//                .having(DSL.countDistinct(CP_SEARCH_CATEGORY_DATA.CP_SEARCH_CATEGORY_DATA_SEQ).eq(cpSearchCategoryDataArray.size()))
+//                .fetch();
 
         // DB 조회
         List<Map<String, Object>> entityList = cpVersionRepository.findByCategorySeqAndCategoryData(
