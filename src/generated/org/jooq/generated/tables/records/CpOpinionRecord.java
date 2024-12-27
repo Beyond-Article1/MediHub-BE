@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.CpOpinion;
+import org.jooq.generated.tables.JCpOpinion;
+import org.jooq.generated.tables.pojos.CpOpinion;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -156,14 +157,14 @@ public class CpOpinionRecord extends UpdatableRecordImpl<CpOpinionRecord> {
      * Create a detached CpOpinionRecord
      */
     public CpOpinionRecord() {
-        super(CpOpinion.CP_OPINION);
+        super(JCpOpinion.CP_OPINION);
     }
 
     /**
      * Create a detached, initialised CpOpinionRecord
      */
     public CpOpinionRecord(Long cpOpinionSeq, LocalDateTime createdAt, LocalDateTime deletedAt, LocalDateTime updatedAt, String cpOpinionContent, Long cpOpinionLocationSeq, Long cpOpinionViewCount, Long userSeq) {
-        super(CpOpinion.CP_OPINION);
+        super(JCpOpinion.CP_OPINION);
 
         setCpOpinionSeq(cpOpinionSeq);
         setCreatedAt(createdAt);
@@ -179,8 +180,8 @@ public class CpOpinionRecord extends UpdatableRecordImpl<CpOpinionRecord> {
     /**
      * Create a detached, initialised CpOpinionRecord
      */
-    public CpOpinionRecord(org.jooq.generated.tables.pojos.CpOpinion value) {
-        super(CpOpinion.CP_OPINION);
+    public CpOpinionRecord(CpOpinion value) {
+        super(JCpOpinion.CP_OPINION);
 
         if (value != null) {
             setCpOpinionSeq(value.getCpOpinionSeq());

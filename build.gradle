@@ -101,7 +101,7 @@ dependencies {
     implementation 'org.apache.lucene:lucene-core:9.11.1'
 
     // jOOQ
-    jooqGenerator 'org.mariadb.jdbc:mariadb-java-client'
+    jooqGenerator project(':jOOQ-custom')
     jooqGenerator "org.jooq:jooq:${jooqVersion}"
     jooqGenerator "org.jooq:jooq-meta:${jooqVersion}"
 }
@@ -261,16 +261,18 @@ jooq {
                     }
 
                     generate {
-                        daos = true
-                        records = true
-                        fluentSetters = true
-                        javaTimeTypes = true
+                        daos = true                 // dao 생성
+                        records = true              // record 생성
+                        fluentSetters = true        // 본인 반환
+                        javaTimeTypes = true        // LocalDateTime (false -> DateTimeStamp)
                         deprecated = false
                     }
 
                     target {
                         directory = 'src/generated'
                     }
+
+                    strategy.name = 'jooq.custom.generator.JPrefixGeneratorStrategy'
                 }
             }
         }

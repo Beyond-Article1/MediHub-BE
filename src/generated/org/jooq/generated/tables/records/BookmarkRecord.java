@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Bookmark;
+import org.jooq.generated.tables.JBookmark;
+import org.jooq.generated.tables.pojos.Bookmark;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -96,14 +97,14 @@ public class BookmarkRecord extends UpdatableRecordImpl<BookmarkRecord> {
      * Create a detached BookmarkRecord
      */
     public BookmarkRecord() {
-        super(Bookmark.BOOKMARK);
+        super(JBookmark.BOOKMARK);
     }
 
     /**
      * Create a detached, initialised BookmarkRecord
      */
     public BookmarkRecord(Long bookmarkSeq, LocalDateTime createdAt, Long flagSeq, Long userSeq) {
-        super(Bookmark.BOOKMARK);
+        super(JBookmark.BOOKMARK);
 
         setBookmarkSeq(bookmarkSeq);
         setCreatedAt(createdAt);
@@ -115,8 +116,8 @@ public class BookmarkRecord extends UpdatableRecordImpl<BookmarkRecord> {
     /**
      * Create a detached, initialised BookmarkRecord
      */
-    public BookmarkRecord(org.jooq.generated.tables.pojos.Bookmark value) {
-        super(Bookmark.BOOKMARK);
+    public BookmarkRecord(Bookmark value) {
+        super(JBookmark.BOOKMARK);
 
         if (value != null) {
             setBookmarkSeq(value.getBookmarkSeq());

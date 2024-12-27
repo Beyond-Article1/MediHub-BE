@@ -4,36 +4,36 @@
 package org.jooq.generated;
 
 
-import org.jooq.generated.tables.AnonymousBoard;
-import org.jooq.generated.tables.Bookmark;
-import org.jooq.generated.tables.CaseSharing;
-import org.jooq.generated.tables.CaseSharingComment;
-import org.jooq.generated.tables.CaseSharingGroup;
-import org.jooq.generated.tables.Chat;
-import org.jooq.generated.tables.Chatroom;
-import org.jooq.generated.tables.Comment;
-import org.jooq.generated.tables.Cp;
-import org.jooq.generated.tables.CpOpinion;
-import org.jooq.generated.tables.CpOpinionLocation;
-import org.jooq.generated.tables.CpOpinionVote;
-import org.jooq.generated.tables.CpSearchCategory;
-import org.jooq.generated.tables.CpSearchCategoryData;
-import org.jooq.generated.tables.CpSearchData;
-import org.jooq.generated.tables.CpVersion;
-import org.jooq.generated.tables.Dept;
-import org.jooq.generated.tables.Flag;
-import org.jooq.generated.tables.Follow;
-import org.jooq.generated.tables.Journal;
-import org.jooq.generated.tables.JournalSearch;
-import org.jooq.generated.tables.Keyword;
-import org.jooq.generated.tables.MedicalLife;
-import org.jooq.generated.tables.Notify;
-import org.jooq.generated.tables.Part;
-import org.jooq.generated.tables.Picture;
-import org.jooq.generated.tables.Prefer;
-import org.jooq.generated.tables.Ranking;
-import org.jooq.generated.tables.Template;
-import org.jooq.generated.tables.User;
+import org.jooq.generated.tables.JAnonymousBoard;
+import org.jooq.generated.tables.JBookmark;
+import org.jooq.generated.tables.JCaseSharing;
+import org.jooq.generated.tables.JCaseSharingComment;
+import org.jooq.generated.tables.JCaseSharingGroup;
+import org.jooq.generated.tables.JChat;
+import org.jooq.generated.tables.JChatroom;
+import org.jooq.generated.tables.JComment;
+import org.jooq.generated.tables.JCp;
+import org.jooq.generated.tables.JCpOpinion;
+import org.jooq.generated.tables.JCpOpinionLocation;
+import org.jooq.generated.tables.JCpOpinionVote;
+import org.jooq.generated.tables.JCpSearchCategory;
+import org.jooq.generated.tables.JCpSearchCategoryData;
+import org.jooq.generated.tables.JCpSearchData;
+import org.jooq.generated.tables.JCpVersion;
+import org.jooq.generated.tables.JDept;
+import org.jooq.generated.tables.JFlag;
+import org.jooq.generated.tables.JFollow;
+import org.jooq.generated.tables.JJournal;
+import org.jooq.generated.tables.JJournalSearch;
+import org.jooq.generated.tables.JKeyword;
+import org.jooq.generated.tables.JMedicalLife;
+import org.jooq.generated.tables.JNotify;
+import org.jooq.generated.tables.JPart;
+import org.jooq.generated.tables.JPicture;
+import org.jooq.generated.tables.JPrefer;
+import org.jooq.generated.tables.JRanking;
+import org.jooq.generated.tables.JTemplate;
+import org.jooq.generated.tables.JUser;
 
 
 /**
@@ -45,150 +45,150 @@ public class Tables {
     /**
      * The table <code>medihub.anonymous_board</code>.
      */
-    public static final AnonymousBoard ANONYMOUS_BOARD = AnonymousBoard.ANONYMOUS_BOARD;
+    public static final JAnonymousBoard ANONYMOUS_BOARD = JAnonymousBoard.ANONYMOUS_BOARD;
 
     /**
      * The table <code>medihub.bookmark</code>.
      */
-    public static final Bookmark BOOKMARK = Bookmark.BOOKMARK;
+    public static final JBookmark BOOKMARK = JBookmark.BOOKMARK;
 
     /**
      * The table <code>medihub.case_sharing</code>.
      */
-    public static final CaseSharing CASE_SHARING = CaseSharing.CASE_SHARING;
+    public static final JCaseSharing CASE_SHARING = JCaseSharing.CASE_SHARING;
 
     /**
      * The table <code>medihub.case_sharing_comment</code>.
      */
-    public static final CaseSharingComment CASE_SHARING_COMMENT = CaseSharingComment.CASE_SHARING_COMMENT;
+    public static final JCaseSharingComment CASE_SHARING_COMMENT = JCaseSharingComment.CASE_SHARING_COMMENT;
 
     /**
      * The table <code>medihub.case_sharing_group</code>.
      */
-    public static final CaseSharingGroup CASE_SHARING_GROUP = CaseSharingGroup.CASE_SHARING_GROUP;
+    public static final JCaseSharingGroup CASE_SHARING_GROUP = JCaseSharingGroup.CASE_SHARING_GROUP;
 
     /**
      * The table <code>medihub.chat</code>.
      */
-    public static final Chat CHAT = Chat.CHAT;
+    public static final JChat CHAT = JChat.CHAT;
 
     /**
      * The table <code>medihub.chatroom</code>.
      */
-    public static final Chatroom CHATROOM = Chatroom.CHATROOM;
+    public static final JChatroom CHATROOM = JChatroom.CHATROOM;
 
     /**
      * The table <code>medihub.comment</code>.
      */
-    public static final Comment COMMENT = Comment.COMMENT;
+    public static final JComment COMMENT = JComment.COMMENT;
 
     /**
      * The table <code>medihub.cp</code>.
      */
-    public static final Cp CP = Cp.CP;
+    public static final JCp CP = JCp.CP;
 
     /**
      * The table <code>medihub.cp_opinion</code>.
      */
-    public static final CpOpinion CP_OPINION = CpOpinion.CP_OPINION;
+    public static final JCpOpinion CP_OPINION = JCpOpinion.CP_OPINION;
 
     /**
      * The table <code>medihub.cp_opinion_location</code>.
      */
-    public static final CpOpinionLocation CP_OPINION_LOCATION = CpOpinionLocation.CP_OPINION_LOCATION;
+    public static final JCpOpinionLocation CP_OPINION_LOCATION = JCpOpinionLocation.CP_OPINION_LOCATION;
 
     /**
      * The table <code>medihub.cp_opinion_vote</code>.
      */
-    public static final CpOpinionVote CP_OPINION_VOTE = CpOpinionVote.CP_OPINION_VOTE;
+    public static final JCpOpinionVote CP_OPINION_VOTE = JCpOpinionVote.CP_OPINION_VOTE;
 
     /**
      * The table <code>medihub.cp_search_category</code>.
      */
-    public static final CpSearchCategory CP_SEARCH_CATEGORY = CpSearchCategory.CP_SEARCH_CATEGORY;
+    public static final JCpSearchCategory CP_SEARCH_CATEGORY = JCpSearchCategory.CP_SEARCH_CATEGORY;
 
     /**
      * The table <code>medihub.cp_search_category_data</code>.
      */
-    public static final CpSearchCategoryData CP_SEARCH_CATEGORY_DATA = CpSearchCategoryData.CP_SEARCH_CATEGORY_DATA;
+    public static final JCpSearchCategoryData CP_SEARCH_CATEGORY_DATA = JCpSearchCategoryData.CP_SEARCH_CATEGORY_DATA;
 
     /**
      * The table <code>medihub.cp_search_data</code>.
      */
-    public static final CpSearchData CP_SEARCH_DATA = CpSearchData.CP_SEARCH_DATA;
+    public static final JCpSearchData CP_SEARCH_DATA = JCpSearchData.CP_SEARCH_DATA;
 
     /**
      * The table <code>medihub.cp_version</code>.
      */
-    public static final CpVersion CP_VERSION = CpVersion.CP_VERSION;
+    public static final JCpVersion CP_VERSION = JCpVersion.CP_VERSION;
 
     /**
      * The table <code>medihub.dept</code>.
      */
-    public static final Dept DEPT = Dept.DEPT;
+    public static final JDept DEPT = JDept.DEPT;
 
     /**
      * The table <code>medihub.flag</code>.
      */
-    public static final Flag FLAG = Flag.FLAG;
+    public static final JFlag FLAG = JFlag.FLAG;
 
     /**
      * The table <code>medihub.follow</code>.
      */
-    public static final Follow FOLLOW = Follow.FOLLOW;
+    public static final JFollow FOLLOW = JFollow.FOLLOW;
 
     /**
      * The table <code>medihub.journal</code>.
      */
-    public static final Journal JOURNAL = Journal.JOURNAL;
+    public static final JJournal JOURNAL = JJournal.JOURNAL;
 
     /**
      * The table <code>medihub.journal_search</code>.
      */
-    public static final JournalSearch JOURNAL_SEARCH = JournalSearch.JOURNAL_SEARCH;
+    public static final JJournalSearch JOURNAL_SEARCH = JJournalSearch.JOURNAL_SEARCH;
 
     /**
      * The table <code>medihub.keyword</code>.
      */
-    public static final Keyword KEYWORD = Keyword.KEYWORD;
+    public static final JKeyword KEYWORD = JKeyword.KEYWORD;
 
     /**
      * The table <code>medihub.medical_life</code>.
      */
-    public static final MedicalLife MEDICAL_LIFE = MedicalLife.MEDICAL_LIFE;
+    public static final JMedicalLife MEDICAL_LIFE = JMedicalLife.MEDICAL_LIFE;
 
     /**
      * The table <code>medihub.notify</code>.
      */
-    public static final Notify NOTIFY = Notify.NOTIFY;
+    public static final JNotify NOTIFY = JNotify.NOTIFY;
 
     /**
      * The table <code>medihub.part</code>.
      */
-    public static final Part PART = Part.PART;
+    public static final JPart PART = JPart.PART;
 
     /**
      * The table <code>medihub.picture</code>.
      */
-    public static final Picture PICTURE = Picture.PICTURE;
+    public static final JPicture PICTURE = JPicture.PICTURE;
 
     /**
      * The table <code>medihub.prefer</code>.
      */
-    public static final Prefer PREFER = Prefer.PREFER;
+    public static final JPrefer PREFER = JPrefer.PREFER;
 
     /**
      * The table <code>medihub.ranking</code>.
      */
-    public static final Ranking RANKING = Ranking.RANKING;
+    public static final JRanking RANKING = JRanking.RANKING;
 
     /**
      * The table <code>medihub.template</code>.
      */
-    public static final Template TEMPLATE = Template.TEMPLATE;
+    public static final JTemplate TEMPLATE = JTemplate.TEMPLATE;
 
     /**
      * The table <code>medihub.user</code>.
      */
-    public static final User USER = User.USER;
+    public static final JUser USER = JUser.USER;
 }

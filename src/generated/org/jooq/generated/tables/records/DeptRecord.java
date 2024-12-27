@@ -5,7 +5,8 @@ package org.jooq.generated.tables.records;
 
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Dept;
+import org.jooq.generated.tables.JDept;
+import org.jooq.generated.tables.pojos.Dept;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -64,14 +65,14 @@ public class DeptRecord extends UpdatableRecordImpl<DeptRecord> {
      * Create a detached DeptRecord
      */
     public DeptRecord() {
-        super(Dept.DEPT);
+        super(JDept.DEPT);
     }
 
     /**
      * Create a detached, initialised DeptRecord
      */
     public DeptRecord(Long deptSeq, String deptName) {
-        super(Dept.DEPT);
+        super(JDept.DEPT);
 
         setDeptSeq(deptSeq);
         setDeptName(deptName);
@@ -81,8 +82,8 @@ public class DeptRecord extends UpdatableRecordImpl<DeptRecord> {
     /**
      * Create a detached, initialised DeptRecord
      */
-    public DeptRecord(org.jooq.generated.tables.pojos.Dept value) {
-        super(Dept.DEPT);
+    public DeptRecord(Dept value) {
+        super(JDept.DEPT);
 
         if (value != null) {
             setDeptSeq(value.getDeptSeq());

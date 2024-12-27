@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.CpVersion;
+import org.jooq.generated.tables.JCpVersion;
+import org.jooq.generated.tables.pojos.CpVersion;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -141,14 +142,14 @@ public class CpVersionRecord extends UpdatableRecordImpl<CpVersionRecord> {
      * Create a detached CpVersionRecord
      */
     public CpVersionRecord() {
-        super(CpVersion.CP_VERSION);
+        super(JCpVersion.CP_VERSION);
     }
 
     /**
      * Create a detached, initialised CpVersionRecord
      */
     public CpVersionRecord(Long cpVersionSeq, LocalDateTime createdAt, Long cpSeq, String cpUrl, String cpVersion, String cpVersionDescription, Long userSeq) {
-        super(CpVersion.CP_VERSION);
+        super(JCpVersion.CP_VERSION);
 
         setCpVersionSeq(cpVersionSeq);
         setCreatedAt(createdAt);
@@ -163,8 +164,8 @@ public class CpVersionRecord extends UpdatableRecordImpl<CpVersionRecord> {
     /**
      * Create a detached, initialised CpVersionRecord
      */
-    public CpVersionRecord(org.jooq.generated.tables.pojos.CpVersion value) {
-        super(CpVersion.CP_VERSION);
+    public CpVersionRecord(CpVersion value) {
+        super(JCpVersion.CP_VERSION);
 
         if (value != null) {
             setCpVersionSeq(value.getCpVersionSeq());

@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.CaseSharing;
+import org.jooq.generated.tables.JCaseSharing;
+import org.jooq.generated.tables.pojos.CaseSharing;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -216,14 +217,14 @@ public class CaseSharingRecord extends UpdatableRecordImpl<CaseSharingRecord> {
      * Create a detached CaseSharingRecord
      */
     public CaseSharingRecord() {
-        super(CaseSharing.CASE_SHARING);
+        super(JCaseSharing.CASE_SHARING);
     }
 
     /**
      * Create a detached, initialised CaseSharingRecord
      */
     public CaseSharingRecord(Long caseSharingSeq, LocalDateTime createdAt, LocalDateTime deletedAt, String caseSharingContent, Boolean caseSharingIsDraft, Boolean caseSharingIsLatest, String caseSharingTitle, Long caseSharingViewCount, Long caseSharingGroupSeq, Long partSeq, Long templateSeq, Long userSeq) {
-        super(CaseSharing.CASE_SHARING);
+        super(JCaseSharing.CASE_SHARING);
 
         setCaseSharingSeq(caseSharingSeq);
         setCreatedAt(createdAt);
@@ -243,8 +244,8 @@ public class CaseSharingRecord extends UpdatableRecordImpl<CaseSharingRecord> {
     /**
      * Create a detached, initialised CaseSharingRecord
      */
-    public CaseSharingRecord(org.jooq.generated.tables.pojos.CaseSharing value) {
-        super(CaseSharing.CASE_SHARING);
+    public CaseSharingRecord(CaseSharing value) {
+        super(JCaseSharing.CASE_SHARING);
 
         if (value != null) {
             setCaseSharingSeq(value.getCaseSharingSeq());

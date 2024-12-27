@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.MedicalLife;
+import org.jooq.generated.tables.JMedicalLife;
+import org.jooq.generated.tables.pojos.MedicalLife;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -171,14 +172,14 @@ public class MedicalLifeRecord extends UpdatableRecordImpl<MedicalLifeRecord> {
      * Create a detached MedicalLifeRecord
      */
     public MedicalLifeRecord() {
-        super(MedicalLife.MEDICAL_LIFE);
+        super(JMedicalLife.MEDICAL_LIFE);
     }
 
     /**
      * Create a detached, initialised MedicalLifeRecord
      */
     public MedicalLifeRecord(Long medicalLifeSeq, LocalDateTime createdAt, LocalDateTime deletedAt, LocalDateTime updatedAt, String medicalLifeContent, Boolean medicalLifeIsDeleted, String medicalLifeTitle, Long medicalLifeViewCount, Long userSeq) {
-        super(MedicalLife.MEDICAL_LIFE);
+        super(JMedicalLife.MEDICAL_LIFE);
 
         setMedicalLifeSeq(medicalLifeSeq);
         setCreatedAt(createdAt);
@@ -195,8 +196,8 @@ public class MedicalLifeRecord extends UpdatableRecordImpl<MedicalLifeRecord> {
     /**
      * Create a detached, initialised MedicalLifeRecord
      */
-    public MedicalLifeRecord(org.jooq.generated.tables.pojos.MedicalLife value) {
-        super(MedicalLife.MEDICAL_LIFE);
+    public MedicalLifeRecord(MedicalLife value) {
+        super(JMedicalLife.MEDICAL_LIFE);
 
         if (value != null) {
             setMedicalLifeSeq(value.getMedicalLifeSeq());

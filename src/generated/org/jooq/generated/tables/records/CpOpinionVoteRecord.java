@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.CpOpinionVote;
+import org.jooq.generated.tables.JCpOpinionVote;
+import org.jooq.generated.tables.pojos.CpOpinionVote;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -111,14 +112,14 @@ public class CpOpinionVoteRecord extends UpdatableRecordImpl<CpOpinionVoteRecord
      * Create a detached CpOpinionVoteRecord
      */
     public CpOpinionVoteRecord() {
-        super(CpOpinionVote.CP_OPINION_VOTE);
+        super(JCpOpinionVote.CP_OPINION_VOTE);
     }
 
     /**
      * Create a detached, initialised CpOpinionVoteRecord
      */
     public CpOpinionVoteRecord(Long cpOpinionVoteSeq, LocalDateTime createdAt, Long cpOpinionSeq, Boolean cpOpinionVote, Long userSeq) {
-        super(CpOpinionVote.CP_OPINION_VOTE);
+        super(JCpOpinionVote.CP_OPINION_VOTE);
 
         setCpOpinionVoteSeq(cpOpinionVoteSeq);
         setCreatedAt(createdAt);
@@ -131,8 +132,8 @@ public class CpOpinionVoteRecord extends UpdatableRecordImpl<CpOpinionVoteRecord
     /**
      * Create a detached, initialised CpOpinionVoteRecord
      */
-    public CpOpinionVoteRecord(org.jooq.generated.tables.pojos.CpOpinionVote value) {
-        super(CpOpinionVote.CP_OPINION_VOTE);
+    public CpOpinionVoteRecord(CpOpinionVote value) {
+        super(JCpOpinionVote.CP_OPINION_VOTE);
 
         if (value != null) {
             setCpOpinionVoteSeq(value.getCpOpinionVoteSeq());

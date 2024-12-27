@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Prefer;
+import org.jooq.generated.tables.JPrefer;
+import org.jooq.generated.tables.pojos.Prefer;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -96,14 +97,14 @@ public class PreferRecord extends UpdatableRecordImpl<PreferRecord> {
      * Create a detached PreferRecord
      */
     public PreferRecord() {
-        super(Prefer.PREFER);
+        super(JPrefer.PREFER);
     }
 
     /**
      * Create a detached, initialised PreferRecord
      */
     public PreferRecord(Long preferSeq, LocalDateTime createdAt, Long flagSeq, Long userSeq) {
-        super(Prefer.PREFER);
+        super(JPrefer.PREFER);
 
         setPreferSeq(preferSeq);
         setCreatedAt(createdAt);
@@ -115,8 +116,8 @@ public class PreferRecord extends UpdatableRecordImpl<PreferRecord> {
     /**
      * Create a detached, initialised PreferRecord
      */
-    public PreferRecord(org.jooq.generated.tables.pojos.Prefer value) {
-        super(Prefer.PREFER);
+    public PreferRecord(Prefer value) {
+        super(JPrefer.PREFER);
 
         if (value != null) {
             setPreferSeq(value.getPreferSeq());

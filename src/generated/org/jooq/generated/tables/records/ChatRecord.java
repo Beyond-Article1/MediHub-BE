@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Chat;
+import org.jooq.generated.tables.JChat;
+import org.jooq.generated.tables.pojos.Chat;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -126,14 +127,14 @@ public class ChatRecord extends UpdatableRecordImpl<ChatRecord> {
      * Create a detached ChatRecord
      */
     public ChatRecord() {
-        super(Chat.CHAT);
+        super(JChat.CHAT);
     }
 
     /**
      * Create a detached, initialised ChatRecord
      */
     public ChatRecord(Long chatSeq, String chatroomCustomName, LocalDateTime joinedAt, Long chatroomSeq, Long userSeq, LocalDateTime lastVisitedAt) {
-        super(Chat.CHAT);
+        super(JChat.CHAT);
 
         setChatSeq(chatSeq);
         setChatroomCustomName(chatroomCustomName);
@@ -147,8 +148,8 @@ public class ChatRecord extends UpdatableRecordImpl<ChatRecord> {
     /**
      * Create a detached, initialised ChatRecord
      */
-    public ChatRecord(org.jooq.generated.tables.pojos.Chat value) {
-        super(Chat.CHAT);
+    public ChatRecord(Chat value) {
+        super(JChat.CHAT);
 
         if (value != null) {
             setChatSeq(value.getChatSeq());

@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 
 import org.jooq.Record1;
 import org.jooq.generated.enums.TemplateTemplateOpenScope;
-import org.jooq.generated.tables.Template;
+import org.jooq.generated.tables.JTemplate;
+import org.jooq.generated.tables.pojos.Template;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -172,14 +173,14 @@ public class TemplateRecord extends UpdatableRecordImpl<TemplateRecord> {
      * Create a detached TemplateRecord
      */
     public TemplateRecord() {
-        super(Template.TEMPLATE);
+        super(JTemplate.TEMPLATE);
     }
 
     /**
      * Create a detached, initialised TemplateRecord
      */
     public TemplateRecord(Long templateSeq, LocalDateTime createdAt, LocalDateTime deletedAt, LocalDateTime updatedAt, TemplateTemplateOpenScope templateOpenScope, String templateContent, String templateTitle, Long partSeq, Long userSeq) {
-        super(Template.TEMPLATE);
+        super(JTemplate.TEMPLATE);
 
         setTemplateSeq(templateSeq);
         setCreatedAt(createdAt);
@@ -196,8 +197,8 @@ public class TemplateRecord extends UpdatableRecordImpl<TemplateRecord> {
     /**
      * Create a detached, initialised TemplateRecord
      */
-    public TemplateRecord(org.jooq.generated.tables.pojos.Template value) {
-        super(Template.TEMPLATE);
+    public TemplateRecord(Template value) {
+        super(JTemplate.TEMPLATE);
 
         if (value != null) {
             setTemplateSeq(value.getTemplateSeq());

@@ -5,7 +5,8 @@ package org.jooq.generated.tables.records;
 
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Ranking;
+import org.jooq.generated.tables.JRanking;
+import org.jooq.generated.tables.pojos.Ranking;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -94,14 +95,14 @@ public class RankingRecord extends UpdatableRecordImpl<RankingRecord> {
      * Create a detached RankingRecord
      */
     public RankingRecord() {
-        super(Ranking.RANKING);
+        super(JRanking.RANKING);
     }
 
     /**
      * Create a detached, initialised RankingRecord
      */
     public RankingRecord(Long rankingSeq, Long deptSeq, String rankingName, Integer rankingNum) {
-        super(Ranking.RANKING);
+        super(JRanking.RANKING);
 
         setRankingSeq(rankingSeq);
         setDeptSeq(deptSeq);
@@ -113,8 +114,8 @@ public class RankingRecord extends UpdatableRecordImpl<RankingRecord> {
     /**
      * Create a detached, initialised RankingRecord
      */
-    public RankingRecord(org.jooq.generated.tables.pojos.Ranking value) {
-        super(Ranking.RANKING);
+    public RankingRecord(Ranking value) {
+        super(JRanking.RANKING);
 
         if (value != null) {
             setRankingSeq(value.getRankingSeq());

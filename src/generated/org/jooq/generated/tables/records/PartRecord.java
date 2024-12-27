@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Part;
+import org.jooq.generated.tables.JPart;
+import org.jooq.generated.tables.pojos.Part;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -126,14 +127,14 @@ public class PartRecord extends UpdatableRecordImpl<PartRecord> {
      * Create a detached PartRecord
      */
     public PartRecord() {
-        super(Part.PART);
+        super(JPart.PART);
     }
 
     /**
      * Create a detached, initialised PartRecord
      */
     public PartRecord(Long partSeq, LocalDateTime createdAt, LocalDateTime deletedAt, LocalDateTime updatedAt, String partName, Long deptSeq) {
-        super(Part.PART);
+        super(JPart.PART);
 
         setPartSeq(partSeq);
         setCreatedAt(createdAt);
@@ -147,8 +148,8 @@ public class PartRecord extends UpdatableRecordImpl<PartRecord> {
     /**
      * Create a detached, initialised PartRecord
      */
-    public PartRecord(org.jooq.generated.tables.pojos.Part value) {
-        super(Part.PART);
+    public PartRecord(Part value) {
+        super(JPart.PART);
 
         if (value != null) {
             setPartSeq(value.getPartSeq());

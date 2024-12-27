@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Comment;
+import org.jooq.generated.tables.JComment;
+import org.jooq.generated.tables.pojos.Comment;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -156,14 +157,14 @@ public class CommentRecord extends UpdatableRecordImpl<CommentRecord> {
      * Create a detached CommentRecord
      */
     public CommentRecord() {
-        super(Comment.COMMENT);
+        super(JComment.COMMENT);
     }
 
     /**
      * Create a detached, initialised CommentRecord
      */
     public CommentRecord(Long commentSeq, LocalDateTime createdAt, LocalDateTime deletedAt, LocalDateTime updatedAt, String commentContent, Boolean commentIsDeleted, Long flagSeq, Long userSeq) {
-        super(Comment.COMMENT);
+        super(JComment.COMMENT);
 
         setCommentSeq(commentSeq);
         setCreatedAt(createdAt);
@@ -179,8 +180,8 @@ public class CommentRecord extends UpdatableRecordImpl<CommentRecord> {
     /**
      * Create a detached, initialised CommentRecord
      */
-    public CommentRecord(org.jooq.generated.tables.pojos.Comment value) {
-        super(Comment.COMMENT);
+    public CommentRecord(Comment value) {
+        super(JComment.COMMENT);
 
         if (value != null) {
             setCommentSeq(value.getCommentSeq());

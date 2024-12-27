@@ -5,7 +5,8 @@ package org.jooq.generated.tables.records;
 
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.CpSearchData;
+import org.jooq.generated.tables.JCpSearchData;
+import org.jooq.generated.tables.pojos.CpSearchData;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -81,14 +82,14 @@ public class CpSearchDataRecord extends UpdatableRecordImpl<CpSearchDataRecord> 
      * Create a detached CpSearchDataRecord
      */
     public CpSearchDataRecord() {
-        super(CpSearchData.CP_SEARCH_DATA);
+        super(JCpSearchData.CP_SEARCH_DATA);
     }
 
     /**
      * Create a detached, initialised CpSearchDataRecord
      */
     public CpSearchDataRecord(Long cpSearchDataSeq, Long cpSearchCategoryDataSeq, Long cpVersionSeq) {
-        super(CpSearchData.CP_SEARCH_DATA);
+        super(JCpSearchData.CP_SEARCH_DATA);
 
         setCpSearchDataSeq(cpSearchDataSeq);
         setCpSearchCategoryDataSeq(cpSearchCategoryDataSeq);
@@ -99,8 +100,8 @@ public class CpSearchDataRecord extends UpdatableRecordImpl<CpSearchDataRecord> 
     /**
      * Create a detached, initialised CpSearchDataRecord
      */
-    public CpSearchDataRecord(org.jooq.generated.tables.pojos.CpSearchData value) {
-        super(CpSearchData.CP_SEARCH_DATA);
+    public CpSearchDataRecord(CpSearchData value) {
+        super(JCpSearchData.CP_SEARCH_DATA);
 
         if (value != null) {
             setCpSearchDataSeq(value.getCpSearchDataSeq());

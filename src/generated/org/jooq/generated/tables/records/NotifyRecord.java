@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 import org.jooq.Record1;
 import org.jooq.generated.enums.NotifyNotiType;
 import org.jooq.generated.enums.NotifyReadedAt;
-import org.jooq.generated.tables.Notify;
+import org.jooq.generated.tables.JNotify;
+import org.jooq.generated.tables.pojos.Notify;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -188,14 +189,14 @@ public class NotifyRecord extends UpdatableRecordImpl<NotifyRecord> {
      * Create a detached NotifyRecord
      */
     public NotifyRecord() {
-        super(Notify.NOTIFY);
+        super(JNotify.NOTIFY);
     }
 
     /**
      * Create a detached, initialised NotifyRecord
      */
     public NotifyRecord(Long notiSeq, LocalDateTime createdAt, String notiContent, String notiSenderUserName, String notiSenderUserPart, NotifyNotiType notiType, String notiUrl, NotifyReadedAt readedAt, Long flagSeq, Long userSeq) {
-        super(Notify.NOTIFY);
+        super(JNotify.NOTIFY);
 
         setNotiSeq(notiSeq);
         setCreatedAt(createdAt);
@@ -213,8 +214,8 @@ public class NotifyRecord extends UpdatableRecordImpl<NotifyRecord> {
     /**
      * Create a detached, initialised NotifyRecord
      */
-    public NotifyRecord(org.jooq.generated.tables.pojos.Notify value) {
-        super(Notify.NOTIFY);
+    public NotifyRecord(Notify value) {
+        super(JNotify.NOTIFY);
 
         if (value != null) {
             setNotiSeq(value.getNotiSeq());

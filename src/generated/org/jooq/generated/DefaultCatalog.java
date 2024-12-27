@@ -28,7 +28,7 @@ public class DefaultCatalog extends CatalogImpl {
     /**
      * The schema <code>medihub</code>.
      */
-    public final Medihub MEDIHUB = Medihub.MEDIHUB;
+    public final JMedihub MEDIHUB = JMedihub.MEDIHUB;
 
     /**
      * No further instances allowed
@@ -40,7 +40,7 @@ public class DefaultCatalog extends CatalogImpl {
     @Override
     public final List<Schema> getSchemas() {
         return Arrays.asList(
-            Medihub.MEDIHUB
+            JMedihub.MEDIHUB
         );
     }
 

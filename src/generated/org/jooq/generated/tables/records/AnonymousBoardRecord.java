@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.AnonymousBoard;
+import org.jooq.generated.tables.JAnonymousBoard;
+import org.jooq.generated.tables.pojos.AnonymousBoard;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -175,14 +176,14 @@ public class AnonymousBoardRecord extends UpdatableRecordImpl<AnonymousBoardReco
      * Create a detached AnonymousBoardRecord
      */
     public AnonymousBoardRecord() {
-        super(AnonymousBoard.ANONYMOUS_BOARD);
+        super(JAnonymousBoard.ANONYMOUS_BOARD);
     }
 
     /**
      * Create a detached, initialised AnonymousBoardRecord
      */
     public AnonymousBoardRecord(Long anonymousBoardSeq, LocalDateTime createdAt, LocalDateTime deletedAt, LocalDateTime updatedAt, String anonymousBoardContent, Boolean anonymousBoardIsDeleted, String anonymousBoardTitle, Long anonymousBoardViewCount, Long userSeq) {
-        super(AnonymousBoard.ANONYMOUS_BOARD);
+        super(JAnonymousBoard.ANONYMOUS_BOARD);
 
         setAnonymousBoardSeq(anonymousBoardSeq);
         setCreatedAt(createdAt);
@@ -199,8 +200,8 @@ public class AnonymousBoardRecord extends UpdatableRecordImpl<AnonymousBoardReco
     /**
      * Create a detached, initialised AnonymousBoardRecord
      */
-    public AnonymousBoardRecord(org.jooq.generated.tables.pojos.AnonymousBoard value) {
-        super(AnonymousBoard.ANONYMOUS_BOARD);
+    public AnonymousBoardRecord(AnonymousBoard value) {
+        super(JAnonymousBoard.ANONYMOUS_BOARD);
 
         if (value != null) {
             setAnonymousBoardSeq(value.getAnonymousBoardSeq());

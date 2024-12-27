@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.CpSearchCategory;
+import org.jooq.generated.tables.JCpSearchCategory;
+import org.jooq.generated.tables.pojos.CpSearchCategory;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -130,14 +131,14 @@ public class CpSearchCategoryRecord extends UpdatableRecordImpl<CpSearchCategory
      * Create a detached CpSearchCategoryRecord
      */
     public CpSearchCategoryRecord() {
-        super(CpSearchCategory.CP_SEARCH_CATEGORY);
+        super(JCpSearchCategory.CP_SEARCH_CATEGORY);
     }
 
     /**
      * Create a detached, initialised CpSearchCategoryRecord
      */
     public CpSearchCategoryRecord(Long cpSearchCategorySeq, LocalDateTime createdAt, LocalDateTime deletedAt, LocalDateTime updatedAt, String cpSearchCategoryName, Long userSeq) {
-        super(CpSearchCategory.CP_SEARCH_CATEGORY);
+        super(JCpSearchCategory.CP_SEARCH_CATEGORY);
 
         setCpSearchCategorySeq(cpSearchCategorySeq);
         setCreatedAt(createdAt);
@@ -151,8 +152,8 @@ public class CpSearchCategoryRecord extends UpdatableRecordImpl<CpSearchCategory
     /**
      * Create a detached, initialised CpSearchCategoryRecord
      */
-    public CpSearchCategoryRecord(org.jooq.generated.tables.pojos.CpSearchCategory value) {
-        super(CpSearchCategory.CP_SEARCH_CATEGORY);
+    public CpSearchCategoryRecord(CpSearchCategory value) {
+        super(JCpSearchCategory.CP_SEARCH_CATEGORY);
 
         if (value != null) {
             setCpSearchCategorySeq(value.getCpSearchCategorySeq());

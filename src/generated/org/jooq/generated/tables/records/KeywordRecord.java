@@ -5,7 +5,8 @@ package org.jooq.generated.tables.records;
 
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Keyword;
+import org.jooq.generated.tables.JKeyword;
+import org.jooq.generated.tables.pojos.Keyword;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -79,14 +80,14 @@ public class KeywordRecord extends UpdatableRecordImpl<KeywordRecord> {
      * Create a detached KeywordRecord
      */
     public KeywordRecord() {
-        super(Keyword.KEYWORD);
+        super(JKeyword.KEYWORD);
     }
 
     /**
      * Create a detached, initialised KeywordRecord
      */
     public KeywordRecord(Long keywordSeq, Long flagSeq, String keywordName) {
-        super(Keyword.KEYWORD);
+        super(JKeyword.KEYWORD);
 
         setKeywordSeq(keywordSeq);
         setFlagSeq(flagSeq);
@@ -97,8 +98,8 @@ public class KeywordRecord extends UpdatableRecordImpl<KeywordRecord> {
     /**
      * Create a detached, initialised KeywordRecord
      */
-    public KeywordRecord(org.jooq.generated.tables.pojos.Keyword value) {
-        super(Keyword.KEYWORD);
+    public KeywordRecord(Keyword value) {
+        super(JKeyword.KEYWORD);
 
         if (value != null) {
             setKeywordSeq(value.getKeywordSeq());

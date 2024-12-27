@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.CaseSharingComment;
+import org.jooq.generated.tables.JCaseSharingComment;
+import org.jooq.generated.tables.pojos.CaseSharingComment;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -162,14 +163,14 @@ public class CaseSharingCommentRecord extends UpdatableRecordImpl<CaseSharingCom
      * Create a detached CaseSharingCommentRecord
      */
     public CaseSharingCommentRecord() {
-        super(CaseSharingComment.CASE_SHARING_COMMENT);
+        super(JCaseSharingComment.CASE_SHARING_COMMENT);
     }
 
     /**
      * Create a detached, initialised CaseSharingCommentRecord
      */
     public CaseSharingCommentRecord(Long caseSharingCommentSeq, LocalDateTime createdAt, LocalDateTime deletedAt, LocalDateTime updatedAt, String caseSharingBlockId, String caseSharingCommentContent, Long caseSharingSeq, Long userSeq) {
-        super(CaseSharingComment.CASE_SHARING_COMMENT);
+        super(JCaseSharingComment.CASE_SHARING_COMMENT);
 
         setCaseSharingCommentSeq(caseSharingCommentSeq);
         setCreatedAt(createdAt);
@@ -185,8 +186,8 @@ public class CaseSharingCommentRecord extends UpdatableRecordImpl<CaseSharingCom
     /**
      * Create a detached, initialised CaseSharingCommentRecord
      */
-    public CaseSharingCommentRecord(org.jooq.generated.tables.pojos.CaseSharingComment value) {
-        super(CaseSharingComment.CASE_SHARING_COMMENT);
+    public CaseSharingCommentRecord(CaseSharingComment value) {
+        super(JCaseSharingComment.CASE_SHARING_COMMENT);
 
         if (value != null) {
             setCaseSharingCommentSeq(value.getCaseSharingCommentSeq());

@@ -5,7 +5,8 @@ package org.jooq.generated.tables.records;
 
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Flag;
+import org.jooq.generated.tables.JFlag;
+import org.jooq.generated.tables.pojos.Flag;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -79,14 +80,14 @@ public class FlagRecord extends UpdatableRecordImpl<FlagRecord> {
      * Create a detached FlagRecord
      */
     public FlagRecord() {
-        super(Flag.FLAG);
+        super(JFlag.FLAG);
     }
 
     /**
      * Create a detached, initialised FlagRecord
      */
     public FlagRecord(Long flagSeq, Long flagEntitySeq, String flagType) {
-        super(Flag.FLAG);
+        super(JFlag.FLAG);
 
         setFlagSeq(flagSeq);
         setFlagEntitySeq(flagEntitySeq);
@@ -97,8 +98,8 @@ public class FlagRecord extends UpdatableRecordImpl<FlagRecord> {
     /**
      * Create a detached, initialised FlagRecord
      */
-    public FlagRecord(org.jooq.generated.tables.pojos.Flag value) {
-        super(Flag.FLAG);
+    public FlagRecord(Flag value) {
+        super(JFlag.FLAG);
 
         if (value != null) {
             setFlagSeq(value.getFlagSeq());

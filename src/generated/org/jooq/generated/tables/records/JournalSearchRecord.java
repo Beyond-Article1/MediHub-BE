@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.JournalSearch;
+import org.jooq.generated.tables.JJournalSearch;
+import org.jooq.generated.tables.pojos.JournalSearch;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -111,14 +112,14 @@ public class JournalSearchRecord extends UpdatableRecordImpl<JournalSearchRecord
      * Create a detached JournalSearchRecord
      */
     public JournalSearchRecord() {
-        super(JournalSearch.JOURNAL_SEARCH);
+        super(JJournalSearch.JOURNAL_SEARCH);
     }
 
     /**
      * Create a detached, initialised JournalSearchRecord
      */
     public JournalSearchRecord(Long journalSearchSeq, LocalDateTime createdAt, LocalDateTime updatedAt, Long journalSeq, Long userSeq) {
-        super(JournalSearch.JOURNAL_SEARCH);
+        super(JJournalSearch.JOURNAL_SEARCH);
 
         setJournalSearchSeq(journalSearchSeq);
         setCreatedAt(createdAt);
@@ -131,8 +132,8 @@ public class JournalSearchRecord extends UpdatableRecordImpl<JournalSearchRecord
     /**
      * Create a detached, initialised JournalSearchRecord
      */
-    public JournalSearchRecord(org.jooq.generated.tables.pojos.JournalSearch value) {
-        super(JournalSearch.JOURNAL_SEARCH);
+    public JournalSearchRecord(JournalSearch value) {
+        super(JJournalSearch.JOURNAL_SEARCH);
 
         if (value != null) {
             setJournalSearchSeq(value.getJournalSearchSeq());

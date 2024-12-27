@@ -5,7 +5,8 @@ package org.jooq.generated.tables.records;
 
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Follow;
+import org.jooq.generated.tables.JFollow;
+import org.jooq.generated.tables.pojos.Follow;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -79,14 +80,14 @@ public class FollowRecord extends UpdatableRecordImpl<FollowRecord> {
      * Create a detached FollowRecord
      */
     public FollowRecord() {
-        super(Follow.FOLLOW);
+        super(JFollow.FOLLOW);
     }
 
     /**
      * Create a detached, initialised FollowRecord
      */
     public FollowRecord(Long followSeq, Long userFromSeq, Long userToSeq) {
-        super(Follow.FOLLOW);
+        super(JFollow.FOLLOW);
 
         setFollowSeq(followSeq);
         setUserFromSeq(userFromSeq);
@@ -97,8 +98,8 @@ public class FollowRecord extends UpdatableRecordImpl<FollowRecord> {
     /**
      * Create a detached, initialised FollowRecord
      */
-    public FollowRecord(org.jooq.generated.tables.pojos.Follow value) {
-        super(Follow.FOLLOW);
+    public FollowRecord(Follow value) {
+        super(JFollow.FOLLOW);
 
         if (value != null) {
             setFollowSeq(value.getFollowSeq());

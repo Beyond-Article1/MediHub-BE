@@ -5,7 +5,8 @@ package org.jooq.generated.tables.records;
 
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Journal;
+import org.jooq.generated.tables.JJournal;
+import org.jooq.generated.tables.pojos.Journal;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -169,14 +170,14 @@ public class JournalRecord extends UpdatableRecordImpl<JournalRecord> {
      * Create a detached JournalRecord
      */
     public JournalRecord() {
-        super(Journal.JOURNAL);
+        super(JJournal.JOURNAL);
     }
 
     /**
      * Create a detached, initialised JournalRecord
      */
     public JournalRecord(Long journalSeq, String journalAuthors, String journalDate, String journalDoi, String journalJournal, String journalKoreanTitle, String journalPmid, String journalSize, String journalTitle) {
-        super(Journal.JOURNAL);
+        super(JJournal.JOURNAL);
 
         setJournalSeq(journalSeq);
         setJournalAuthors(journalAuthors);
@@ -193,8 +194,8 @@ public class JournalRecord extends UpdatableRecordImpl<JournalRecord> {
     /**
      * Create a detached, initialised JournalRecord
      */
-    public JournalRecord(org.jooq.generated.tables.pojos.Journal value) {
-        super(Journal.JOURNAL);
+    public JournalRecord(Journal value) {
+        super(JJournal.JOURNAL);
 
         if (value != null) {
             setJournalSeq(value.getJournalSeq());

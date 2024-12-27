@@ -5,7 +5,8 @@ package org.jooq.generated.tables.records;
 
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Cp;
+import org.jooq.generated.tables.JCp;
+import org.jooq.generated.tables.pojos.Cp;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -109,14 +110,14 @@ public class CpRecord extends UpdatableRecordImpl<CpRecord> {
      * Create a detached CpRecord
      */
     public CpRecord() {
-        super(Cp.CP);
+        super(JCp.CP);
     }
 
     /**
      * Create a detached, initialised CpRecord
      */
     public CpRecord(Long cpSeq, String cpDescription, String cpName, Long cpViewCount, Long userSeq) {
-        super(Cp.CP);
+        super(JCp.CP);
 
         setCpSeq(cpSeq);
         setCpDescription(cpDescription);
@@ -129,8 +130,8 @@ public class CpRecord extends UpdatableRecordImpl<CpRecord> {
     /**
      * Create a detached, initialised CpRecord
      */
-    public CpRecord(org.jooq.generated.tables.pojos.Cp value) {
-        super(Cp.CP);
+    public CpRecord(Cp value) {
+        super(JCp.CP);
 
         if (value != null) {
             setCpSeq(value.getCpSeq());

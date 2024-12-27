@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.Picture;
+import org.jooq.generated.tables.JPicture;
+import org.jooq.generated.tables.pojos.Picture;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -171,14 +172,14 @@ public class PictureRecord extends UpdatableRecordImpl<PictureRecord> {
      * Create a detached PictureRecord
      */
     public PictureRecord() {
-        super(Picture.PICTURE);
+        super(JPicture.PICTURE);
     }
 
     /**
      * Create a detached, initialised PictureRecord
      */
     public PictureRecord(Long pictureSeq, LocalDateTime createdAt, LocalDateTime deletedAt, String pictureChangedName, Boolean pictureIsDeleted, String pictureName, String pictureType, String pictureUrl, Long flagSeq) {
-        super(Picture.PICTURE);
+        super(JPicture.PICTURE);
 
         setPictureSeq(pictureSeq);
         setCreatedAt(createdAt);
@@ -195,8 +196,8 @@ public class PictureRecord extends UpdatableRecordImpl<PictureRecord> {
     /**
      * Create a detached, initialised PictureRecord
      */
-    public PictureRecord(org.jooq.generated.tables.pojos.Picture value) {
-        super(Picture.PICTURE);
+    public PictureRecord(Picture value) {
+        super(JPicture.PICTURE);
 
         if (value != null) {
             setPictureSeq(value.getPictureSeq());

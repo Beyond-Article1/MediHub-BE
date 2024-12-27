@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 import org.jooq.Record1;
 import org.jooq.generated.enums.UserUserAuth;
 import org.jooq.generated.enums.UserUserStatus;
-import org.jooq.generated.tables.User;
+import org.jooq.generated.tables.JUser;
+import org.jooq.generated.tables.pojos.User;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -233,14 +234,14 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> {
      * Create a detached UserRecord
      */
     public UserRecord() {
-        super(User.USER);
+        super(JUser.USER);
     }
 
     /**
      * Create a detached, initialised UserRecord
      */
     public UserRecord(Long userSeq, LocalDateTime createdAt, LocalDateTime deletedAt, LocalDateTime updatedAt, UserUserAuth userAuth, String userEmail, String userId, String userName, String userPassword, String userPhone, UserUserStatus userStatus, Long partSeq, Long rankingSeq) {
-        super(User.USER);
+        super(JUser.USER);
 
         setUserSeq(userSeq);
         setCreatedAt(createdAt);
@@ -261,8 +262,8 @@ public class UserRecord extends UpdatableRecordImpl<UserRecord> {
     /**
      * Create a detached, initialised UserRecord
      */
-    public UserRecord(org.jooq.generated.tables.pojos.User value) {
-        super(User.USER);
+    public UserRecord(User value) {
+        super(JUser.USER);
 
         if (value != null) {
             setUserSeq(value.getUserSeq());

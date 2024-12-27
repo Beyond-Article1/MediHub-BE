@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.CpOpinionLocation;
+import org.jooq.generated.tables.JCpOpinionLocation;
+import org.jooq.generated.tables.pojos.CpOpinionLocation;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -149,14 +150,14 @@ public class CpOpinionLocationRecord extends UpdatableRecordImpl<CpOpinionLocati
      * Create a detached CpOpinionLocationRecord
      */
     public CpOpinionLocationRecord() {
-        super(CpOpinionLocation.CP_OPINION_LOCATION);
+        super(JCpOpinionLocation.CP_OPINION_LOCATION);
     }
 
     /**
      * Create a detached, initialised CpOpinionLocationRecord
      */
     public CpOpinionLocationRecord(Long cpOpinionLocationSeq, LocalDateTime createdAt, LocalDateTime deletedAt, Long cpOpinionLocationPageNum, Double cpOpinionLocationX, Double cpOpinionLocationY, Long cpVersionSeq) {
-        super(CpOpinionLocation.CP_OPINION_LOCATION);
+        super(JCpOpinionLocation.CP_OPINION_LOCATION);
 
         setCpOpinionLocationSeq(cpOpinionLocationSeq);
         setCreatedAt(createdAt);
@@ -171,8 +172,8 @@ public class CpOpinionLocationRecord extends UpdatableRecordImpl<CpOpinionLocati
     /**
      * Create a detached, initialised CpOpinionLocationRecord
      */
-    public CpOpinionLocationRecord(org.jooq.generated.tables.pojos.CpOpinionLocation value) {
-        super(CpOpinionLocation.CP_OPINION_LOCATION);
+    public CpOpinionLocationRecord(CpOpinionLocation value) {
+        super(JCpOpinionLocation.CP_OPINION_LOCATION);
 
         if (value != null) {
             setCpOpinionLocationSeq(value.getCpOpinionLocationSeq());

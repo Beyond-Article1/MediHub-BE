@@ -7,7 +7,8 @@ package org.jooq.generated.tables.records;
 import java.time.LocalDateTime;
 
 import org.jooq.Record1;
-import org.jooq.generated.tables.CaseSharingGroup;
+import org.jooq.generated.tables.JCaseSharingGroup;
+import org.jooq.generated.tables.pojos.CaseSharingGroup;
 import org.jooq.impl.UpdatableRecordImpl;
 
 
@@ -98,14 +99,14 @@ public class CaseSharingGroupRecord extends UpdatableRecordImpl<CaseSharingGroup
      * Create a detached CaseSharingGroupRecord
      */
     public CaseSharingGroupRecord() {
-        super(CaseSharingGroup.CASE_SHARING_GROUP);
+        super(JCaseSharingGroup.CASE_SHARING_GROUP);
     }
 
     /**
      * Create a detached, initialised CaseSharingGroupRecord
      */
     public CaseSharingGroupRecord(Long caseSharingGroupSeq, LocalDateTime createdAt, LocalDateTime deletedAt, LocalDateTime updatedAt) {
-        super(CaseSharingGroup.CASE_SHARING_GROUP);
+        super(JCaseSharingGroup.CASE_SHARING_GROUP);
 
         setCaseSharingGroupSeq(caseSharingGroupSeq);
         setCreatedAt(createdAt);
@@ -117,8 +118,8 @@ public class CaseSharingGroupRecord extends UpdatableRecordImpl<CaseSharingGroup
     /**
      * Create a detached, initialised CaseSharingGroupRecord
      */
-    public CaseSharingGroupRecord(org.jooq.generated.tables.pojos.CaseSharingGroup value) {
-        super(CaseSharingGroup.CASE_SHARING_GROUP);
+    public CaseSharingGroupRecord(CaseSharingGroup value) {
+        super(JCaseSharingGroup.CASE_SHARING_GROUP);
 
         if (value != null) {
             setCaseSharingGroupSeq(value.getCaseSharingGroupSeq());
