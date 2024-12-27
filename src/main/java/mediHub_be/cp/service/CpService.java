@@ -15,13 +15,10 @@ import mediHub_be.cp.dto.ResponseCpVersionDTO;
 import mediHub_be.cp.entity.Cp;
 import mediHub_be.cp.repository.CpRepository;
 import mediHub_be.cp.repository.CpVersionRepository;
+import mediHub_be.cp.repository.JooqCpVersionRepository;
 import mediHub_be.security.util.SecurityUtil;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.service.UserService;
-import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.Result;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -44,12 +41,12 @@ public class CpService {
     // Repository
     private final CpRepository cpRepository;
     private final CpVersionRepository cpVersionRepository;
+    private final JooqCpVersionRepository jooqCpVersionRepository;
 
     // etc
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpService");       // Logger
     private final ViewCountManager viewCountManager;        // 조회수 매니저
     private final String CP_VERSION_FLAG = "CP_VERSION";
-    private final DSLContext dslContext;
 
     /**
      * 주어진 카테고리 시퀀스와 카테고리 데이터를 기준으로 CP 리스트를 조회하는 메서드입니다.
@@ -67,60 +64,20 @@ public class CpService {
 
         logger.info("CP 검색 카테고리 시퀀스: {}, 카테고리 데이터: {}", cpSearchCategorySeqArray, cpSearchCategoryDataArray);
 
-        // DB 조회
-//        Result<Record> result = dslContext
-//                .selectDistinct(
-//                        CP_VERSION.CP_VERSION_SEQ.as("cpVersionSeq"),
-//                        CP.CP_NAME.as("cpName"),
-//                        CP.CP_DESCRIPTION.as("cpDescription"),
-//                        CP.CP_VIEW_COUNT.as("cpViewCount"),
-//                        CP_VERSION.CP_VERSION.as("cpVersion"),
-//                        CP_VERSION.CP_VERSION_DESCRIPTION.as("cpVersionDescription"),
-//                        CP_VERSION.CREATED_AT.as("createdAt"),
-//                        CP_VERSION.CP_URL.as("cpUrl"),
-//                        USER.USER_NAME.as("userName"),
-//                        USER.USER_ID.as("userId"),
-//                        PART.PART_NAME.as("partName")
-//                )
-//                .from(CP_VERSION)
-//                .join(CP).on(CP_VERSION.CP_SEQ.eq(CP.CP_SEQ))
-//                .join(CP_SEARCH_DATA).on(CP_VERSION.CP_VERSION_SEQ.eq(CP_SEARCH_DATA.CP_VERSION_SEQ))
-//                .join(CP_SEARCH_CATEGORY_DATA).on(CP_SEARCH_DATA.CP_SEARCH_CATEGORY_DATA_SEQ.eq(CP_SEARCH_CATEGORY_DATA.CP_SEARCH_CATEGORY_DATA_SEQ))
-//                .join(USER).on(CP_VERSION.USER_SEQ.eq(USER.USER_SEQ))
-//                .join(PART).on(USER.PART_SEQ.eq(PART.PART_SEQ))
-//                .where(CP_SEARCH_CATEGORY_DATA.CP_SEARCH_CATEGORY_SEQ.in(cpSearchCategorySeqArray))
-//                .and(CP_SEARCH_CATEGORY_DATA.CP_SEARCH_CATEGORY_DATA_SEQ.in(cpSearchCategoryDataArray))
-//                .groupBy(
-//                        CP_VERSION.CP_VERSION_SEQ,
-//                        CP.CP_NAME,
-//                        CP.CP_DESCRIPTION,
-//                        CP.CP_VIEW_COUNT,
-//                        CP_VERSION.CP_VERSION,
-//                        CP_VERSION.CP_VERSION_DESCRIPTION,
-//                        CP_VERSION.CREATED_AT,
-//                        CP_VERSION.CP_URL,
-//                        USER.USER_NAME,
-//                        USER.USER_ID,
-//                        PART.PART_NAME
-//                )
-//                .having(DSL.countDistinct(CP_SEARCH_CATEGORY_DATA.CP_SEARCH_CATEGORY_DATA_SEQ).eq(cpSearchCategoryDataArray.size()))
-//                .fetch();
+//        // DB 조회
+//        List<Map<String, Object>> entityList = cpVersionRepository.findByCategorySeqAndCategoryData(
+//                cpSearchCategorySeqArray,
+//                cpSearchCategoryDataArray
+//        );
 
         // DB 조회
-        List<Map<String, Object>> entityList = cpVersionRepository.findByCategorySeqAndCategoryData(
-                cpSearchCategorySeqArray,
-                cpSearchCategoryDataArray
-        );
+        List<ResponseCpDTO> dtoList = jooqCpVersionRepository.findCpVersionByCategory(cpSearchCategoryDataArray);
 
-        if (entityList.isEmpty()) {
+        if (dtoList.isEmpty()) {
             logger.info("조회 결과 없음: 카테고리 시퀀스와 데이터로 찾은 CP가 없습니다.");
             throw new CustomException(ErrorCode.NOT_FOUND_CP_VERSION);
         } else {
-            logger.info("조회된 CP 리스트 크기: {}", entityList.size());
-
-            List<ResponseCpDTO> dtoList = entityList.stream()
-                    .map(ResponseCpDTO::toDto)
-                    .collect(Collectors.toList());
+            logger.info("조회된 CP 리스트 크기: {}", dtoList.size());
 
             // 북마크 확인
             checkBookmark(dtoList);
