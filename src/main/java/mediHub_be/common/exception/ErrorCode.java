@@ -101,6 +101,9 @@ public enum ErrorCode {
     // 팔로우
     NOT_FOUND_FOLLOW(40421, HttpStatus.NOT_FOUND, "팔로우한 사용자가 아닙니다."),
 
+    // 챗봇 세션
+    NOT_FOUND_CHATBOT_SESSION(40422, HttpStatus.NOT_FOUND, "챗봇 세션을 찾을 수 없습니다."),
+
     /**
      * == 409 CONFLICT ==
      */

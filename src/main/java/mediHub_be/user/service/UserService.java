@@ -166,12 +166,28 @@ public class UserService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
 
+    public boolean isDoctor(Long userSeq) {
+        User user = userRepository.findByUserSeq(userSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+
+        if ("진료과".equals(user.getPart().getDept().getDeptName())) {
+            return true;
+        }
+        return false;
+    }
+
+    // userSeqs로 Users 조회 (한번에 여러 사용자 정보 조회)
+    public List<User> findUsersBySeqs(List<Long> allUserSeqs) {
+        return userRepository.findAllById(allUserSeqs);
+    }
+
     public boolean validateAdmin(User user){
-        return user.getUserAuth().equals(UserAuth.ADMIN);
+        return !user.getUserAuth().equals(UserAuth.ADMIN);
     }
 
     public List<User> findFollowersByUser(User user) {
         return followRepository.findFollowersByUser(user);
     }
+
 }
 

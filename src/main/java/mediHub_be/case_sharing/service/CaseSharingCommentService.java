@@ -2,6 +2,8 @@ package mediHub_be.case_sharing.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.entity.Flag;
+import mediHub_be.board.service.FlagService;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.case_sharing.dto.CaseSharingCommentDetailDTO;
 import mediHub_be.case_sharing.dto.CaseSharingCommentListDTO;
@@ -11,6 +13,8 @@ import mediHub_be.case_sharing.entity.CaseSharingComment;
 import mediHub_be.case_sharing.repository.CaseSharingCommentRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.notify.entity.NotiType;
+import mediHub_be.notify.service.NotifyServiceImlp;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.service.UserService;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,10 @@ public class CaseSharingCommentService {
     private final PictureService pictureService;
 
     private final CaseSharingCommentRepository commentRepository;
+    private final NotifyServiceImlp notifyServiceImlp;
+    private final FlagService flagService;
+
+    private static final String CASE_SHARING_FLAG = "CASE_SHARING";
 
     //1. 케이스 공유 댓글 목록 조회
     @Transactional(readOnly = true)
@@ -50,6 +58,9 @@ public class CaseSharingCommentService {
         // DTO로 변환
         return comments.stream()
                 .map(comment -> CaseSharingCommentDetailDTO.builder()
+                        .blockId(comment.getCaseSharingBlockId())
+                        .commentSeq(comment.getCaseSharingCommentSeq())
+                        .userId(comment.getUser().getUserId())
                         .userName(comment.getUser().getUserName()) // 댓글 작성자명
                         .userRankName(comment.getUser().getRanking().getRankingName()) // 댓글 작성자 직위명
                         .content(comment.getCaseSharingCommentContent()) // 댓글 내용
@@ -64,7 +75,8 @@ public class CaseSharingCommentService {
     public Long createCaseSharingComment(String userId, Long caseSharingSeq, CaseSharingCommentRequestDTO requestDTO) {
         User user = userService.findByUserId(userId);
         CaseSharing caseSharing = caseSharingService.findCaseSharing(caseSharingSeq);
-
+        Flag flag = flagService.findFlag(CASE_SHARING_FLAG,caseSharingSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
         CaseSharingComment comment = CaseSharingComment.builder()
                 .user(user)
                 .caseSharing(caseSharing)
@@ -73,6 +85,13 @@ public class CaseSharingCommentService {
                 .build();
 
         commentRepository.save(comment);
+        notifyServiceImlp.send(
+                user,
+                caseSharing.getUser(),
+                flag,
+                NotiType.COMMENT,
+                "/case_sharing/" + caseSharingSeq
+        );
         return comment.getCaseSharingCommentSeq();
     }
 
