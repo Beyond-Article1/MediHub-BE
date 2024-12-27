@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.chat.dto.ChatMessageDTO;
+import mediHub_be.chat.dto.ResponseAttachFileDTO;
 import mediHub_be.chat.dto.ResponseChatMessageDTO;
 import mediHub_be.chat.entity.ChatMessage;
 import mediHub_be.chat.repository.ChatMessageRepository;
 import mediHub_be.chat.repository.ChatRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.common.utils.TimeFormatUtil;
 import mediHub_be.config.amazonS3.AmazonS3Service;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
@@ -192,4 +194,32 @@ public class ChatService {
 
     }
 
+    /* 사용자별 첨부파일 목록 조회 */
+    public List<ResponseAttachFileDTO> getFilesByUserSeq(Long userSeq) {
+        // 사용자가 참여 중인 모든 채팅방 chatroomSeq, joinedAt 조회
+        List<ChatRepository.ChatroomJoinInfo> joinInfos = chatRepository.findJoinInfoByUserSeq(userSeq);
+
+        // isDeleted = false && createdAt > joinedAt 인 첨부파일 메시지 조회
+        List<ChatMessage> messagesWithAttachments = joinInfos.stream()
+                .flatMap(joinInfo ->
+                        chatMessageRepository.findByChatroomSeqAndCreatedAtAfterAndIsDeletedFalseAndAttachmentIsNotNull
+                                (joinInfo.getChatroomSeq(), joinInfo.getJoinedAt()).stream())
+                .collect(Collectors.toList());
+
+        // ChatMessage -> ResponseAttachFileDTO 반환
+        return messagesWithAttachments.stream()
+                .map(message -> {
+                    User senderUser = userService.findUser(message.getSenderUserSeq());
+
+                    return ResponseAttachFileDTO.builder()
+                            .messageSeq(message.getId())
+                            .senderUserSeq(senderUser.getUserSeq())
+                            .senderUserName(senderUser.getUserName())
+                            .rankingName(senderUser.getRanking().getRankingName())
+                            .type(message.getType())
+                            .createdAt(TimeFormatUtil.yearAndMonthDay(message.getCreatedAt()).format(TimeFormatUtil.yMDFormatter))
+                            .attachment(message.getAttachment())
+                            .build();
+                }).collect(Collectors.toList());
+    }
 }
