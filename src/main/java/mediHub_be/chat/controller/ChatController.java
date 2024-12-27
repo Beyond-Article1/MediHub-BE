@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.chat.dto.ChatMessageDTO;
+import mediHub_be.chat.dto.ResponseAttachFileDTO;
 import mediHub_be.chat.dto.ResponseChatMessageDTO;
 import mediHub_be.chat.service.ChatService;
 import mediHub_be.chat.service.KafkaProducerService;
@@ -75,6 +76,14 @@ public class ChatController {
         Long userSeq = SecurityUtil.getCurrentUserSeq();
         List<ResponseChatMessageDTO> messages = chatService.getMessagesByRoomSeq(userSeq, chatroomSeq);
         return ResponseEntity.ok(ApiResponse.ok(messages));
+    }
+
+    @Operation(summary = "첨부파일 목록 조회", description = "사용자별 첨부파일 목록 조회")
+    @GetMapping("/files")
+    public ResponseEntity<ApiResponse<List<ResponseAttachFileDTO>>> getFilesByUserSeq() {
+        Long userSeq = SecurityUtil.getCurrentUserSeq();
+        List<ResponseAttachFileDTO> files = chatService.getFilesByUserSeq(userSeq);
+        return ResponseEntity.ok(ApiResponse.ok(files));
     }
 
 }
