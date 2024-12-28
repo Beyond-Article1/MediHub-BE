@@ -70,8 +70,6 @@ public class CpService {
 //                cpSearchCategoryDataArray
 //        );
 
-        // 점검 해봐야됨. 구현만 함
-
         // DB 조회
         List<ResponseCpDTO> dtoList = jooqCpVersionRepository.findCpVersionByCategory(cpSearchCategoryDataArray);
 

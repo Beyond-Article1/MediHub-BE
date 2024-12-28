@@ -60,19 +60,6 @@ public class JooqCpVersionRepository {
                 .join(PART).on(USER.PART_SEQ.eq(PART.PART_SEQ))
                 .where(condition)
                 .fetchInto(ResponseCpDTO.class);
-//                .map(record -> ResponseCpDTO.builder()
-//                        .cpVersionSeq(record.getValue(CP_VERSION.CP_VERSION_SEQ))
-//                        .cpName(record.getValue(CP.CP_NAME))
-//                        .cpDescription(record.getValue(CP.CP_DESCRIPTION))
-//                        .cpViewCount(record.getValue(CP.CP_VIEW_COUNT))
-//                        .cpVersion(record.getValue(CP_VERSION.CP_VERSION_))
-//                        .cpVersionDescription(record.getValue(CP_VERSION.CP_VERSION_DESCRIPTION))
-//                        .createdAt(record.getValue(CP_VERSION.CREATED_AT))
-//                        .cpUrl(record.getValue(CP_VERSION.CP_URL))
-//                        .userName(record.getValue(USER.USER_NAME))
-//                        .userId(record.getValue(USER.USER_ID))
-//                        .partName(record.getValue(PART.PART_NAME))
-//                        .build());
 
         log.info("조회 성공");
 
