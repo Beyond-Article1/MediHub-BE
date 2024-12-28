@@ -70,8 +70,12 @@ public class CpService {
 //                cpSearchCategoryDataArray
 //        );
 
+        // 점검 해봐야됨. 구현만 함
+
         // DB 조회
         List<ResponseCpDTO> dtoList = jooqCpVersionRepository.findCpVersionByCategory(cpSearchCategoryDataArray);
+
+        logger.info("조회된 정보: {}", dtoList);
 
         if (dtoList.isEmpty()) {
             logger.info("조회 결과 없음: 카테고리 시퀀스와 데이터로 찾은 CP가 없습니다.");
