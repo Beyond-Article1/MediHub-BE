@@ -13,5 +13,9 @@ public interface ChatMessageRepository extends MongoRepository<ChatMessage, Stri
     ChatMessage findTopByChatroomSeqAndIsDeletedFalseOrderByCreatedAtDesc(Long chatroomSeq);
 
     List<ChatMessage> findByChatroomSeqAndCreatedAtAfterAndIsDeletedFalseOrderByCreatedAtAsc(Long chatroomSeq, LocalDateTime userJoinDate);
+
+    Long countByChatroomSeqAndCreatedAtAfterAndIsDeletedFalse(Long chatroomSeq, LocalDateTime lastVisitedAt);
+
+    List<ChatMessage> findByChatroomSeqAndCreatedAtAfterAndIsDeletedFalseAndAttachmentIsNotNull(Long chatroomSeq, LocalDateTime joinedAt);
 }
 
