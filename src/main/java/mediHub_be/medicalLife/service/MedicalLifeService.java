@@ -117,9 +117,10 @@ public class MedicalLifeService {
                             .medicalLifeSeq(medicalLife.getMedicalLifeSeq())
                             .userSeq(medicalLife.getUser().getUserSeq())
                             .userName(medicalLife.getUser().getUserName())
-                            .PartSeq(part.getPartName())
-                            .DeptSeq(dept.getDeptName())
-                            .medicalLifeName(medicalLife.getMedicalLifeTitle())
+                            .deptSeq(dept.getDeptSeq())
+                            .deptName(dept.getDeptName())
+                            .partSeq(part.getPartSeq())
+                            .partName(part.getPartName())
                             .medicalLifeTitle(medicalLife.getMedicalLifeTitle())
                             .medicalLifeContent(medicalLife.getMedicalLifeContent())
                             .medicalLifeIsDeleted(medicalLife.getMedicalLifeIsDeleted())
@@ -131,7 +132,6 @@ public class MedicalLifeService {
                 })
                 .collect(Collectors.toList());
     }
-
 
     // 메디컬 라이프 상세 조회
     @Transactional
