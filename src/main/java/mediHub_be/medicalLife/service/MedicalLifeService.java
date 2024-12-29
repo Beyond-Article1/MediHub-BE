@@ -317,21 +317,25 @@ public class MedicalLifeService {
             List<MultipartFile> newImageList,
             Long userSeq
     ) {
+        // 사용자 인증 확인
         User user = userRepository.findById(userSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
+        // 수정 대상 게시글 조회
         MedicalLife medicalLife = medicalLifeRepository
                 .findById(medicalLifeSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEDICAL_LIFE));
 
+        // 작성자 확인
         if (!medicalLife.getUser().equals(user)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
-        // 기존 이미지 삭제
+        // 플래그 조회
         Flag flag = flagService.findFlag(MEDICAL_LIFE_FLAG, medicalLifeSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
+        // 기존 이미지 삭제
         List<Picture> pictureList = pictureRepository.findAllByFlag_FlagSeqAndPictureIsDeletedFalse(flag.getFlagSeq());
         for (Picture picture : pictureList) {
             amazonS3Service.deleteImageFromS3(picture.getPictureUrl());
@@ -339,15 +343,12 @@ public class MedicalLifeService {
             pictureRepository.save(picture);
         }
 
-        // 새 이미지 처리 및 업데이트된 내용 저장
-        String updatedContent = null;
-        if (newImageList != null && !newImageList.isEmpty()) {
-            updatedContent = pictureService.replaceBase64WithUrls(
-                    medicalLifeUpdateRequestDTO.getMedicalLifeContent(),
-                    flag.getFlagType(),
-                    flag.getFlagEntitySeq()
-            );
-        }
+        // Base64 이미지를 URL로 변환하여 content 업데이트
+        String updatedContent = pictureService.replaceBase64WithUrls(
+                medicalLifeUpdateRequestDTO.getMedicalLifeContent(),
+                MEDICAL_LIFE_FLAG,
+                flag.getFlagEntitySeq()
+        );
 
         // 게시글 업데이트
         medicalLife.update(
@@ -367,6 +368,7 @@ public class MedicalLifeService {
 
         return medicalLife.getMedicalLifeSeq();
     }
+
 
     // 댓글 수정
     @Transactional
