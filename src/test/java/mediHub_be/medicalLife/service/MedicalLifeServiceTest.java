@@ -284,7 +284,7 @@ class MedicalLifeServiceTest {
 
     @Test
     void testGetMedicalLifeList_Success() {
-        
+
         // given
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(medicalLifeRepository.findAllByMedicalLifeIsDeletedFalse()).thenReturn(List.of(medicalLife));
