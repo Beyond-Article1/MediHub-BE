@@ -16,8 +16,8 @@ import java.util.Map;
 @Component
 public class VectorDatabase {
 
-    private final IndexWriter indexWriter;
-    private final IndexSearcher indexSearcher;
+    private IndexWriter indexWriter;
+    private IndexSearcher indexSearcher;
 
     public VectorDatabase() throws IOException {
         // Lucene 디렉토리 생성
@@ -26,8 +26,7 @@ public class VectorDatabase {
         this.indexWriter = new IndexWriter(directory, config);
 
         // IndexSearcher 초기화
-        DirectoryReader reader = DirectoryReader.open(indexWriter);
-        this.indexSearcher = new IndexSearcher(reader);
+        refreshIndexSearcher();
         BooleanQuery.setMaxClauseCount(10000);
     }
 
@@ -38,76 +37,99 @@ public class VectorDatabase {
         Document document = new Document();
 
         // 테이블 이름 및 Row ID 저장
+        if (rowId == null || rowId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Row ID가 null이거나 비어 있습니다. 테이블: " + tableName);
+        }
         document.add(new StringField("table", tableName, Field.Store.YES));
         document.add(new StringField("id", rowId, Field.Store.YES));
 
-        // 컬럼 데이터와 컬럼 이름을 JSON 형식으로 결합하여 content에 저장
+        // JSON 형태로 컬럼 데이터 저장
         StringBuilder contentWithColumns = new StringBuilder();
+        String[] contentValues = content.split(",");
         for (int i = 0; i < columnNames.size(); i++) {
             contentWithColumns.append(columnNames.get(i))
                     .append(": ")
-                    .append(content.split(",")[i].trim()) // 데이터와 매칭
+                    .append(i < contentValues.length ? contentValues[i].trim() : "null")
                     .append("\n");
         }
         document.add(new TextField("content", contentWithColumns.toString(), Field.Store.YES));
 
         // 벡터 저장
+        float magnitude = 0.0f;
         for (int i = 0; i < vector.size(); i++) {
-            document.add(new FloatPoint("vector_" + i, vector.get(i)));
-            document.add(new StoredField("vector_" + i, vector.get(i)));
+            float value = vector.get(i);
+            magnitude += value * value;
+            document.add(new FloatPoint("vector_" + i, value));
+            document.add(new StoredField("vector_" + i, value));
         }
+        magnitude = (float) Math.sqrt(magnitude);
+        document.add(new StoredField("magnitude", magnitude));
+
+        // 디버깅 로그 추가
+        System.out.println("문서 저장 - 테이블: " + tableName + ", Row ID: " + rowId + ", Magnitude: " + magnitude + ", Vector: " + vector);
 
         indexWriter.addDocument(document);
         indexWriter.commit();
-        System.out.println("Stored vector for row ID: " + rowId + " with metadata.");
+        refreshIndexSearcher();
     }
 
-
-
-    /**
-     * 벡터 검색
-     */
     public List<Map<String, String>> search(float[] queryVector, int topK) throws IOException {
-        BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
-
-        // 각 차원의 범위 쿼리 추가 (±0.1 유사도 범위)
-        for (int i = 0; i < queryVector.length; i++) {
-            queryBuilder.add(
-                    FloatPoint.newRangeQuery("vector_" + i, queryVector[i] - 0.1f, queryVector[i] + 0.1f),
-                    BooleanClause.Occur.MUST
-            );
-        }
-
-        // 최종 쿼리 생성
-        Query query = queryBuilder.build();
-        TopDocs topDocs = indexSearcher.search(query, topK);
-
-        // 결과 처리
         List<Map<String, String>> results = new ArrayList<>();
+
+        // 쿼리 벡터의 크기 계산
+        float queryMagnitude = 0.0f;
+        for (float value : queryVector) {
+            queryMagnitude += value * value;
+        }
+        queryMagnitude = (float) Math.sqrt(queryMagnitude);
+
+        TopDocs topDocs = indexSearcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE);
+
         for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
             Document doc = indexSearcher.doc(scoreDoc.doc);
+
+            // 저장된 벡터 가져오기
+            List<Float> storedVector = new ArrayList<>();
+            for (int i = 0; ; i++) {
+                IndexableField field = doc.getField("vector_" + i);
+                if (field == null) break;
+                storedVector.add(field.numericValue().floatValue());
+            }
+
+            // 저장된 벡터 크기 가져오기
+            float storedMagnitude = doc.getField("magnitude").numericValue().floatValue();
+
+            // 코사인 유사도 계산
+            float dotProduct = 0.0f;
+            for (int i = 0; i < queryVector.length; i++) {
+                dotProduct += queryVector[i] * storedVector.get(i);
+            }
+            float cosineSimilarity = dotProduct / (queryMagnitude * storedMagnitude);
+
+            // 결과 추가
             Map<String, String> result = new HashMap<>();
             result.put("rowId", doc.get("id"));
             result.put("table", doc.get("table"));
             result.put("content", doc.get("content"));
-            result.put("score", String.valueOf(scoreDoc.score));
+            result.put("score", String.valueOf(cosineSimilarity));
             results.add(result);
         }
-        System.out.println("검색 결과: " + results);
-        return results;
+
+        // 코사인 유사도 기준으로 정렬
+        results.sort((a, b) -> Float.compare(Float.parseFloat(b.get("score")), Float.parseFloat(a.get("score"))));
+
+        // 상위 K개 결과 반환
+        return results.subList(0, Math.min(topK, results.size()));
     }
 
     /**
-     * 리소스 해제
+     * 벡터 데이터베이스 초기화
      */
-    public void close() throws IOException {
-        indexWriter.close();
-    }
-
     public void clearVectorDatabase() {
         try {
             indexWriter.deleteAll(); // 모든 문서 삭제
             indexWriter.commit();   // 삭제 적용
+            refreshIndexSearcher();
             System.out.println("Vector database has been cleared.");
         } catch (IOException e) {
             System.err.println("Error clearing vector database.");
@@ -115,25 +137,33 @@ public class VectorDatabase {
         }
     }
 
-    public List<Map<String, Object>> getAllVectors() throws IOException {
-        List<Map<String, Object>> vectors = new ArrayList<>();
-        try (IndexReader reader = DirectoryReader.open(FSDirectory.open(Paths.get("vector-index")))) {
-            for (int i = 0; i < reader.maxDoc(); i++) {
-                Document doc = reader.document(i);
-                Map<String, Object> vectorData = new HashMap<>();
-                vectorData.put("table", doc.get("table"));
-                vectorData.put("rowId", doc.get("id"));
-                vectorData.put("content", doc.get("content"));
+    /**
+     * IndexSearcher 갱신
+     */
+    private void refreshIndexSearcher() throws IOException {
+        DirectoryReader currentReader = (indexSearcher != null && indexSearcher.getIndexReader() instanceof DirectoryReader)
+                ? (DirectoryReader) indexSearcher.getIndexReader()
+                : null;
 
-                List<Float> vector = new ArrayList<>();
-                for (int j = 0; doc.getField("vector_" + j) != null; j++) {
-                    vector.add(Float.valueOf(doc.get("vector_" + j)));
-                }
-                vectorData.put("vector", vector);
+        DirectoryReader newReader = (currentReader != null)
+                ? DirectoryReader.openIfChanged(currentReader)
+                : DirectoryReader.open(indexWriter);
 
-                vectors.add(vectorData);
+        if (newReader != null) {
+            if (indexSearcher != null) {
+                indexSearcher.getIndexReader().close(); // 기존 리더 닫기
             }
+            indexSearcher = new IndexSearcher(newReader); // 새로운 검색자 초기화
         }
-        return vectors;
+    }
+
+    /**
+     * 리소스 해제
+     */
+    public void close() throws IOException {
+        indexWriter.close();
+        if (indexSearcher != null) {
+            indexSearcher.getIndexReader().close();
+        }
     }
 }

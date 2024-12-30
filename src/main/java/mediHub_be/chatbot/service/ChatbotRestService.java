@@ -129,18 +129,27 @@ public class ChatbotRestService {
     public String answerQuestion(String question) {
         try {
             // 1. 질문을 벡터화
+            log.info("질문을 받았습니다: {}", question);
             List<Float> questionEmbedding = embeddingService.getEmbedding(question);
+            log.info("질문의 벡터가 생성되었습니다: {}", questionEmbedding);
 
             // 2. 벡터 데이터베이스에서 검색
+            log.info("벡터 데이터베이스에서 검색을 시작합니다...");
             List<Map<String, String>> searchResults = vectorDatabase.search(convertToFloatArray(questionEmbedding), 5);
+            log.info("검색 결과: {}", searchResults);
 
             // 3. OpenAI Chat API 호출
-            return openAIService.generateAnswer(question, searchResults);
+            log.info("OpenAI API를 사용하여 답변을 생성 중입니다...");
+            String answer = openAIService.generateAnswer(question, searchResults);
+            log.info("생성된 답변: {}", answer);
+
+            return answer;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("질문에 답변을 생성하는 중 오류가 발생했습니다: {}", question, e);
             return "질문에 대한 답변을 생성하지 못했습니다.";
         }
     }
+
 
     private float[] convertToFloatArray(List<Float> list) {
         float[] array = new float[list.size()];
