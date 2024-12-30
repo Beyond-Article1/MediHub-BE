@@ -12,7 +12,9 @@ public class AdminResponseDTO {
     private String userEmail;
     private String userPhone;
     private String rankingName;
+    private Long rankingSeq;
     private String partName;
+    private Long partSeq;
     private String deptName;
     private String profileImage;
     private String userStatus;
