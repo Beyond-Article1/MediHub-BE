@@ -15,4 +15,5 @@ public class AdminResponseDTO {
     private String partName;
     private String deptName;
     private String profileImage;
+    private String userStatus;
 }

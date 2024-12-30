@@ -205,6 +205,7 @@ public class AdminUserService {
                             .deptName(user.getPart() != null && user.getPart().getDept() != null
                                     ? user.getPart().getDept().getDeptName() : null)
                             .profileImage(profileImage)
+                            .userStatus(user.getUserStatus().name())
                             .build();
                 })
                 .collect(Collectors.toList());
