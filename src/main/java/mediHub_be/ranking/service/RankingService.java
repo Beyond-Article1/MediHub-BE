@@ -75,4 +75,19 @@ public class RankingService {
         }
         rankingRepository.deleteById(rankingSeq);
     }
+
+    // 특정 부서에 해당하는 직급 조회
+    @Transactional(readOnly = true)
+    public List<RankingDTO> getRankingsByDeptSeq(Long deptSeq) {
+        return rankingRepository.findByDeptSeq(deptSeq)
+                .stream()
+                .map(ranking -> RankingDTO.builder()
+                        .rankingSeq(ranking.getRankingSeq())
+                        .deptSeq(ranking.getDeptSeq())
+                        .rankingNum(ranking.getRankingNum())
+                        .rankingName(ranking.getRankingName())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
 }
