@@ -222,13 +222,18 @@ public class PictureService {
     }
     @Transactional(readOnly = true)
     public String getCaseSharingFirstImageUrl(Long caseSharingSeq ){
-        Flag flag = flagService.findFlag("case_sharing", caseSharingSeq).orElse(null);
+        Flag flag = flagService.findFlag("CASE_SHARING", caseSharingSeq).orElse(null);
+
         if (flag != null) {
+
+            System.out.println("케이스seq"+caseSharingSeq);
             Picture profile = pictureRepository.findFirstByFlag_FlagSeqOrderByCreatedAtDesc(flag.getFlagSeq()).orElse(null);
 
             if (profile != null) {
                 return profile.getPictureUrl();
             } else {
+
+                System.out.println("null인 케이스seq "+caseSharingSeq);
                 return null;
             }
         } else {

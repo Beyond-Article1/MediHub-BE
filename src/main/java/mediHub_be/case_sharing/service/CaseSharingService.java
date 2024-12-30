@@ -91,6 +91,7 @@ public class CaseSharingService {
                 .caseSharingTitle(caseSharing.getCaseSharingTitle())
                 .caseSharingContent(caseSharing.getCaseSharingContent())
                 .caseAuthor(caseSharing.getUser().getUserName())
+                .caseAuthorId(caseSharing.getUser().getUserId())
                 .caseAuthorRankName(caseSharing.getUser().getRanking().getRankingName())
                 .keywords(keywordDTOs)
                 .createdAt(caseSharing.getCreatedAt())
@@ -98,7 +99,7 @@ public class CaseSharingService {
                 .templateSeq(caseSharing.getTemplate().getTemplateSeq())
                 .isLatestVersion(caseSharing.getCaseSharingIsLatest())
                 .caseSharingViewCount(caseSharing.getCaseSharingViewCount())
-                .caseAuthorUrl(pictureService.getUserProfileUrl(user.getUserSeq()))
+                .caseAuthorUrl(pictureService.getUserProfileUrl(caseSharing.getUser().getUserSeq()))
                 .build();
     }
 
@@ -227,7 +228,6 @@ public class CaseSharingService {
                             caseSharingGroup.getCaseSharingGroupSeq(),
                             caseSharingSeq
                     ).orElse(null);
-            log.info("seq값"+previousVersion.getCaseSharingSeq());
             if (previousVersion != null) {
                 previousVersion.markAsLatest();
                 caseSharingRepository.save(previousVersion);
