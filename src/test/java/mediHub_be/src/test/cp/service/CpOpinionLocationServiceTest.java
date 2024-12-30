@@ -94,7 +94,7 @@ class CpOpinionLocationServiceTest {
 
         List<CpOpinionLocation> entityList = List.of(entity1, entity2);
 
-        Mockito.when(cpOpinionLocationRepository.findByCpVersionSeq(anyLong()))
+        Mockito.when(cpOpinionLocationRepository.findByCpVersionSeqAndDeletedAtIsNull(anyLong()))
                 .thenReturn(entityList);
 
         // When
@@ -165,15 +165,6 @@ class CpOpinionLocationServiceTest {
             // Mockito 설정: findById가 Mock 엔티티를 반환하도록 설정
             Mockito.when(cpOpinionLocationRepository.findById(cpOpinionLocationSeq))
                     .thenReturn(Optional.of(result)); // Mock entity 반환
-            Mockito.when(cpOpinionLocationRepository.findByCpOpinionLocation_CpOpinion_CpOpinionLocationSeq(cpOpinionLocationSeq))
-                    .thenReturn(Optional.of(ResponseCpOpinionLocationDTO.builder()
-                            .cpOpinionLocationSeq(cpOpinionLocationSeq)
-                            .cpVersionSeq(cpVersionSeq)
-                            .cpOpinionLocationPageNum(1)
-                            .cpOpinionLocationX(123.4)
-                            .cpOpinionLocationY(55.4)
-                            .userSeq(currentUserSeq)
-                            .build()));
 
             Mockito.doNothing().when(result).delete(); // delete 메서드가 호출되면 아무 동작도 하지 않음
 
