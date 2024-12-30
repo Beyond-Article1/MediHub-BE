@@ -4,6 +4,7 @@ import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpDTO;
 import mediHub_be.cp.repository.CpVersionRepository;
+import mediHub_be.cp.repository.JooqCpVersionRepository;
 import mediHub_be.cp.service.CpService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +32,11 @@ class CpServiceTest {
     @MockBean
     CpVersionRepository cpVersionRepository;
 
+    @MockBean
+    JooqCpVersionRepository jooqCpVersionRepository;
+
     private static List<Map<String, Object>> mockCpVersionList;
+    private static List<ResponseCpDTO> mockCpVersionDtoList;
 
     @BeforeAll
     public static void setUp() {
@@ -62,6 +67,34 @@ class CpServiceTest {
         cp2.put("userId", "19615042");
         cp2.put("partName", "안과");
 
+        ResponseCpDTO dto3 = ResponseCpDTO.builder()
+                .cpVersionSeq(1L)
+                .cpName("백내장")
+                .cpDescription("백내장 설명")
+                .cpViewCount(523L)
+                .cpVersion("1.0.0")
+                .cpVersionDescription("최초 업로드")
+                .createdAt(LocalDateTime.of(2024, 1, 1, 0, 0))
+                .cpUrl("https://medihub.s3.ap-northeast-2.amazonaws.com/%5BCP%5D%EC%AF%94%EC%AF%94%EA%B0%80%EB%AC%B4%EC%8B%9C.1.0.0.pdf")
+                .userName("임광택")
+                .userId("19615041")
+                .partName("안과")
+                .build();
+
+        ResponseCpDTO dto4 = ResponseCpDTO.builder()
+                .cpVersionSeq(2L)
+                .cpName("각막염")
+                .cpDescription("각막염 설명")
+                .cpViewCount(492L)
+                .cpVersion("1.1.0")
+                .cpVersionDescription("2일차 처방약 변경")
+                .createdAt(LocalDateTime.of(2024, 1, 2, 0, 0))
+                .cpUrl("https://medihub.s3.ap-northeast-2.amazonaws.com/%5BCP%5D%EC%AF%94%EC%AF%94%EA%B0%80%EB%AC%B4%EC%8B%9C.1.0.0.pdf")
+                .userName("김철수")
+                .userId("19615042")
+                .partName("안과")
+                .build();
+
         mockCpVersionList = Arrays.asList(cp1, cp2);
     }
 
@@ -69,8 +102,8 @@ class CpServiceTest {
     @DisplayName(value = "CP 검색 카테고리 -> CP 찾기")
     public void getCpListByCpSearchCategoryAndCpSearchCategoryDataTest() {
         // Given
-        Mockito.when(cpVersionRepository.findByCategorySeqAndCategoryData(anyList(), anyList()))
-                .thenReturn(mockCpVersionList);
+        Mockito.when(jooqCpVersionRepository.findCpVersionByCategory(anyList()))
+                .thenReturn(mockCpVersionDtoList);
 
         // When
         List<ResponseCpDTO> result = cpService.getCpListByCpSearchCategoryAndCpSearchCategoryData(
