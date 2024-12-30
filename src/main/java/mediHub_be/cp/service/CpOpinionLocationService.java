@@ -125,22 +125,19 @@ public class CpOpinionLocationService {
     @Transactional
     public void deleteCpOpinionLocation(long cpVersionSeq, long cpOpinionLocationSeq) {
         try {
-            // 작성자 검증
-            checkUnauthorizedAccess(cpOpinionLocationSeq);
-
             // DB에서 CP 의견 위치 조회
             CpOpinionLocation entity = cpOpinionLocationRepository.findById(cpOpinionLocationSeq)
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CP_OPINION_LOCATION));
+            logger.info("조회 성공");
+            logger.info("{}", entity);
 
             // 삭제 처리
             entity.delete(); // delete() 메서드가 논리 삭제를 처리한다고 가정
+            logger.info("삭제 처리 완료");
 
             // 엔티티 저장 (변경된 상태 반영)
             cpOpinionLocationRepository.save(entity);
-
-            // 성공 로그 추가
-            logger.info("CP 의견 위치 삭제 성공. CP 버전 번호: {}, CP 의견 위치 번호: {}", cpVersionSeq, cpOpinionLocationSeq);
-
+            logger.info("저장 완료");
         } catch (DataAccessException e) {
             logger.error("데이터베이스 접근 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
@@ -177,6 +174,7 @@ public class CpOpinionLocationService {
             logger.error("로그인이 필요한 서비스 입니다.");
             throw new CustomException(ErrorCode.NEED_LOGIN);
         }
+        logger.info("권한 확인 완료");
 
         try {
             // DB에서 데이터 조회
