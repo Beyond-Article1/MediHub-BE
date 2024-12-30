@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Keyword;
-import mediHub_be.board.repository.KeywordRepository;
 import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.FlagService;
 import mediHub_be.board.service.KeywordService;
@@ -48,7 +47,6 @@ public class CpOpinionService {
 
     // Repository
     private final CpOpinionRepository cpOpinionRepository;
-    private final KeywordRepository keywordRepository;
     private final CpOpinionVoteRepository cpOpinionVoteRepository;
 
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpOpinionService");    // Logger
@@ -228,6 +226,7 @@ public class CpOpinionService {
                     logger.warn("조회된 CP 의견이 없습니다. CP 의견 번호: {}", cpOpinionSeq);
                     return new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
                 });
+        logger.info("조회된 CP 의견: {}", entity);
 
         if (entity.getDeletedAt() == null) {
             // 활성 상태
@@ -277,8 +276,8 @@ public class CpOpinionService {
      * @return 관리자 권한 여부
      */
     private boolean isAdminUser() {
-        boolean isAdmin = SecurityUtil.getCurrentUserAuthorities().equals(UserAuth.ADMIN);
-        logger.info("현재 사용자는 관리자 권한: {}", isAdmin);
+        boolean isAdmin = SecurityUtil.getCurrentUserAuthorities().equals(UserAuth.ADMIN.name());
+        logger.info("현재 사용자는 관리자 여부: {}", isAdmin);
         return isAdmin;
     }
 
@@ -650,5 +649,35 @@ public class CpOpinionService {
 
         logger.info("사용자 {}의 북마크된 CP 의견 조회가 완료되었습니다.", user.getUserId());
         return responseCpOpinionDTOList;
+    }
+
+    /**
+     * 현재 로그인한 사용자가 작성한 CP 의견 목록을 조회합니다.
+     * <p>
+     * 이 메서드는 사용자의 시퀀스를 확인하고, 해당 사용자가 작성한 CP 의견을 데이터베이스에서 조회합니다.
+     * 사용자가 로그인하지 않은 경우, 예외를 발생시킵니다.
+     * </p>
+     *
+     * @return 사용자가 작성한 CP 의견 DTO 목록
+     * @throws CustomException {@link ErrorCode#NEED_LOGIN} 사용자가 로그인하지 않은 경우
+     */
+    @Transactional(readOnly = true)
+    public List<ResponseCpOpinionDTO> getMyCpOpinionList() {
+        logger.info("컨트롤 클래스가 요청한 사용자가 작성한 CP 조회 요청이 수신되었습니다.");
+
+        if (SecurityUtil.getCurrentUserSeq() == null) {
+            logger.error("로그인이 필요합니다.");
+            throw new CustomException(ErrorCode.NEED_LOGIN);
+        }
+
+        long currentUserSeq = SecurityUtil.getCurrentUserSeq();
+        logger.info("회원조회 성공, 회원번호: {}", currentUserSeq);
+
+        List<ResponseCpOpinionDTO> dtoList = cpOpinionRepository.findByUserSeq(currentUserSeq);
+        logger.info("작성한 CP 의견 조회 성공");
+
+        dtoList = setKeywordListForCpOpinions(dtoList);
+
+        return dtoList;
     }
 }

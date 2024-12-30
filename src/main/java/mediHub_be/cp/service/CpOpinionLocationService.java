@@ -182,7 +182,7 @@ public class CpOpinionLocationService {
             // DB에서 데이터 조회
             dto = cpOpinionLocationRepository.findByCpOpinionLocation_CpOpinion_CpOpinionLocationSeq(cpOpinionLocationSeq)
                     .orElseThrow(() -> {
-                        logger.warn("CP 의견 위치 ID: {}에 대한 데이터가 존재하지 않습니다.", cpOpinionLocationSeq);
+                        logger.warn("CP 의견 위치 시퀀스: {}에 대한 데이터가 존재하지 않습니다.", cpOpinionLocationSeq);
                         return new CustomException(ErrorCode.NOT_FOUND_CP_OPINION_LOCATION);
                     });
 

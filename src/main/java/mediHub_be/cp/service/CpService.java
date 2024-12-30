@@ -8,7 +8,6 @@ import mediHub_be.board.Util.ViewCountManager;
 import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.FlagService;
-import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpDTO;
@@ -16,6 +15,7 @@ import mediHub_be.cp.dto.ResponseCpVersionDTO;
 import mediHub_be.cp.entity.Cp;
 import mediHub_be.cp.repository.CpRepository;
 import mediHub_be.cp.repository.CpVersionRepository;
+import mediHub_be.cp.repository.JooqCpVersionRepository;
 import mediHub_be.security.util.SecurityUtil;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.service.UserService;
@@ -35,20 +35,18 @@ public class CpService {
 
     // Service
     private final BookmarkService bookmarkService;
-    private final PictureService pictureService;
     private final UserService userService;
+    private final FlagService flagService;
 
     // Repository
     private final CpRepository cpRepository;
     private final CpVersionRepository cpVersionRepository;
+    private final JooqCpVersionRepository jooqCpVersionRepository;
 
+    // etc
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpService");       // Logger
     private final ViewCountManager viewCountManager;        // 조회수 매니저
-
-    // FlagType
     private final String CP_VERSION_FLAG = "CP_VERSION";
-    private final FlagService flagService;
-
 
     /**
      * 주어진 카테고리 시퀀스와 카테고리 데이터를 기준으로 CP 리스트를 조회하는 메서드입니다.
@@ -66,21 +64,22 @@ public class CpService {
 
         logger.info("CP 검색 카테고리 시퀀스: {}, 카테고리 데이터: {}", cpSearchCategorySeqArray, cpSearchCategoryDataArray);
 
-        // DB 조회
-        List<Map<String, Object>> entityList = cpVersionRepository.findByCategorySeqAndCategoryData(
-                cpSearchCategorySeqArray,
-                cpSearchCategoryDataArray
-        );
+//        // DB 조회
+//        List<Map<String, Object>> entityList = cpVersionRepository.findByCategorySeqAndCategoryData(
+//                cpSearchCategorySeqArray,
+//                cpSearchCategoryDataArray
+//        );
 
-        if (entityList.isEmpty()) {
+        // DB 조회
+        List<ResponseCpDTO> dtoList = jooqCpVersionRepository.findCpVersionByCategory(cpSearchCategoryDataArray);
+
+        logger.info("조회된 정보: {}", dtoList);
+
+        if (dtoList.isEmpty()) {
             logger.info("조회 결과 없음: 카테고리 시퀀스와 데이터로 찾은 CP가 없습니다.");
             throw new CustomException(ErrorCode.NOT_FOUND_CP_VERSION);
         } else {
-            logger.info("조회된 CP 리스트 크기: {}", entityList.size());
-
-            List<ResponseCpDTO> dtoList = entityList.stream()
-                    .map(ResponseCpDTO::toDto)
-                    .collect(Collectors.toList());
+            logger.info("조회된 CP 리스트 크기: {}", dtoList.size());
 
             // 북마크 확인
             checkBookmark(dtoList);

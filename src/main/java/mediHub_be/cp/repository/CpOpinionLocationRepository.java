@@ -13,7 +13,6 @@ public interface CpOpinionLocationRepository extends JpaRepository<CpOpinionLoca
 
     List<CpOpinionLocation> findByCpVersionSeq(long cpVersionSeq);
 
-    // 6일(금) 여기서 조회 오류남
     @Query("SELECT new mediHub_be.cp.dto.ResponseCpOpinionLocationDTO( " +
             "col.cpOpinionLocationSeq, " +
             "col.cpVersionSeq, " +

@@ -149,4 +149,17 @@ public class CpOpinionController {
 
         return ResponseEntity.ok(ApiResponse.ok(bookmarkedCpOpinionList));
     }
+
+    // 작성한 CP 의견 조회
+    @GetMapping("/myOpinion")
+    @Operation(summary = "사용자가 작성한 CP 의견 조회",
+            description = "사용자가 작성한 CP 의견 리스트를 조회합니다.")
+    public ResponseEntity<ApiResponse<List<ResponseCpOpinionDTO>>> getMyCpOpinionList(@PathVariable String cpVersionSeq) {
+        logger.info("사용자가 작성한 CP 의견 조회 요청이 수신되었습니다.");
+
+        List<ResponseCpOpinionDTO> dtoList = cpOpinionService.getMyCpOpinionList();
+        logger.info("사용자가 작성한 CP 의견 조회에 성공하였습니다. 조회된 크기: {}", dtoList.size());
+
+        return ResponseEntity.ok(ApiResponse.ok(dtoList));
+    }
 }
