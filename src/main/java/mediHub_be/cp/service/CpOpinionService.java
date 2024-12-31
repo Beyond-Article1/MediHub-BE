@@ -535,9 +535,11 @@ public class CpOpinionService {
     public CpOpinionDTO updateCpOpinionByCpOpinionSeq(long cpOpinionSeq, RequestCpOpinionDTO requestBody) {
 
         validateRequestCpOpinion(requestBody); // requestBody 유효성 검사
+        logger.info("유효성 검사 통과");
 
         // DB에서 현재 CP 의견 조회 및 작성자 확인
         CpOpinion entity = getCpOpinionAndCheckUnauthorizedAccess(cpOpinionSeq);
+        logger.info("작성자 확인 완료");
 
         // 요청 본문으로부터 CP 의견 내용 업데이트
         if (requestBody.getCpOpinionContent() != null) {
