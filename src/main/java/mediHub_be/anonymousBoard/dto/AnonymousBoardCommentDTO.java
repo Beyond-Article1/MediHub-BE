@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AnonymousBoardCommentDTO {
 
-    private String userName;
+    private Long commentSeq;
+    private Long userSeq;
     private String commentContent;
     private LocalDateTime createdAt;
 }
