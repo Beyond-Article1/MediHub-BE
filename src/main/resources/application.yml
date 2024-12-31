@@ -44,7 +44,7 @@ spring:
   # MongoDB 설정
   data:
     mongodb:
-      uri: mongodb://${db.name}:${db.password}@localhost:${mongodb.port}/${db.name}?authSource=admin
+      uri: mongodb://${mongodb.host}:${mongodb.port.number}/${db.name}?authSource=admin
       database: ${db.name}
       username: ${db.name}
       password: ${db.password}
