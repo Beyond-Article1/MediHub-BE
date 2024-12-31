@@ -107,11 +107,9 @@ public class MedicalLifeService {
                     Dept dept = medicalLife.getUser().getPart().getDept();
                     Part part = medicalLife.getUser().getPart();
 
-                    String rankingName = rankings.stream()
-                            .filter(r -> r.getDeptSeq() == dept.getDeptSeq())
-                            .map(Ranking::getRankingName)
-                            .findFirst()
-                            .orElse("N/A");
+                    String rankingName = medicalLife.getUser().getRanking() != null
+                            ? medicalLife.getUser().getRanking().getRankingName()
+                            : "N/A";
 
                     return MedicalLifeListDTO.builder()
                             .medicalLifeSeq(medicalLife.getMedicalLifeSeq())
