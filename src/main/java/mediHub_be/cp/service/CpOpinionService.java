@@ -1,7 +1,10 @@
 package mediHub_be.cp.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.Util.ViewCountManager;
 import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Keyword;
@@ -51,7 +54,7 @@ public class CpOpinionService {
 
     // etc
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpOpinionService");    // Logger
-
+    private final ViewCountManager viewCountManager;        // 조회수 매니저
     // 상수
     public static final String CP_OPINION_BOARD_FLAG = "CP_OPINION";        // 플레그명 상수
 
@@ -75,6 +78,8 @@ public class CpOpinionService {
 
         List<ResponseCpOpinionDTO> responseCpOpinionDtoList;
 
+//        logger.info("삭제 상태: {}", isDeleted);
+
         try {
             // DB 조회
             if (isDeleted) {
@@ -85,18 +90,15 @@ public class CpOpinionService {
                 responseCpOpinionDtoList = cpOpinionRepository.findByCpOpinionLocationSeqAndDeletedAtIsNull(cpOpinionLocationSeq);
             }
 
-            // 키워드 목록 설정
-            List<ResponseCpOpinionDTO> dtoList = setKeywordListForCpOpinions(responseCpOpinionDtoList);
-
-            // 결과 확인
-            if (dtoList.isEmpty()) {
-                logger.warn("조회된 CP 의견이 없습니다. CP 버전 번호: {}, CP 의견 위치 번호: {}", cpVersionSeq, cpOpinionLocationSeq);
+            // 결과 없으면 404 반환
+            if (responseCpOpinionDtoList.isEmpty()) {
+                logger.info("조회 결과 없음");
                 throw new CustomException(ErrorCode.NOT_FOUND_CP_OPINION);
             } else {
-                logger.info("조회된 CP 의견의 수: {}", dtoList.size());
+                logger.info("조회 성공");
             }
-
-            return dtoList;
+            // 키워드 목록 설정 및 반환
+            return setKeywordListForCpOpinions(responseCpOpinionDtoList);
         } catch (CustomException e) {
             throw e;
         } catch (DataAccessException e) {
@@ -196,20 +198,21 @@ public class CpOpinionService {
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
         }
 
+        // DTO 리스트로 변환
+        List<CpOpinionVoteDTO> dtoList = new ArrayList<>();
+
         // 결과가 없을 경우 로그 남기기
         if (entityList == null || entityList.isEmpty()) {
             logger.warn("CP 의견 번호: {}에 대한 의견 투표가 존재하지 않습니다.", cpOpinionSeq);
         } else {
             logger.info("조회된 CP 의견 투표 목록의 크기: {}", entityList.size());
+
+            for (CpOpinionVote entity : entityList) {
+                dtoList.add(CpOpinionVoteDTO.toDto(entity));
+            }
         }
 
-        // DTO 리스트로 변환
-        List<CpOpinionVoteDTO> dtoList = new ArrayList<>();
-        for (CpOpinionVote entity : entityList) {
-            dtoList.add(CpOpinionVoteDTO.toDto(entity));
-        }
-
-        return dtoList; // 빈 리스트를 반환
+        return dtoList;
     }
 
     /**
@@ -220,7 +223,7 @@ public class CpOpinionService {
      * @throws CustomException 조회된 의견이 없거나 접근 권한이 없는 경우
      */
     @Transactional(readOnly = true)
-    public ResponseCpOpinionDTO findCpOpinionByCpOpinionSeq(long cpOpinionSeq) {
+    public ResponseCpOpinionDTO findCpOpinionByCpOpinionSeq(long cpOpinionSeq, HttpServletRequest request, HttpServletResponse response) {
         logger.info("CP 의견 번호: {}로 조회 요청했습니다.", cpOpinionSeq);
 
         // DB 조회
@@ -234,7 +237,7 @@ public class CpOpinionService {
         if (entity.getDeletedAt() == null) {
             // 활성 상태
             logger.info("CP 의견 번호: {}는 활성 상태입니다.", cpOpinionSeq);
-            incrementViewCount(entity, cpOpinionSeq); // 조회수 증가 메서드 호출
+            viewCountManager.shouldIncreaseViewCount(entity.getCpOpinionSeq(), request, response);
             logger.info("CP 의견 번호: {}의 조회수가 증가했습니다.", cpOpinionSeq);
 
             return retrieveCpOpinionDto(cpOpinionSeq);
