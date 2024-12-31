@@ -38,6 +38,7 @@ public class ChatService {
     private final UserRepository userRepository;
     private final PictureService pictureService;
     private final AmazonS3Service amazonS3Service;
+    private final KafkaProducerService kafkaProducerService;
 
     /* 채팅 메시지 저장 */
     public ResponseChatMessageDTO saveMessage(ChatMessageDTO message) {
@@ -137,9 +138,13 @@ public class ChatService {
     public void deleteMessage(String messageId) {
         ChatMessage message = chatMessageRepository.findById(messageId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CHATMESSAGE));
-        // 논리삭제
+
+        // 논리 삭제
         message.setIsDeleted(true);
         chatMessageRepository.save(message);
+
+        // Kafka로 삭제 이벤트 전송
+        kafkaProducerService.sendDeleteMessage("chat-topic", messageId, message.getChatroomSeq());
     }
 
     /* 특정 채팅방의 메시지 조회 */
@@ -182,7 +187,7 @@ public class ChatService {
                             .messageSeq(message.getId())
                             .chatroomSeq(message.getChatroomSeq())
                             .senderUserSeq(message.getSenderUserSeq())
-                            .senderUserName(senderUser != null ? senderUser.getUserName() : "System") // 사용자 이름 추가
+                            .senderUserName(senderUser != null ? senderUser.getUserName() : "Unknown") // 사용자 이름 추가
                             .senderUserProfileUrl(profileUrl != null ? profileUrl : "System")
                             .type(message.getType())
                             .message(message.getMessage())
