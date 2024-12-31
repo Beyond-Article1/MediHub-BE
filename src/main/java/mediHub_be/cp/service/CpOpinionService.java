@@ -164,6 +164,7 @@ public class CpOpinionService {
             List<Keyword> keywordList = keywordService.getKeywordList(CP_OPINION_BOARD_FLAG, dto.getCpOpinionSeq());
             List<CpOpinionVoteDTO> voteList = getCpOpinionVoteList(dto.getCpOpinionSeq());
             // 비율 계산 및 DTO 생성
+            logger.info("키워드와 의견 투표 결과 설정이 완료되었습니다.");
             if (voteList.isEmpty()) {
                 return ResponseCpOpinionDTO.create(dto, keywordList);
             } else {
@@ -193,6 +194,7 @@ public class CpOpinionService {
         try {
             // CP 의견 투표 목록 조회
             entityList = cpOpinionVoteRepository.findByCpOpinionSeq(cpOpinionSeq);
+            logger.info("CP 의견 투표 조회 완료");
         } catch (Exception e) {
             logger.error("데이터베이스 접근 중 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
@@ -272,7 +274,10 @@ public class CpOpinionService {
         logger.info("CP 의견 번호: {}에 대한 키워드 목록을 조회합니다.", cpOpinionSeq);
         setKeywordForCpOpinion(dto);
 //        logger.info("dto: {}", dto);
+        logger.info("CP 의견에 프로필 사진 정보를 설정 요청을 합니다.");
         dto.setProfileUrl(pictureService.getUserProfileUrl(dto.getUserSeq()));
+
+        logger.info("CP 의견에 프로필 사진 정보를 설정 완료했습니다.");
         return dto;
     }
 
@@ -285,18 +290,6 @@ public class CpOpinionService {
         boolean isAdmin = SecurityUtil.getCurrentUserAuthorities().equals(UserAuth.ADMIN.name());
         logger.info("현재 사용자는 관리자 여부: {}", isAdmin);
         return isAdmin;
-    }
-
-    /**
-     * 주어진 CP 의견의 조회 수를 증가시킵니다.
-     *
-     * @param cpOpinionSeq 조회 수를 증가시킬 CP 의견의 ID
-     * @throws CustomException 주어진 ID에 해당하는 CP 의견이 존재하지 않을 경우 예외를 발생시킬 수 있습니다.
-     */
-    @Transactional
-    public void incrementViewCount(CpOpinion entity, long cpOpinionSeq) {
-        entity.increaseCpOpinionViewCount();
-        cpOpinionRepository.save(entity);
     }
 
     /**
