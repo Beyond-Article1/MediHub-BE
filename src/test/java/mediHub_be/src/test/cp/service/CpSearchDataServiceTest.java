@@ -22,7 +22,6 @@ import org.springframework.dao.DataAccessException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class CpSearchDataServiceTest {
