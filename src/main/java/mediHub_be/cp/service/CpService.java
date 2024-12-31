@@ -8,7 +8,6 @@ import mediHub_be.board.Util.ViewCountManager;
 import mediHub_be.board.dto.BookmarkDTO;
 import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.FlagService;
-import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpDTO;
@@ -16,6 +15,7 @@ import mediHub_be.cp.dto.ResponseCpVersionDTO;
 import mediHub_be.cp.entity.Cp;
 import mediHub_be.cp.repository.CpRepository;
 import mediHub_be.cp.repository.CpVersionRepository;
+import mediHub_be.cp.repository.JooqCpVersionRepository;
 import mediHub_be.security.util.SecurityUtil;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.service.UserService;
@@ -35,20 +35,18 @@ public class CpService {
 
     // Service
     private final BookmarkService bookmarkService;
-    private final PictureService pictureService;
     private final UserService userService;
+    private final FlagService flagService;
 
     // Repository
     private final CpRepository cpRepository;
     private final CpVersionRepository cpVersionRepository;
+    private final JooqCpVersionRepository jooqCpVersionRepository;
 
+    // etc
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpService");       // Logger
     private final ViewCountManager viewCountManager;        // 조회수 매니저
-
-    // FlagType
     private final String CP_VERSION_FLAG = "CP_VERSION";
-    private final FlagService flagService;
-
 
     /**
      * 주어진 카테고리 시퀀스와 카테고리 데이터를 기준으로 CP 리스트를 조회하는 메서드입니다.
@@ -66,21 +64,22 @@ public class CpService {
 
         logger.info("CP 검색 카테고리 시퀀스: {}, 카테고리 데이터: {}", cpSearchCategorySeqArray, cpSearchCategoryDataArray);
 
-        // DB 조회
-        List<Map<String, Object>> entityList = cpVersionRepository.findByCategorySeqAndCategoryData(
-                cpSearchCategorySeqArray,
-                cpSearchCategoryDataArray
-        );
+//        // DB 조회
+//        List<Map<String, Object>> entityList = cpVersionRepository.findByCategorySeqAndCategoryData(
+//                cpSearchCategorySeqArray,
+//                cpSearchCategoryDataArray
+//        );
 
-        if (entityList.isEmpty()) {
+        // DB 조회
+        List<ResponseCpDTO> dtoList = jooqCpVersionRepository.findCpVersionByCategory(cpSearchCategoryDataArray);
+
+        logger.info("조회된 정보: {}", dtoList);
+
+        if (dtoList.isEmpty()) {
             logger.info("조회 결과 없음: 카테고리 시퀀스와 데이터로 찾은 CP가 없습니다.");
             throw new CustomException(ErrorCode.NOT_FOUND_CP_VERSION);
         } else {
-            logger.info("조회된 CP 리스트 크기: {}", entityList.size());
-
-            List<ResponseCpDTO> dtoList = entityList.stream()
-                    .map(ResponseCpDTO::toDto)
-                    .collect(Collectors.toList());
+            logger.info("조회된 CP 리스트 크기: {}", dtoList.size());
 
             // 북마크 확인
             checkBookmark(dtoList);
@@ -299,4 +298,45 @@ public class CpService {
         return dtoList;
     }
 
+    /**
+     * 주어진 CP 버전 시퀀스와 CP 버전을 기반으로 CP 정보를 조회하고,
+     * 조회수 증가 조건에 따라 조회수를 증가시킵니다.
+     *
+     * @param cpVersionSeq CP 버전 시퀀스
+     * @param cpVersion CP 버전
+     * @param request HTTP 요청 객체
+     * @param response HTTP 응답 객체
+     * @return 조회된 CP 정보가 담긴 {@link ResponseCpDTO} 객체
+     * @throws CustomException CP가 존재하지 않을 경우 {@link ErrorCode#NOT_FOUND_CP} 예외가 발생합니다.
+     */
+    @Transactional()
+    public ResponseCpDTO findCpByCpVersion(
+            long cpVersionSeq,
+            String cpVersion,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        // 해당 데이터 조회
+        ResponseCpDTO dto = jooqCpVersionRepository.findCpVersionByCpVersionSeqAndCpVersion(cpVersionSeq, cpVersion);
+
+        // 조회수 증가를 위한 DB 조회
+        Cp entity = cpRepository.findByCpVersionSeq(cpVersionSeq)
+                .orElseThrow(() -> {
+                    logger.warn("조회된 CP가 없습니다: CP 버전 시퀀스={}", cpVersionSeq);
+                    return new CustomException(ErrorCode.NOT_FOUND_CP);
+                });
+        logger.info("조회된 CP: {}", entity);
+
+        boolean shouldIncrease = viewCountManager.shouldIncreaseViewCount(entity.getCpSeq(), request, response);
+        if (shouldIncrease) {
+            logger.info("뷰 카운트를 증가시킵니다: CP 시퀀스={}", entity.getCpSeq());
+            entity.increaseCpViewCount();
+            cpRepository.save(entity);
+            logger.info("뷰 카운트 증가 완료: CP 시퀀스={}", entity.getCpSeq());
+        } else {
+            logger.info("뷰 카운트를 증가시키지 않습니다: CP 시퀀스={} - 사유: 조건 미충족", entity.getCpSeq());
+        }
+
+        return dto;
+    }
 }

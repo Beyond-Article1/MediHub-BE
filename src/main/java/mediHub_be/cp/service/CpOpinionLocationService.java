@@ -48,7 +48,7 @@ public class CpOpinionLocationService {
         try {
             logger.info("CP 버전 시퀀스: {}로 의견 위치 목록 조회 요청을 시작합니다.", cpVersionSeq);
 
-            entityList = cpOpinionLocationRepository.findByCpVersionSeq(cpVersionSeq);
+            entityList = cpOpinionLocationRepository.findByCpVersionSeqAndDeletedAtIsNull(cpVersionSeq);
 
             if (entityList.isEmpty()) {
                 logger.info("CP 버전 시퀀스: {}에 대한 의견 위치 목록이 없습니다.", cpVersionSeq);
@@ -125,22 +125,19 @@ public class CpOpinionLocationService {
     @Transactional
     public void deleteCpOpinionLocation(long cpVersionSeq, long cpOpinionLocationSeq) {
         try {
-            // 작성자 검증
-            checkUnauthorizedAccess(cpOpinionLocationSeq);
-
             // DB에서 CP 의견 위치 조회
             CpOpinionLocation entity = cpOpinionLocationRepository.findById(cpOpinionLocationSeq)
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CP_OPINION_LOCATION));
+            logger.info("조회 성공");
+            logger.info("{}", entity);
 
             // 삭제 처리
             entity.delete(); // delete() 메서드가 논리 삭제를 처리한다고 가정
+            logger.info("삭제 처리 완료");
 
             // 엔티티 저장 (변경된 상태 반영)
             cpOpinionLocationRepository.save(entity);
-
-            // 성공 로그 추가
-            logger.info("CP 의견 위치 삭제 성공. CP 버전 번호: {}, CP 의견 위치 번호: {}", cpVersionSeq, cpOpinionLocationSeq);
-
+            logger.info("저장 완료");
         } catch (DataAccessException e) {
             logger.error("데이터베이스 접근 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
@@ -150,56 +147,6 @@ public class CpOpinionLocationService {
         } catch (Exception e) {
             logger.error("예기치 않은 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    /**
-     * 지정된 CP 의견 위치 시퀀스를 사용하여 해당 의견 위치에 대한 접근 권한을 검증하는 메서드입니다.
-     *
-     * <p>이 메서드는 주어진 CP 의견 위치 시퀀스를 기반으로 데이터베이스에서 의견 위치를 조회하고,
-     * 현재 사용자가 해당 의견 위치에 접근할 수 있는 권한이 있는지를 확인합니다.
-     * 사용자가 권한이 없거나 의견 위치가 존재하지 않을 경우 예외를 발생시킵니다.</p>
-     *
-     * @param cpOpinionLocationSeq CP 의견 위치의 고유 식별자
-     * @throws CustomException 데이터베이스 접근 오류 발생 시,
-     *                         의견 위치가 존재하지 않거나 권한이 없는 경우
-     */
-    @Transactional(readOnly = true)
-    public void checkUnauthorizedAccess(long cpOpinionLocationSeq) {
-
-        ResponseCpOpinionLocationDTO dto;
-
-        // 로그인 유저 정보
-        Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
-        String currentUserAuth = SecurityUtil.getCurrentUserAuthorities();
-
-        if (currentUserSeq == null) {
-            logger.error("로그인이 필요한 서비스 입니다.");
-            throw new CustomException(ErrorCode.NEED_LOGIN);
-        }
-
-        try {
-            // DB에서 데이터 조회
-            dto = cpOpinionLocationRepository.findByCpOpinionLocation_CpOpinion_CpOpinionLocationSeq(cpOpinionLocationSeq)
-                    .orElseThrow(() -> {
-                        logger.warn("CP 의견 위치 ID: {}에 대한 데이터가 존재하지 않습니다.", cpOpinionLocationSeq);
-                        return new CustomException(ErrorCode.NOT_FOUND_CP_OPINION_LOCATION);
-                    });
-
-            logger.info("CP 의견 위치 조회 성공: {}", dto);
-
-        } catch (DataAccessException e) {
-            logger.error("데이터베이스 접근 오류: {}", e.getMessage(), e);
-            throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
-        } catch (Exception e) {
-            logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
-            throw new RuntimeException("예기치 않은 오류가 발생했습니다.", e);
-        }
-
-        // 권한 확인
-        if (dto.getUserSeq() != currentUserSeq && !UserAuth.valueOf(currentUserAuth).equals(UserAuth.ADMIN)) {
-            logger.warn("사용자 ID: {}가 CP 의견 위치 ID: {}에 대한 접근 권한이 없습니다.", currentUserSeq, cpOpinionLocationSeq);
-            throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
     }
 }

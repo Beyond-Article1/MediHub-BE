@@ -92,6 +92,9 @@ public class CpSearchCategoryDataService {
         } catch (DataAccessException e) {
             logger.error("데이터 접근 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
+        } catch (CustomException e) {
+            logger.error("{}", e.getErrorCode());
+            throw e;
         } catch (Exception e) {
             logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
             throw new RuntimeException("CP 검색 카테고리 조회 시 예기치 못한 에러가 발생했습니다.", e);
@@ -200,17 +203,25 @@ public class CpSearchCategoryDataService {
         // 2. CP 검색 카테고리 데이터 삭제 요청
         logger.info("CP 검색 카테고리 데이터 삭제 요청: ID={}", cpSearchCategoryDataSeq);
 
-        // 3. 삭제(삭제일 추가)
-        entity.updateUserSeq(SecurityUtil.getCurrentUserSeq()); // 현재 사용자 ID 업데이트
-        entity.delete(); // 삭제 처리
-
-        // 4. 저장
         try {
+            // 로그인 확인
+            if (SecurityUtil.getCurrentUserSeq() == null) {
+                throw new CustomException(ErrorCode.NEED_LOGIN);
+            }
+
+            // 3. 삭제(삭제일 추가)
+            entity.updateUserSeq(SecurityUtil.getCurrentUserSeq()); // 현재 사용자 ID 업데이트
+            entity.delete(); // 삭제 처리
+
+            // 4. 저장
             cpSearchCategoryDataRepository.save(entity); // 수정된 엔티티를 데이터베이스에 저장
             logger.info("CP 검색 카테고리 데이터 삭제 성공: ID={}", cpSearchCategoryDataSeq);
         } catch (DataAccessException e) {
             logger.error("CP 검색 카테고리 데이터 삭제 중 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        } catch (CustomException e) {
+            logger.error("{}", e.getErrorCode());
+            throw e;
         } catch (Exception e) {
             logger.error("CP 검색 카테고리 데이터 삭제 중 에상치 못한 오류 발생: {}", e.getMessage());
             throw new RuntimeException("CP 검색 카테고리 데이터 삭제 중 에상치 못한 오류 발생했습니다.", e);
