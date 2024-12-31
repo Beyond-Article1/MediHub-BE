@@ -32,7 +32,7 @@ class CpOpinionVoteServiceTest {
     private static CpOpinionVote mockedCpOpinionVote;
 
     @BeforeEach
-    public void setUp() {
+    public void setUpBeforeEach() {
         mockedCpOpinionVote = CpOpinionVote.builder()
                 .cpOpinionSeq(1L)
                 .userSeq(1L)
