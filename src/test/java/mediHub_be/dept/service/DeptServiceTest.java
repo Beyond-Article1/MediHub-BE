@@ -134,7 +134,7 @@ class DeptServiceTest {
         when(deptRepository.existsById(1L)).thenReturn(false);
 
         CustomException exception = assertThrows(CustomException.class, () -> deptService.deleteDept(1L));
-        
+
         assertEquals(ErrorCode.NOT_FOUND_PART, exception.getErrorCode());
 
         verify(deptRepository, times(1)).existsById(1L);
