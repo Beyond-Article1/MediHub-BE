@@ -110,3 +110,11 @@ token:
 
 user:
   default-password: ${user.default-password}
+
+# jOOQ 결과 확인을 위한 로그 레벨 설정
+logging:
+  level:
+    org:
+      jooq:
+        tools:
+          LoggerListener: debug

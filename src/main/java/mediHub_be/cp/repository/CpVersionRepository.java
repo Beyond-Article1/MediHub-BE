@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
 
-    @Query("SELECT new map(" +
+    @Query("SELECT DISTINCT new map(" +
             "cv.cpVersionSeq AS cpVersionSeq," +
             "cp.cpName AS cpName, " +
             "cp.cpDescription AS cpDescription, " +

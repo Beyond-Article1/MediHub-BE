@@ -499,3 +499,6 @@ ALTER TABLE cp_opinion
 
 ALTER TABLE cp_opinion
     MODIFY COLUMN cp_opinion_content longtext;
+
+ALTER TABLE cp_opinion
+MODIFY COLUMN cp_opinion_content LONGTEXT NOT NULL;

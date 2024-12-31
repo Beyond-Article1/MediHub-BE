@@ -63,4 +63,22 @@ public interface CpOpinionRepository extends JpaRepository<CpOpinion, Long> {
             "JOIN User AS u ON u.userSeq = co.userSeq " +
             "WHERE co.cpOpinionSeq = :cpOpinionSeq")
     Optional<ResponseCpOpinionDTO> findByCpOpinionSeq(@Param("cpOpinionSeq") long cpOpinionSeq);
+
+    // 사용자가 작성한 CP 의견 조회 메서드
+    @Query("SELECT new mediHub_be.cp.dto.ResponseCpOpinionDTO( " +
+            "co.cpOpinionSeq, " +
+            "co.cpOpinionContent, " +
+            "co.createdAt, " +
+            "co.updatedAt, " +
+            "co.deletedAt, " +
+            "co.cpOpinionViewCount, " +
+            "u.userName, " +
+            "u.userId, " +
+            "u.userSeq, " +
+            "u.part.partName) " +
+            "FROM CpOpinion AS co " +
+            "JOIN User AS u ON co.userSeq = u.userSeq " +
+            "WHERE co.userSeq = :userSeq " +
+            "AND co.deletedAt IS NULL")
+    List<ResponseCpOpinionDTO> findByUserSeq(@Param("userSeq") long userSeq);
 }

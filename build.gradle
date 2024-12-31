@@ -1,9 +1,16 @@
+buildscript {
+    ext {
+        jooqVersion = '3.19.14'
+    }
+}
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.5'
     id 'io.spring.dependency-management' version '1.1.6'
-    id 'com.google.cloud.tools.jib' version '3.3.2' // Jib 플러그인
-    id 'jacoco'     // jacoco 생성
+    id 'com.google.cloud.tools.jib' version '3.3.2'         // Jib 플러그인
+    id 'jacoco'                                             // jacoco 생성
+    id 'nu.studer.jooq' version '9.0'                       // jOOQ 플러그인
 }
 
 group = 'org.example'
@@ -31,6 +38,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-jooq'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
@@ -90,6 +99,11 @@ dependencies {
 
     //챗봇
     implementation 'org.apache.lucene:lucene-core:9.11.1'
+
+    // jOOQ
+    jooqGenerator project(':jOOQ-custom')
+    jooqGenerator "org.jooq:jooq:${jooqVersion}"
+    jooqGenerator "org.jooq:jooq-meta:${jooqVersion}"
 }
 
 //// .env 파일 로드
@@ -137,7 +151,7 @@ jacoco {
 jacocoTestReport {
     dependsOn test // 리포트 생성 전에 test를 반드시 수행
 
-    classDirectories.setFrom(files(classDirectories.files.collect{
+    classDirectories.setFrom(files(classDirectories.files.collect {
         fileTree(dir: it, excludes: [
                 '**/*Application*',
                 '**/exception/**',
@@ -155,7 +169,7 @@ jacocoTestReport {
                 '**/*KafkaConstants*',
                 '**/*Handler*',
                 '**/*ViewCountManager*',
-
+                '**/*jooq*/**',
                 '**/repository/**',
 
         ])
@@ -163,7 +177,8 @@ jacocoTestReport {
     reports {
         xml.required.set(true) // xml 리포트를 활성화
         html.required.set(true) // html 리포트를 비활성화
-        xml.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/test/jacocoTestReport.xml")  // XML 리포트 경로
+        xml.destination file("${project.layout.buildDirectory.get().asFile}/reports/jacoco/test/jacocoTestReport.xml")
+        // XML 리포트 경로
         html.destination file("${project.layout.buildDirectory.get().asFile}/jacocoReport/test/html")  // HTML 리포트 경로
     }
     finalizedBy 'jacocoTestCoverageVerification'
@@ -197,7 +212,78 @@ jacocoTestCoverageVerification {
                     '*.filter.*',
                     '*.PasswordEncryptor',
                     '*.component.*',
+                    '*.*jooq.*',
                     '*.ViewCountManager']
+        }
+    }
+}
+
+// application-key.properties 파일 경로
+def propertiesFile = file('src/main/resources/application-key.properties')
+
+// Properties 객체 생성
+def properties = new Properties()
+properties.load(new FileInputStream(propertiesFile))
+
+// 프로퍼티 읽기
+String dbHost = properties.getProperty("mariadb.host") ?: "localhost"
+String dbPort = properties.getProperty("mariadb.port") ?: "3306"
+String dbName = properties.getProperty("db.name") ?: "root"
+String dbPassword = properties.getProperty("db.password") ?: "passwd"
+
+//println(dbHost);
+//println(dbPort);
+//println(dbName);
+//println(dbPassword);
+
+jooq {
+    version = "${jooqVersion}"
+
+    configurations {
+        medihubDb {
+            generationTool{
+                jdbc {
+                    driver = 'org.mariadb.jdbc.Driver'
+                    url = "jdbc:mariadb://${dbHost}:${dbPort}"
+                    user = "${dbName}"
+                    password = "${dbPassword}"
+                }
+
+                // Generator 설정
+                generator {
+                    name = 'org.jooq.codegen.DefaultGenerator'
+                    database {
+                        name = 'org.jooq.meta.mariadb.MariaDBDatabase'
+                        schemata {
+                            schema {
+                                inputSchema = 'medihub'
+                            }
+                        }
+                    }
+
+                    generate {
+                        daos = true                 // dao 생성
+                        records = true              // record 생성
+                        fluentSetters = true        // 본인 반환
+                        javaTimeTypes = true        // LocalDateTime (false -> DateTimeStamp)
+                        deprecated = false
+                    }
+
+                    target {
+                        directory = 'src/generated'
+                    }
+
+                    strategy.name = 'jooq.custom.generator.JPrefixGeneratorStrategy'
+                }
+            }
+        }
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["src/main/java", "src/generated"]
         }
     }
 }

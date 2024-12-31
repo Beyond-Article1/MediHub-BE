@@ -31,10 +31,12 @@ public class CpOpinionLocation extends BaseCreateDeleteEntity {
 
     @Builder
     public CpOpinionLocation(
+            long cpOpinionLocationSeq,
             long cpVersionSeq,
             long cpOpinionLocationPageNum,
             double cpOpinionLocationX,
             double cpOpinionLocationY) {
+        this.cpOpinionLocationSeq = cpOpinionLocationSeq;
         this.cpVersionSeq = cpVersionSeq;
         this.cpOpinionLocationPageNum = cpOpinionLocationPageNum;
         this.cpOpinionLocationX = cpOpinionLocationX;
