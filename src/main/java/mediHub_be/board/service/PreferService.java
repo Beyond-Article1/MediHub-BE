@@ -87,7 +87,7 @@ public class PreferService {
         Flag flag = flagService.findFlag(flagType, entitySeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
-        // 2. 북마크 삭제
+        // 2. 좋아요 삭제
         deletePreferByFlag(flag);
     }
 }

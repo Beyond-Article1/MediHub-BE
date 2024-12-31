@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 public class AnonymousBoardUpdateRequestDTO {
 
-    private String AnonymousBoardTitle;
-    private String AnonymousBoardContent;
-    private List<String> keywords;
+    private String anonymousBoardTitle;
+    private String anonymousBoardContent;
+    private List<String> keywordList;
 }

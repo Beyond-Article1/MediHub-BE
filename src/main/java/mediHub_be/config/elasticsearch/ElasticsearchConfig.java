@@ -34,16 +34,16 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
     @Value("${spring.elasticsearch.medical-life.index.name}")
     private String medicalLife;
 
-    @Value("${spring.elasticsearch.user.index.name}")
-    private String user;
-
     @Override
     public ClientConfiguration clientConfiguration() {
 
         return ClientConfiguration.builder()
                 .connectedTo(elasticsearchUris.replace("http://",""))
+                // 기본 인증
                 .withBasicAuth(elasticsearchUsername, elasticsearchPassword)
+                // 소켓 타임아웃 설정 (30초)
                 .withSocketTimeout(30000)
+                // 연결 타임아웃 설정 (30초)
                 .withConnectTimeout(30000)
                 .build();
     }
