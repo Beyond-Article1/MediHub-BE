@@ -1,6 +1,6 @@
 package mediHub_be.elasticsearch.repository;
 
-import mediHub_be.elasticsearch.document.AnonymousBoardDocument;
+import mediHub_be.elasticsearch.document.CpDocument;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.elasticsearch.annotations.Query;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
@@ -12,7 +12,7 @@ import java.util.List;
         havingValue = "true",
         matchIfMissing = false
 )
-public interface AnonymousBoardElasticRepository extends ElasticsearchRepository<AnonymousBoardDocument, Long>, CustomElasticRepository {
+public interface CpElasticRepository extends ElasticsearchRepository<CpDocument, Long>, CustomElasticRepository {
 
     @Query("""
             {
@@ -20,7 +20,7 @@ public interface AnonymousBoardElasticRepository extends ElasticsearchRepository
                          "should": [
                            {
                              "match": {
-                               "anonymous_board_title.prefix": {
+                               "cp_name.prefix": {
                                  "query": "?0",
                                  "boost": 2.0
                                }
@@ -28,7 +28,7 @@ public interface AnonymousBoardElasticRepository extends ElasticsearchRepository
                            },
                            {
                              "match": {
-                               "anonymous_board_title": {
+                               "cp_name": {
                                  "query": "?0",
                                  "boost": 1.0,
                                  "fuzziness": "AUTO",
@@ -38,7 +38,7 @@ public interface AnonymousBoardElasticRepository extends ElasticsearchRepository
                            },
                            {
                              "wildcard": {
-                               "anonymous_board_title": {
+                               "cp_name": {
                                  "value": "*?0*",
                                  "boost": 0.5
                                }
@@ -49,6 +49,6 @@ public interface AnonymousBoardElasticRepository extends ElasticsearchRepository
                        }
                      }
             """)
-    // 검색 단어가 포함된 익명 게시판 전체 검색
-    List<AnonymousBoardDocument> findByAnonymousBoardTitle(String findAnonymousBoardTitle);
+    // 검색 단어가 포함된 CP 전체 검색
+    List<CpDocument> findByCpName(String findCpName);
 }

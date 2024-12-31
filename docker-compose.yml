@@ -96,7 +96,6 @@ services:
   # elk 서비스 - elasticsearch, kibana, logstash
   elasticsearch:
     container_name: elasticsearch
-#    image: elasticsearch:7.14.1
     build:
       context: .
       dockerfile: Dockerfile
@@ -108,7 +107,6 @@ services:
       - xpack.security.enabled=false
     ports:
       - 9200:9200
-      - 9300:9300
     volumes:
       - ./elasticsearch:/usr/share/elasticsearch/data
     networks:
@@ -119,7 +117,6 @@ services:
     image: docker.elastic.co/logstash/logstash:7.14.1
     ports:
       - 5000:5000
-      - 9600:9600
     volumes:
       - ./logstash/pipeline:/usr/share/logstash/pipeline
     depends_on:
