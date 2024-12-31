@@ -33,5 +33,14 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
             "   AND COUNT(DISTINCT CASE WHEN c.user.userSeq IN (:userSeqs) THEN c.user.userSeq END) = 2 " +  // 제공된 userSeqs만 참여한 채팅방 찾기
             "ORDER BY MAX(c.joinedAt) DESC")
     List<Long> findExistingChatroom(@Param("userSeqs") List<Long> userSeqs);
-}
 
+    // 사용자의 각 채팅방 참여 정보 (chatroomSeq, joinedAt) 조회
+    interface ChatroomJoinInfo {
+        Long getChatroomSeq();
+        LocalDateTime getJoinedAt();
+    }
+
+    @Query("SELECT c.chatroom.chatroomSeq AS chatroomSeq, c.joinedAt AS joinedAt " +
+            "FROM Chat c WHERE c.user.userSeq = :userSeq")
+    List<ChatroomJoinInfo> findJoinInfoByUserSeq(@Param("userSeq") Long userSeq);
+}

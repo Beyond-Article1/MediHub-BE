@@ -48,4 +48,11 @@ public class RankingController {
         rankingService.deleteRanking(rankingSeq);
         return ResponseEntity.ok(ApiResponse.ok(rankingSeq));
     }
+
+    @Operation(summary = "부서별 직급 조회", description = "특정 부서에 해당하는 직급을 조회합니다.")
+    @GetMapping("/by-dept/{deptSeq}")
+    public ResponseEntity<ApiResponse<List<RankingDTO>>> getRankingsByDeptSeq(@PathVariable Long deptSeq) {
+        List<RankingDTO> rankings = rankingService.getRankingsByDeptSeq(deptSeq);
+        return ResponseEntity.ok(ApiResponse.ok(rankings));
+    }
 }

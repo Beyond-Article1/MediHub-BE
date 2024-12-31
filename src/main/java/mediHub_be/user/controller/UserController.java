@@ -63,5 +63,18 @@ public class UserController {
         // 성공 응답 반환
         return ResponseEntity.ok(ApiResponse.ok(allUsers));
     }
+
+    // 회원 의사 여부 반환
+    @Operation(summary = "회원 의사 여부 반환", description = "로그인한 회원아 의사인지 반환합니다.")
+    @GetMapping(value = "/isDoctor")
+    public ResponseEntity<ApiResponse<Boolean>> getIsDoctor() {
+        Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
+        Boolean isDoctor = userService.isDoctor(currentUserSeq);
+
+        // 성공 응답 반환
+        return ResponseEntity.ok(ApiResponse.ok(isDoctor));
+    }
+
+
 }
 

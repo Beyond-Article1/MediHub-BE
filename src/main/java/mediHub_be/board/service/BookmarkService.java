@@ -15,14 +15,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BookmarkService {
 
-    private final BookmarkRepository bookmarkRepository;
-    private final FlagRepository flagRepository;
     private final UserRepository userRepository;
+    private final FlagRepository flagRepository;
+    private final BookmarkRepository bookmarkRepository;
     private final FlagService flagService;
 
     @Transactional
@@ -35,7 +36,7 @@ public class BookmarkService {
         // 기존 북마크 존재 여부 확인
         Optional<Bookmark> existingBookmark = bookmarkRepository.findByUserAndFlag(user, flag);
 
-        if (existingBookmark.isPresent()) {
+        if(existingBookmark.isPresent()) {
 
             // 북마크 해제 (삭제)
             bookmarkRepository.delete(existingBookmark.get());
@@ -89,5 +90,13 @@ public class BookmarkService {
 
         // 2. 북마크 삭제
         deleteBookmarkByFlag(flag);
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> getUsersWhoBookmarkedCaseSharing(Long caseSharingSeq) {
+        List<Bookmark> bookmarks = bookmarkRepository.findByFlag_FlagTypeAndFlag_FlagEntitySeq("case_sharing", caseSharingSeq);
+        return bookmarks.stream()
+                .map(Bookmark::getUser) // Bookmark에서 User를 추출
+                .collect(Collectors.toList());
     }
 }

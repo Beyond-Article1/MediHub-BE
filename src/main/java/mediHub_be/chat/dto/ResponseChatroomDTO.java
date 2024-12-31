@@ -18,4 +18,5 @@ public class ResponseChatroomDTO {
     private Long chatroomUsersCount;    // 채팅방 참여 인원
     private String lastMessage;         // 마지막 채팅 내용
     private LocalDateTime lastMessageTime;     // 마지막 채팅 시간
+    private Long unreadMessageCount;   // 읽지 않은 메시지 수
 }

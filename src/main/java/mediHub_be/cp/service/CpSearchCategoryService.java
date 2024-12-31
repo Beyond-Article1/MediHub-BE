@@ -93,6 +93,9 @@ public class CpSearchCategoryService {
         } catch (DataAccessException e) {
             logger.error("데이터 접근 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);
+        } catch (CustomException e) {
+            logger.error("커스텀 예외 발생: {}", e.getErrorCode());
+            throw e;
         } catch (Exception e) {
             logger.error("예기치 않은 오류 발생: {}", e.getMessage(), e);
             throw new RuntimeException("CP 검색 카테고리 상세 조회 과정에서 예상치 못한 에러가 발생했습니다.", e);
@@ -110,24 +113,35 @@ public class CpSearchCategoryService {
      * @throws CustomException 유효성 검사 실패, 중복 카테고리, 또는 데이터 저장 오류 발생 시 예외
      */
     public ResponseCpSearchCategoryDTO createCpSearchCategory(String cpSearchCategoryName) {
+        CpSearchCategory entity;
+
         // 1. 유효성 검사 및 중복 검사
         cpSearchCategoryName = validateAndCheckDuplicate(cpSearchCategoryName);
         logger.info("유효성 검사 및 중복 검사 성공");
 
-        // 2. 데이터 생성
-        CpSearchCategory entity = CpSearchCategory.builder()
-                .userSeq(SecurityUtil.getCurrentUserSeq())
-                .cpSearchCategoryName(cpSearchCategoryName)
-                .build();
-        logger.info("생성된 데이터 = {}", entity);
-
         try {
+            if (SecurityUtil.getCurrentUserSeq() == null) {
+                throw new CustomException(ErrorCode.NEED_LOGIN);
+            }
+            // 2. 데이터 생성
+            entity = CpSearchCategory.builder()
+                    .userSeq(SecurityUtil.getCurrentUserSeq())
+                    .cpSearchCategoryName(cpSearchCategoryName)
+                    .build();
+            logger.info("생성된 데이터 = {}", entity);
+
             // 3. 데이터 저장
             entity = cpSearchCategoryRepository.save(entity); // 저장 후 반환된 엔티티를 업데이트
             logger.info("저장 성공");
         } catch (DataAccessException e) {
             logger.error("CP 검색 카테고리 저장 중 오류 발생: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        } catch (CustomException e) {
+            logger.error("{}", e.getErrorCode());
+            throw e;
+        } catch (Exception e) {
+            logger.error("에기치 못한 에러가 발생했습니다. {}", e.getMessage());
+            throw e;
         }
 
         // 4. 저장된 데이터 반환
@@ -257,17 +271,24 @@ public class CpSearchCategoryService {
 
         logger.info("CP 검색 카테고리 삭제 요청: ID={}", cpSearchCategorySeq);
 
-        // 3. 삭제(삭제일 추가)
-        entity.updateUserSeq(SecurityUtil.getCurrentUserSeq()); // 현재 사용자 ID 업데이트
-        entity.delete(); // 삭제 처리
-
-        // 4. 저장
         try {
+            if (SecurityUtil.getCurrentUserSeq() == null) {
+                throw new CustomException(ErrorCode.NEED_LOGIN);
+            }
+
+            // 3. 삭제(삭제일 추가)
+            entity.updateUserSeq(SecurityUtil.getCurrentUserSeq()); // 현재 사용자 ID 업데이트
+            entity.delete(); // 삭제 처리
+
+            // 4. 저장
             cpSearchCategoryRepository.save(entity); // 수정된 엔티티를 데이터베이스에 저장
             logger.info("CP 검색 카테고리 삭제 성공: ID={}", cpSearchCategorySeq);
         } catch (DataAccessException e) {
             logger.error("CP 검색 카테고리 삭제 중 오류 발생: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATABASE_ERROR);
+        } catch (CustomException e) {
+            logger.error("{}", e.getErrorCode());
+            throw e;
         }
     }
 

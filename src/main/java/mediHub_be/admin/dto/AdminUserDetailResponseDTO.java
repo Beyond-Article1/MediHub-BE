@@ -15,7 +15,9 @@ public class AdminUserDetailResponseDTO {
     private String userPhone;
     private UserAuth userAuth;
     private UserStatus userStatus;
+    private long rankingSeq;
     private String rankingName;
+    private long partSeq;
     private String partName;
     private long deptSeq;
     private String profileImage;

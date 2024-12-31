@@ -3,11 +3,13 @@ package mediHub_be.chat.entity;
 import jakarta.persistence.Id;
 import lombok.*;
 import mediHub_be.common.utils.DateTimeUtil;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
 @Document(collection = "chat.messages")
+@CompoundIndex(name = "chatroom_createdAt_isDeleted_idx", def = "{'chatroomSeq': 1, 'createdAt': 1, 'isDeleted': 1}")
 @Getter
 @ToString
 @NoArgsConstructor

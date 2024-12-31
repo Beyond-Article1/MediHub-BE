@@ -9,8 +9,6 @@ import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
-import mediHub_be.dept.entity.Dept;
-import mediHub_be.follow.entity.Follow;
 import mediHub_be.follow.repository.FollowRepository;
 import mediHub_be.user.dto.UserResponseDTO;
 import mediHub_be.user.dto.UserSearchDTO;
@@ -166,12 +164,28 @@ public class UserService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
     }
 
+    public boolean isDoctor(Long userSeq) {
+        User user = userRepository.findByUserSeq(userSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+
+        if ("진료과".equals(user.getPart().getDept().getDeptName())) {
+            return true;
+        }
+        return false;
+    }
+
+    // userSeqs로 Users 조회 (한번에 여러 사용자 정보 조회)
+    public List<User> findUsersBySeqs(List<Long> allUserSeqs) {
+        return userRepository.findAllById(allUserSeqs);
+    }
+
     public boolean validateAdmin(User user){
-        return user.getUserAuth().equals(UserAuth.ADMIN);
+        return !user.getUserAuth().equals(UserAuth.ADMIN);
     }
 
     public List<User> findFollowersByUser(User user) {
         return followRepository.findFollowersByUser(user);
     }
+
 }
 

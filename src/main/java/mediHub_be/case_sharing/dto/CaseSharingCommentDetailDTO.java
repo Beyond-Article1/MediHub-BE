@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 @Builder
 public class CaseSharingCommentDetailDTO {
 
+    private Long commentSeq;
+    private String blockId;
+    private String userId;
     private String userName; // 댓글 작성자명
     private String userRankName; //댓글 작성자 직위명
     private String content; // 댓글 내용

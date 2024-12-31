@@ -8,7 +8,6 @@ import java.util.Optional;
 
 public interface PictureRepository extends JpaRepository<Picture, Long> {
 
-    Optional<Picture> findByFlag_FlagSeq(Long flagSeq);
     List<Picture> findAllByFlag_FlagSeq(Long flagSeq);
     List<Picture> findByFlagFlagTypeAndFlagFlagEntitySeq(String flagType, Long flagEntitySeq);
     List<Picture> findByFlagFlagTypeAndFlagFlagEntitySeqAndPictureIsDeletedIsNotNull(String flagType, Long flagEntitySeq);

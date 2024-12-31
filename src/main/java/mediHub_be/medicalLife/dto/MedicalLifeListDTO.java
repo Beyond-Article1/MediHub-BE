@@ -16,9 +16,10 @@ public class MedicalLifeListDTO {
     private Long medicalLifeSeq;
     private Long userSeq;
     private String userName;
-    private String PartSeq;
-    private String DeptSeq;
-    private String medicalLifeName;
+    private Long deptSeq;
+    private String deptName;
+    private Long partSeq;
+    private String partName;
     private String medicalLifeTitle;
     private String medicalLifeContent;
     private Boolean medicalLifeIsDeleted;
