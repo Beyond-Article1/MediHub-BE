@@ -17,6 +17,7 @@ import mediHub_be.user.entity.UserAuth;
 import mediHub_be.user.entity.UserStatus;
 import mediHub_be.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -89,6 +90,7 @@ class AdminUserServiceTest {
         when(user.getUserStatus()).thenReturn(UserStatus.ACTIVE);
     }
 
+    @DisplayName("회원 등록")
     @Test
     void testRegisterUser_Success() throws IOException {
         // given
@@ -127,7 +129,7 @@ class AdminUserServiceTest {
         verify(amazonS3Service, times(1)).upload(profileImage);
     }
 
-
+    @DisplayName("파트 네임 존재하지 않음")
     @Test
     void testRegisterUser_PartNotFound() {
         // given
@@ -144,6 +146,7 @@ class AdminUserServiceTest {
         verify(partRepository, times(1)).findById(999L); // findById 호출 여부 확인
     }
 
+    @DisplayName("패스워드 초기화")
     @Test
     void testInitializePassword_Success() {
         // given
@@ -165,7 +168,7 @@ class AdminUserServiceTest {
         verify(user, times(1)).initializePassword("newEncodedPassword");
     }
 
-
+    @DisplayName("회원 소프트 삭제")
     @Test
     void testDeleteUser_Success() {
         // given
@@ -179,6 +182,7 @@ class AdminUserServiceTest {
         verify(user).markAsDeleted();
     }
 
+    @DisplayName("모든 유저 조회")
     @Test
     void testGetAllUsers_Success() {
         // given

@@ -16,6 +16,7 @@ import mediHub_be.user.dto.UserUpdateRequestDTO;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -70,6 +71,7 @@ class UserServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    @DisplayName("회원 정보 조회")
     @Test
     void testGetUserInfo_Success() {
         // given
@@ -110,7 +112,7 @@ class UserServiceTest {
         verify(flagRepository, times(1)).findByFlagTypeAndFlagEntitySeq("USER", userSeq);
     }
 
-
+    @DisplayName("자기 정보 업데이트")
     @Test
     void testUpdateUser_Success() throws IOException {
         // given
@@ -144,7 +146,7 @@ class UserServiceTest {
     }
 
 
-
+    @DisplayName("모든 회원 조회")
     @Test
     void testGetAllUsers_Success() {
         // given
@@ -179,7 +181,7 @@ class UserServiceTest {
         verify(userRepository, times(1)).findAll();
     }
 
-
+    @DisplayName("유저 찾기 ")
     @Test
     void testFindUser_Success() {
         // given
@@ -194,6 +196,7 @@ class UserServiceTest {
         verify(userRepository, times(1)).findByUserSeq(userSeq);
     }
 
+    @DisplayName("유저를 찾을 수 없습니다.")
     @Test
     void testFindUser_NotFound() {
         // given

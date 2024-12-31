@@ -24,6 +24,7 @@ import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
 import mediHub_be.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -122,6 +123,7 @@ class MedicalLifeServiceTest {
 
     }
 
+    @DisplayName("상세 조회 성공")
     @Test
     void testGetMedicalLifeDetail_Success() {
         // given
@@ -139,6 +141,7 @@ class MedicalLifeServiceTest {
         verify(medicalLifeRepository, times(1)).save(medicalLife);
     }
 
+    @DisplayName("댓글 조회")
     @Test
     void testGetMedicalLifeCommentList_Success() {
         // given
@@ -173,6 +176,7 @@ class MedicalLifeServiceTest {
         verify(commentRepository, times(1)).findByFlag_FlagSeqAndCommentIsDeletedFalse(1L);
     }
 
+    @DisplayName("댓글 삭제")
     @Test
     void testDeleteMedicalLifeComment_Success() {
         // given
@@ -198,6 +202,7 @@ class MedicalLifeServiceTest {
         verify(commentRepository, times(1)).save(comment);
     }
 
+    @DisplayName("북마크")
     @Test
     void testIsBookmarked_Success() {
         // given
@@ -216,6 +221,7 @@ class MedicalLifeServiceTest {
         verify(bookmarkService, times(1)).isBookmarked("MEDICAL_LIFE", medicalLifeSeq, userId);
     }
 
+    @DisplayName("북마크 등록")
     @Test
     void testToggleBookmark_Success() {
         // given
@@ -234,6 +240,7 @@ class MedicalLifeServiceTest {
         verify(bookmarkService, times(1)).toggleBookmark("MEDICAL_LIFE", medicalLifeSeq, userId);
     }
 
+    @DisplayName("상위 3개 조회")
     @Test
     void testGetTop3MedicalLifeByViewCount_Success() {
         // given
@@ -253,6 +260,7 @@ class MedicalLifeServiceTest {
                 .findTop3ByMedicalLifeIsDeletedFalseOrderByMedicalLifeViewCountDesc();
     }
 
+    @DisplayName("북마크 한 메디컬 라이프 조회")
     @Test
     void testGetBookMarkedMedicalLifeList_Success() {
 
@@ -282,6 +290,7 @@ class MedicalLifeServiceTest {
         verify(medicalLifeRepository, times(1)).findAllById(List.of(1L));
     }
 
+    @DisplayName("메디컬 라이프 조회")
     @Test
     void testGetMedicalLifeList_Success() {
 
