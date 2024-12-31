@@ -3,17 +3,23 @@ package mediHub_be.src.test.cp.service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import mediHub_be.board.Util.ViewCountManager;
+import mediHub_be.board.entity.Flag;
 import mediHub_be.board.service.BookmarkService;
+import mediHub_be.board.service.FlagService;
 import mediHub_be.board.service.KeywordService;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.cp.dto.CpOpinionDTO;
+import mediHub_be.cp.dto.RequestCpOpinionDTO;
 import mediHub_be.cp.dto.ResponseCpOpinionDTO;
 import mediHub_be.cp.entity.CpOpinion;
 import mediHub_be.cp.repository.CpOpinionRepository;
 import mediHub_be.cp.repository.CpOpinionVoteRepository;
 import mediHub_be.cp.service.CpOpinionService;
 import mediHub_be.security.util.SecurityUtil;
+import mediHub_be.user.entity.UserAuth;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,6 +60,9 @@ class CpOpinionServiceTest {
     private KeywordService keywordService;
 
     @Mock
+    private FlagService flagService;
+
+    @Mock
     private ViewCountManager viewCountManager;
 
     private static List<ResponseCpOpinionDTO> activeCpOpinionDtoList;
@@ -60,7 +70,7 @@ class CpOpinionServiceTest {
     private static CpOpinion cpOpinion;
 
     @BeforeEach
-    public void setUpBeforeAll() {
+    public void setUpBeforeEach() {
         activeCpOpinionDtoList = new ArrayList<>();
         deletedCpOpinionDtoList = new ArrayList<>(); // 삭제된 데이터 리스트 초기화
 
@@ -366,6 +376,114 @@ class CpOpinionServiceTest {
             });
             assertEquals(ErrorCode.NOT_FOUND_CP_OPINION, thrown.getErrorCode());
             Mockito.verify(cpOpinionRepository).findById(cpOpinionSeq);
+        }
+    }
+
+    @Test
+    @DisplayName("CP 의견 생성 테스트 (성공)")
+    void createCpOpinion_Success() {
+        // Given
+        long cpVersionSeq = 1L;
+        long cpOpinionLocationSeq = 1L;
+        RequestCpOpinionDTO mockedRequestCpOpinionDto = RequestCpOpinionDTO.builder()
+                .cpOpinionContent("내용")
+                .keywordList(null)
+                .build();
+
+        Flag mockedFlag = Flag.builder()
+                .flagSeq(1L)
+                .flagType(CpOpinionService.CP_OPINION_BOARD_FLAG)
+                .flagEntitySeq(1L)
+                .build();
+
+        Mockito.when(cpOpinionRepository.save(Mockito.any()))
+                .thenReturn(cpOpinion);
+
+        Mockito.when(flagService.createFlag(Mockito.anyString(), Mockito.anyLong()))
+                .thenReturn(mockedFlag);
+
+        Mockito.when(pictureService.replaceBase64WithUrls(Mockito.anyString(), Mockito.anyString(), Mockito.anyLong()))
+                .thenReturn("내용");
+
+        // When
+        try (MockedStatic<SecurityUtil> mockedSecurityUtil = Mockito.mockStatic(SecurityUtil.class)) {
+
+            mockedSecurityUtil.when(SecurityUtil::getCurrentUserSeq)
+                    .thenReturn(1L);
+
+            CpOpinionDTO result = cpOpinionService.createCpOpinion(cpVersionSeq, cpOpinionLocationSeq, mockedRequestCpOpinionDto);
+
+            // Then
+            assertNotNull(result);
+            assertEquals(cpOpinionLocationSeq, result.getCpOpinionLocationSeq());
+
+            Mockito.verify(cpOpinionRepository, Mockito.times(2)).save(Mockito.any());
+        }
+    }
+
+    @Test
+    @DisplayName("CP 의견 수정 테스트 (성공)")
+    void updateCpOpinionByCpOpinionSeq_Success() {
+        // Given
+        // 파라미터 설정
+        long cpOpinionSeq = 1L;
+        RequestCpOpinionDTO mockedRequestCpOpinionDto = RequestCpOpinionDTO.builder()
+                .cpOpinionContent("내용")
+                .keywordList(null)
+                .build();
+
+        // 유저 정보 설정
+        long currentUserSeq = 1L;
+        String currentUserAuth = UserAuth.ADMIN.name();
+
+        // 거짓 객체 설정
+        Flag mockedFlag = Flag.builder()
+                .flagSeq(1L)
+                .flagType(CpOpinionService.CP_OPINION_BOARD_FLAG)
+                .flagEntitySeq(1L)
+                .build();
+
+        Mockito.when(cpOpinionRepository.findById(Mockito.anyLong()))
+                .thenReturn(java.util.Optional.of(cpOpinion));
+
+        Mockito.when(cpOpinionRepository.save(Mockito.any()))
+                .thenReturn(cpOpinion);
+
+        Mockito.when(flagService.findFlag(Mockito.anyString(), Mockito.anyLong()))
+                .thenReturn(Optional.of(mockedFlag));
+
+        Mockito.doNothing().when(pictureService).deletePictures(Mockito.any());
+
+        Mockito.when(pictureService.replaceBase64WithUrls(
+                        Mockito.anyString(),
+                        Mockito.anyString(),
+                        Mockito.anyLong()))
+                .thenReturn(mockedRequestCpOpinionDto.getCpOpinionContent());
+
+
+        // When
+        try (MockedStatic<SecurityUtil> mockedSecurityUtil = Mockito.mockStatic(SecurityUtil.class)) {
+
+            // 회원 시퀀스 요청 설정
+            mockedSecurityUtil.when(SecurityUtil::getCurrentUserSeq)
+                    .thenReturn(currentUserSeq);
+
+            // 회원 권한 요청 설정
+            mockedSecurityUtil.when(SecurityUtil::getCurrentUserAuthorities)
+                    .thenReturn(currentUserAuth);
+
+            CpOpinionDTO result = cpOpinionService.updateCpOpinionByCpOpinionSeq(cpOpinionSeq, mockedRequestCpOpinionDto);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.getCpOpinionContent()).isEqualTo("내용");
+
+            // 메서드 호출 여부 검증
+            Mockito.verify(cpOpinionRepository).findById(cpOpinionSeq);
+            Mockito.verify(cpOpinionRepository, Mockito.times(3)).save(Mockito.any());
+            Mockito.verify(flagService).findFlag(Mockito.anyString(), Mockito.anyLong());
+            Mockito.verify(pictureService).deletePictures(Mockito.any());
+            Mockito.verify(pictureService).replaceBase64WithUrls(Mockito.anyString(), Mockito.anyString(), Mockito.anyLong());
         }
     }
 }
