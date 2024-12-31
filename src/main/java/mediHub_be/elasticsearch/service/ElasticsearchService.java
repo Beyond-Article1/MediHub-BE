@@ -1,59 +1,63 @@
 package mediHub_be.elasticsearch.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mediHub_be.anonymousBoard.entity.AnonymousBoard;
 import mediHub_be.anonymousBoard.repository.AnonymousBoardRepository;
 import mediHub_be.board.entity.Keyword;
-import mediHub_be.board.repository.KeywordRepository;
+import mediHub_be.board.service.KeywordService;
 import mediHub_be.case_sharing.entity.CaseSharing;
 import mediHub_be.case_sharing.repository.CaseSharingRepository;
-import mediHub_be.cp.entity.Cp;
-import mediHub_be.cp.repository.CpRepository;
+import mediHub_be.cp.dto.ResponseCpDTO;
+import mediHub_be.cp.repository.CpVersionRepository;
 import mediHub_be.elasticsearch.document.*;
 import mediHub_be.elasticsearch.repository.*;
 import mediHub_be.journal.entity.Journal;
 import mediHub_be.journal.repository.JournalRepository;
 import mediHub_be.medicalLife.entity.MedicalLife;
 import mediHub_be.medicalLife.repository.MedicalLifeRepository;
-import mediHub_be.user.entity.User;
-import mediHub_be.user.repository.UserRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
+@ConditionalOnProperty(
+        name = "spring.data.elasticsearch.repositories.enabled",
+        havingValue = "true",
+        matchIfMissing = false
+)
 public class ElasticsearchService {
 
     private final AnonymousBoardElasticRepository anonymousBoardElasticRepository;
     private final AnonymousBoardRepository anonymousBoardRepository;
-    private final CaseSharingFindRepository caseSharingFindRepository;
+    private final CaseSharingElasticRepository caseSharingElasticRepository;
     private final CaseSharingRepository caseSharingRepository;
-    private final CpFindRepository cpFindRepository;
-    private final CpRepository cpRepository;
-    private final JournalFindRepository journalFindRepository;
+    private final CpElasticRepository cpElasticRepository;
+    private final CpVersionRepository cpVersionRepository;
+    private final JournalElasticRepository journalElasticRepository;
     private final JournalRepository journalRepository;
-    private final MedicalLifeFindRepository medicalLifeFindRepository;
+    private final MedicalLifeElasticRepository medicalLifeElasticRepository;
     private final MedicalLifeRepository medicalLifeRepository;
-    private final UserFindRepository userFindRepository;
-    private final UserRepository userRepository;
-    private final KeywordRepository keywordRepository;
+    private final KeywordService keywordService;
 
     public List<AnonymousBoardDocument> findAnonymousBoard(String findAnonymousBoardTitle) {
 
-        return anonymousBoardElasticRepository.findByKeywordInField(
-                "anonymous_board_title",
-                findAnonymousBoardTitle
-        );
+        return anonymousBoardElasticRepository.findByAnonymousBoardTitle(findAnonymousBoardTitle);
     }
 
     public List<String> queryAnonymousBoard(String queryAnonymousBoardTitle) {
 
         return anonymousBoardElasticRepository
-                .findByKeywordInField("anonymous_board_title", queryAnonymousBoardTitle).stream()
+                .findAnonymousBoardDocumentByKeywordInField(
+                        "anonymous_board_title",
+                        queryAnonymousBoardTitle
+                ).stream()
                 .map(AnonymousBoardDocument::getAnonymousBoardTitle)
                 .toList();
     }
@@ -69,12 +73,12 @@ public class ElasticsearchService {
         List<AnonymousBoardDocument> anonymousBoardDocumentList = anonymousBoardList.stream()
                 .map(anonymousBoard -> {
 
-                    List<Keyword> keywords = keywordRepository.findByFlagTypeAndEntitySeq(
+                    List<Keyword> keywordList = keywordService.getKeywordList(
                             "ANONYMOUS_BOARD",
                             anonymousBoard.getAnonymousBoardSeq()
                     );
 
-                    return AnonymousBoardDocument.from(anonymousBoard, keywords);
+                    return AnonymousBoardDocument.from(anonymousBoard, keywordList);
                 })
                 .collect(Collectors.toList());
 
@@ -82,10 +86,20 @@ public class ElasticsearchService {
         anonymousBoardElasticRepository.saveAll(anonymousBoardDocumentList);
     }
 
-    // 엘라스틱서치로 케이스 공유 검색
     public List<CaseSharingDocument> findCaseSharing(String findCaseSharingTitle) {
 
-        return caseSharingFindRepository.findByCaseSharingTitle(findCaseSharingTitle);
+        return caseSharingElasticRepository.findByCaseSharingTitle(findCaseSharingTitle);
+    }
+
+    public List<String> queryCaseSharing(String queryCaseSharingTitle) {
+
+        return caseSharingElasticRepository
+                .findCaseSharingDocumentByKeywordInField(
+                        "case_sharing_title",
+                        queryCaseSharingTitle
+                ).stream()
+                .map(CaseSharingDocument::getCaseSharingTitle)
+                .toList();
     }
 
     // DB 데이터를 엘라스틱서치에 동기화
@@ -97,17 +111,35 @@ public class ElasticsearchService {
 
         // CaseSharingDocument로 변환
         List<CaseSharingDocument> caseSharingDocumentList = caseSharingList.stream()
-                .map(CaseSharingDocument::from)
+                .map(caseSharing -> {
+
+                    List<Keyword> keywordList = keywordService.getKeywordList(
+                            "CASE_SHARING",
+                            caseSharing.getCaseSharingSeq()
+                    );
+
+                    return CaseSharingDocument.from(caseSharing, keywordList);
+                })
                 .collect(Collectors.toList());
 
         // 엘라스틱서치에 저장
-        caseSharingFindRepository.saveAll(caseSharingDocumentList);
+        caseSharingElasticRepository.saveAll(caseSharingDocumentList);
     }
 
-    // 엘라스틱서치로 CP 검색
     public List<CpDocument> findCp(String findCpName) {
 
-        return cpFindRepository.findByCpName(findCpName);
+        return cpElasticRepository.findByCpName(findCpName);
+    }
+
+    public List<String> queryCp(String queryCpName) {
+
+        return cpElasticRepository
+                .findCpDocumentByKeywordInField(
+                        "cp_name",
+                        queryCpName
+                ).stream()
+                .map(CpDocument::getCpName)
+                .toList();
     }
 
     // DB 데이터를 엘라스틱서치에 동기화
@@ -115,21 +147,31 @@ public class ElasticsearchService {
     public void indexCp() {
 
         // DB에서 모든 CP 데이터 조회
-        List<Cp> cpList = cpRepository.findAll();
+        List<ResponseCpDTO> responseCpDTOList = cpVersionRepository.findLatestCp();
 
         // CpDocument로 변환
-        List<CpDocument> cpDocumentList = cpList.stream()
+        List<CpDocument> cpDocumentList = responseCpDTOList.stream()
                 .map(CpDocument::from)
-                .collect(Collectors.toList());
+                .toList();
 
         // 엘라스틱서치에 저장
-        cpFindRepository.saveAll(cpDocumentList);
+        cpElasticRepository.saveAll(cpDocumentList);
     }
 
-    // 엘라스틱서치로 논문 검색
     public List<JournalDocument> findJournal(String findJournalKoreanTitle) {
 
-        return journalFindRepository.findByJournalKoreanTitle(findJournalKoreanTitle);
+        return journalElasticRepository.findByJournalKoreanTitle(findJournalKoreanTitle);
+    }
+
+    public List<String> queryJournal(String queryJournalKoreanTitle) {
+
+        return journalElasticRepository
+                .findJournalDocumentByKeywordInField(
+                        "journal_korean_title",
+                        queryJournalKoreanTitle
+                ).stream()
+                .map(JournalDocument::getJournalKoreanTitle)
+                .toList();
     }
 
     // DB 데이터를 엘라스틱서치에 동기화
@@ -142,16 +184,26 @@ public class ElasticsearchService {
         // JournalDocument로 변환
         List<JournalDocument> journalDocumentList = journalList.stream()
                 .map(JournalDocument::from)
-                .collect(Collectors.toList());
+                .toList();
 
         // 엘라스틱서치에 저장
-        journalFindRepository.saveAll(journalDocumentList);
+        journalElasticRepository.saveAll(journalDocumentList);
     }
 
-    // 엘라스틱서치로 메디컬 라이프 검색
     public List<MedicalLifeDocument> findMedicalLife(String findMedicalLifeTitle) {
 
-        return medicalLifeFindRepository.findByMedicalLifeTitle(findMedicalLifeTitle);
+        return medicalLifeElasticRepository.findByMedicalLifeTitle(findMedicalLifeTitle);
+    }
+
+    public List<String> queryMedicalLife(String queryMedicalLifeTitle) {
+
+        return medicalLifeElasticRepository
+                .findMedicalLifeDocumentByKeywordInField(
+                        "medical_life_title",
+                        queryMedicalLifeTitle
+                ).stream()
+                .map(MedicalLifeDocument::getMedicalLifeTitle)
+                .toList();
     }
 
     // DB 데이터를 엘라스틱서치에 동기화
@@ -163,32 +215,18 @@ public class ElasticsearchService {
 
         // MedicalLifeDocument로 변환
         List<MedicalLifeDocument> medicalLifeDocumentList = medicalLifeList.stream()
-                .map(MedicalLifeDocument::from)
+                .map(medicalLife -> {
+
+                    List<Keyword> keywordList = keywordService.getKeywordList(
+                            "MEDICAL_LIFE",
+                            medicalLife.getMedicalLifeSeq()
+                    );
+
+                    return MedicalLifeDocument.from(medicalLife, keywordList);
+                })
                 .collect(Collectors.toList());
 
         // 엘라스틱서치에 저장
-        medicalLifeFindRepository.saveAll(medicalLifeDocumentList);
-    }
-
-    // 엘라스틱서치로 직원 검색
-    public List<UserDocument> findUser(String findUserName) {
-
-        return userFindRepository.findByUserName(findUserName);
-    }
-
-    // DB 데이터를 엘라스틱서치에 동기화
-    @Transactional
-    public void indexUser() {
-
-        // DB에서 모든 직원 데이터 조회
-        List<User> userList = userRepository.findAll();
-
-        // UserDocument로 변환
-        List<UserDocument> userDocumentList = userList.stream()
-                .map(UserDocument::from)
-                .collect(Collectors.toList());
-
-        // 엘라스틱서치에 저장
-        userFindRepository.saveAll(userDocumentList);
+        medicalLifeElasticRepository.saveAll(medicalLifeDocumentList);
     }
 }

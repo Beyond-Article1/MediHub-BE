@@ -1,0 +1,20 @@
+{
+  "properties": {
+    "cp_name": {
+      "type": "text",
+      "analyzer": "korean",
+      "search_analyzer": "korean",
+      "fields": {
+        "prefix": {
+          "type": "text",
+          "analyzer": "prefix_analyzer",
+          "search_analyzer": "korean"
+        },
+        "ngram": {
+          "type": "text",
+          "analyzer": "korean"
+        }
+      }
+    }
+  }
+}
