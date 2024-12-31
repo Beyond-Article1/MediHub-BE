@@ -201,10 +201,13 @@ public class AdminUserService {
                             .userEmail(user.getUserEmail())
                             .userPhone(user.getUserPhone())
                             .rankingName(user.getRanking() != null ? user.getRanking().getRankingName() : null)
+                            .rankingSeq(user.getRanking() != null ? user.getRanking().getRankingSeq() : null)
                             .partName(user.getPart() != null ? user.getPart().getPartName() : null)
+                            .partSeq(user.getPart() != null ? user.getPart().getPartSeq() : null)
                             .deptName(user.getPart() != null && user.getPart().getDept() != null
                                     ? user.getPart().getDept().getDeptName() : null)
                             .profileImage(profileImage)
+                            .userStatus(user.getUserStatus().name())
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -239,7 +242,9 @@ public class AdminUserService {
                 .userAuth(UserAuth.valueOf(user.getUserAuth().name()))
                 .userStatus(UserStatus.valueOf(user.getUserStatus().name()))
                 .rankingName(user.getRanking().getRankingName())
+                .rankingSeq(user.getRanking().getRankingSeq())
                 .partName(user.getPart().getPartName())
+                .partSeq(user.getPart().getPartSeq())
                 .deptSeq(user.getPart().getDept().getDeptSeq())
                 .profileImage(profileImage)
                 .build();

@@ -222,10 +222,10 @@ public class MedicalLifeController {
 
     @Operation(summary = "내가 북마크 한 메디컬 라이프 목록 조회", description = "내가 북마크 한, 삭제되지 않은 메디컬 라이프 목록 조회")
     @GetMapping("/mypage/bookmark")
-    public ResponseEntity<ApiResponse<List<MedicalLifeListDTO>>> getBookMarkedMedicalLifeList() {
+    public ResponseEntity<ApiResponse<List<MedicalLifeBookMarkDTO>>> getBookMarkedMedicalLifeList() {
         Long userSeq = SecurityUtil.getCurrentUserSeq();
 
-        List<MedicalLifeListDTO> medicalLifeListDTOList = medicalLifeService.getBookMarkedMedicalLifeList(userSeq);
+        List<MedicalLifeBookMarkDTO> medicalLifeListDTOList = medicalLifeService.getBookMarkedMedicalLifeList(userSeq);
 
         return ResponseEntity.ok(ApiResponse.ok(medicalLifeListDTOList));
     }
