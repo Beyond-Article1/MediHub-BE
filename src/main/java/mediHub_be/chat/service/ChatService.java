@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.chat.dto.ChatMessageDTO;
+import mediHub_be.chat.dto.ResponseAttachFileDTO;
 import mediHub_be.chat.dto.ResponseChatMessageDTO;
 import mediHub_be.chat.entity.ChatMessage;
 import mediHub_be.chat.repository.ChatMessageRepository;
 import mediHub_be.chat.repository.ChatRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
+import mediHub_be.common.utils.TimeFormatUtil;
 import mediHub_be.config.amazonS3.AmazonS3Service;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.repository.UserRepository;
@@ -36,6 +38,7 @@ public class ChatService {
     private final UserRepository userRepository;
     private final PictureService pictureService;
     private final AmazonS3Service amazonS3Service;
+    private final KafkaProducerService kafkaProducerService;
 
     /* 채팅 메시지 저장 */
     public ResponseChatMessageDTO saveMessage(ChatMessageDTO message) {
@@ -135,9 +138,13 @@ public class ChatService {
     public void deleteMessage(String messageId) {
         ChatMessage message = chatMessageRepository.findById(messageId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CHATMESSAGE));
-        // 논리삭제
+
+        // 논리 삭제
         message.setIsDeleted(true);
         chatMessageRepository.save(message);
+
+        // Kafka로 삭제 이벤트 전송
+        kafkaProducerService.sendDeleteMessage("chat-topic", messageId, message.getChatroomSeq());
     }
 
     /* 특정 채팅방의 메시지 조회 */
@@ -180,7 +187,7 @@ public class ChatService {
                             .messageSeq(message.getId())
                             .chatroomSeq(message.getChatroomSeq())
                             .senderUserSeq(message.getSenderUserSeq())
-                            .senderUserName(senderUser != null ? senderUser.getUserName() : "System") // 사용자 이름 추가
+                            .senderUserName(senderUser != null ? senderUser.getUserName() : "Unknown") // 사용자 이름 추가
                             .senderUserProfileUrl(profileUrl != null ? profileUrl : "System")
                             .type(message.getType())
                             .message(message.getMessage())
@@ -192,4 +199,32 @@ public class ChatService {
 
     }
 
+    /* 사용자별 첨부파일 목록 조회 */
+    public List<ResponseAttachFileDTO> getFilesByUserSeq(Long userSeq) {
+        // 사용자가 참여 중인 모든 채팅방 chatroomSeq, joinedAt 조회
+        List<ChatRepository.ChatroomJoinInfo> joinInfos = chatRepository.findJoinInfoByUserSeq(userSeq);
+
+        // isDeleted = false && createdAt > joinedAt 인 첨부파일 메시지 조회
+        List<ChatMessage> messagesWithAttachments = joinInfos.stream()
+                .flatMap(joinInfo ->
+                        chatMessageRepository.findByChatroomSeqAndCreatedAtAfterAndIsDeletedFalseAndAttachmentIsNotNull
+                                (joinInfo.getChatroomSeq(), joinInfo.getJoinedAt()).stream())
+                .collect(Collectors.toList());
+
+        // ChatMessage -> ResponseAttachFileDTO 반환
+        return messagesWithAttachments.stream()
+                .map(message -> {
+                    User senderUser = userService.findUser(message.getSenderUserSeq());
+
+                    return ResponseAttachFileDTO.builder()
+                            .messageSeq(message.getId())
+                            .senderUserSeq(senderUser.getUserSeq())
+                            .senderUserName(senderUser.getUserName())
+                            .rankingName(senderUser.getRanking().getRankingName())
+                            .type(message.getType())
+                            .createdAt(TimeFormatUtil.yearAndMonthDay(message.getCreatedAt()).format(TimeFormatUtil.yMDFormatter))
+                            .attachment(message.getAttachment())
+                            .build();
+                }).collect(Collectors.toList());
+    }
 }
