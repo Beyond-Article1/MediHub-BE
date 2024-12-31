@@ -46,13 +46,6 @@ public class Comment extends BaseFullEntity {
                 .build();
     }
 
-    public void update(User user, Flag flag, String commentContent) {
-
-        this.user = user;
-        this.flag = flag;
-        this.commentContent = commentContent;
-    }
-
     public void updateContent(Flag flag, String commentContent) {
 
         this.flag = flag;

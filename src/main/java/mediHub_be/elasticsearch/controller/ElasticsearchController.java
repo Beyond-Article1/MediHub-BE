@@ -3,8 +3,10 @@ package mediHub_be.elasticsearch.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import mediHub_be.common.response.ApiResponse;
 import mediHub_be.elasticsearch.document.*;
 import mediHub_be.elasticsearch.service.ElasticsearchService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,27 +15,32 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "find")
-@Tag(name = "Elasticsearch", description = "엘라스틱서치 조회 API")
+@Tag(name = "엘라스틱서치", description = "엘라스틱서치 조회 API")
+@ConditionalOnProperty(
+        name = "spring.data.elasticsearch.repositories.enabled",
+        havingValue = "true",
+        matchIfMissing = false
+)
 public class ElasticsearchController {
 
     private final ElasticsearchService elasticsearchService;
 
     @GetMapping("/anonymousBoard/{findAnonymousBoardTitle}")
     @Operation(summary = "익명 게시판 제목 검색", description = "엘라스틱서치로 익명 게시판 제목 검색")
-    public ResponseEntity<List<AnonymousBoardDocument>> findAnonymousBoard(
+    public ResponseEntity<ApiResponse<List<AnonymousBoardDocument>>> findAnonymousBoard(
             @PathVariable String findAnonymousBoardTitle
     ) {
 
-        return ResponseEntity.ok(elasticsearchService.findAnonymousBoard(findAnonymousBoardTitle));
+        return ResponseEntity.ok(ApiResponse.ok(elasticsearchService.findAnonymousBoard(findAnonymousBoardTitle)));
     }
 
     @GetMapping("/anonymousBoard/autoComplete/{queryAnonymousBoardTitle}")
     @Operation(summary = "익명 게시판 검색어 자동 완성", description = "엘라스틱서치로 익명 게시판 검색어 자동 완성")
-    public ResponseEntity<List<String>> queryAnonymousBoard(
+    public ResponseEntity<ApiResponse<List<String>>> queryAnonymousBoard(
             @PathVariable String queryAnonymousBoardTitle
     ) {
 
-        return ResponseEntity.ok(elasticsearchService.queryAnonymousBoard(queryAnonymousBoardTitle));
+        return ResponseEntity.ok(ApiResponse.ok(elasticsearchService.queryAnonymousBoard(queryAnonymousBoardTitle)));
     }
 
     @PostMapping("/index/anonymousBoard")
@@ -47,9 +54,20 @@ public class ElasticsearchController {
 
     @GetMapping("/caseSharing/{findCaseSharingTitle}")
     @Operation(summary = "케이스 공유 제목 검색", description = "엘라스틱서치로 케이스 공유 제목 검색")
-    public ResponseEntity<List<CaseSharingDocument>> findCaseSharing(@PathVariable String findCaseSharingTitle) {
+    public ResponseEntity<ApiResponse<List<CaseSharingDocument>>> findCaseSharing(
+            @PathVariable String findCaseSharingTitle
+    ) {
 
-        return ResponseEntity.ok(elasticsearchService.findCaseSharing(findCaseSharingTitle));
+        return ResponseEntity.ok(ApiResponse.ok(elasticsearchService.findCaseSharing(findCaseSharingTitle)));
+    }
+
+    @GetMapping("/caseSharing/autoComplete/{queryCaseSharingTitle}")
+    @Operation(summary = "케이스 공유 검색어 자동 완성", description = "엘라스틱서치로 케이스 공유 검색어 자동 완성")
+    public ResponseEntity<ApiResponse<List<String>>> queryCaseSharing(
+            @PathVariable String queryCaseSharingTitle
+    ) {
+
+        return ResponseEntity.ok(ApiResponse.ok(elasticsearchService.queryCaseSharing(queryCaseSharingTitle)));
     }
 
     @PostMapping("/index/caseSharing")
@@ -62,10 +80,21 @@ public class ElasticsearchController {
     }
 
     @GetMapping("/cp/{findCpName}")
-    @Operation(summary = "CP cp명 검색", description = "엘라스틱서치로 CP cp명 검색")
-    public ResponseEntity<List<CpDocument>> findCp(@PathVariable String findCpName) {
+    @Operation(summary = "CP 제목 검색", description = "엘라스틱서치로 CP 제목 검색")
+    public ResponseEntity<ApiResponse<List<CpDocument>>> findCp(
+            @PathVariable String findCpName
+    ) {
 
-        return ResponseEntity.ok(elasticsearchService.findCp(findCpName));
+        return ResponseEntity.ok(ApiResponse.ok(elasticsearchService.findCp(findCpName)));
+    }
+
+    @GetMapping("/cp/autoComplete/{queryCpName}")
+    @Operation(summary = "CP 검색어 자동 완성", description = "엘라스틱서치로 CP 검색어 자동 완성")
+    public ResponseEntity<ApiResponse<List<String>>> queryCp(
+            @PathVariable String queryCpName
+    ) {
+
+        return ResponseEntity.ok(ApiResponse.ok(elasticsearchService.queryCp(queryCpName)));
     }
 
     @PostMapping("/index/cp")
@@ -79,9 +108,20 @@ public class ElasticsearchController {
 
     @GetMapping("/journal/{findJournalKoreanTitle}")
     @Operation(summary = "논문 한글 제목 검색", description = "엘라스틱서치로 논문 한글 제목 검색")
-    public ResponseEntity<List<JournalDocument>> findJournal(@PathVariable String findJournalKoreanTitle) {
+    public ResponseEntity<ApiResponse<List<JournalDocument>>> findJournal(
+            @PathVariable String findJournalKoreanTitle
+    ) {
 
-        return ResponseEntity.ok(elasticsearchService.findJournal(findJournalKoreanTitle));
+        return ResponseEntity.ok(ApiResponse.ok(elasticsearchService.findJournal(findJournalKoreanTitle)));
+    }
+
+    @GetMapping("/journal/autoComplete/{queryJournalKoreanTitle}")
+    @Operation(summary = "논문 검색어 자동 완성", description = "엘라스틱서치로 논문 검색어 자동 완성")
+    public ResponseEntity<ApiResponse<List<String>>> queryJournal(
+            @PathVariable String queryJournalKoreanTitle
+    ) {
+
+        return ResponseEntity.ok(ApiResponse.ok(elasticsearchService.queryJournal(queryJournalKoreanTitle)));
     }
 
     @PostMapping("/index/journal")
@@ -95,9 +135,20 @@ public class ElasticsearchController {
 
     @GetMapping("/medicalLife/{findMedicalLifeTitle}")
     @Operation(summary = "메디컬 라이프 제목 검색", description = "엘라스틱서치로 메디컬 라이프 제목 검색")
-    public ResponseEntity<List<MedicalLifeDocument>> findMedicalLife(@PathVariable String findMedicalLifeTitle) {
+    public ResponseEntity<ApiResponse<List<MedicalLifeDocument>>> findMedicalLife(
+            @PathVariable String findMedicalLifeTitle
+    ) {
 
-        return ResponseEntity.ok(elasticsearchService.findMedicalLife(findMedicalLifeTitle));
+        return ResponseEntity.ok(ApiResponse.ok(elasticsearchService.findMedicalLife(findMedicalLifeTitle)));
+    }
+
+    @GetMapping("/medicalLife/autoComplete/{queryMedicalLifeTitle}")
+    @Operation(summary = "메디컬 라이프 검색어 자동 완성", description = "엘라스틱서치로 메디컬 라이프 검색어 자동 완성")
+    public ResponseEntity<ApiResponse<List<String>>> queryMedicalLife(
+            @PathVariable String queryMedicalLifeTitle
+    ) {
+
+        return ResponseEntity.ok(ApiResponse.ok(elasticsearchService.queryMedicalLife(queryMedicalLifeTitle)));
     }
 
     @PostMapping("/index/medicalLife")
@@ -105,22 +156,6 @@ public class ElasticsearchController {
     public ResponseEntity<Void> indexMedicalLife() {
 
         elasticsearchService.indexMedicalLife();
-
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/user/{findUserName}")
-    @Operation(summary = "직원 이름 검색", description = "엘라스틱서치로 직원 이름 검색")
-    public ResponseEntity<List<UserDocument>> findUser(@PathVariable String findUserName) {
-
-        return ResponseEntity.ok(elasticsearchService.findUser(findUserName));
-    }
-
-    @PostMapping("/index/user")
-    @Operation(summary = "직원 엘라스틱서치 인덱스 생성", description = "직원 DB 데이터를 엘라스틱서치에 동기화")
-    public ResponseEntity<Void> indexUser() {
-
-        elasticsearchService.indexUser();
 
         return ResponseEntity.ok().build();
     }

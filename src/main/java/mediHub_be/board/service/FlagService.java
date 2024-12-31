@@ -25,6 +25,7 @@ public class FlagService {
     // Flag 조회 (존재하지 않으면 빈 Optional 반환)
     @Transactional(readOnly = true)
     public Optional<Flag> findFlag(String flagType, Long entitySeq) {
+
         return flagRepository.findByFlagTypeAndFlagEntitySeq(flagType, entitySeq);
     }
 
@@ -40,6 +41,7 @@ public class FlagService {
     }
 
     public void deleteFlag(Long flagSeq) {
+
         flagRepository.deleteById(flagSeq);
     }
 }
