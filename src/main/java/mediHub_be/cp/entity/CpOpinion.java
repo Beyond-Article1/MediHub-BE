@@ -23,7 +23,7 @@ public class CpOpinion extends BaseFullEntity {
     @Column
     private long cpOpinionLocationSeq;      // cp 의견 위치 번호
 
-    @Column
+    @Column(columnDefinition = "LONGTEXT")
     private String cpOpinionContent;        // cp 의견 내용
 
     @Column

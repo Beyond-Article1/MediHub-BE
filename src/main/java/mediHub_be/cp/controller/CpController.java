@@ -96,35 +96,36 @@ public class CpController {
             description = "주어진 CP 버전 시퀀스를 사용하여 CP를 조회합니다.")
     public ResponseEntity<ApiResponse<ResponseCpDTO>> getCpByCpVersionSeq(
             @PathVariable long cpVersionSeq,
+            @RequestParam(required = false) String cpVersion,
             HttpServletRequest request,
             HttpServletResponse response) {
-        logger.info("버전 시퀀스: {}로 CP를 가져오는 요청을 받았습니다.", cpVersionSeq);
-
-        try {
-            // Cp 버전을 통하여 Cp 를 가져오는 서비스 호출
-            ResponseCpDTO cpList = cpService.getCpByCpVersionSeq(cpVersionSeq, request, response);
-
-            if (cpList == null) {
-                logger.warn("버전 시퀀스 '{}'에 대한 CP 레코드가 없습니다.", cpVersionSeq);
-                return ResponseEntity.ok(ApiResponse.ok(null)); // 빈 응답
-            }
-
-            logger.info("버전 시퀀스로 성공적으로 CP를 가져왔습니다: {}", cpList);
-            // 성공적인 응답 반환
-            return ResponseEntity.ok(ApiResponse.ok(cpList));
-        } catch (CustomException e) {
-            logger.error("버전 시퀀스로 CP를 가져오는 동안 CustomException이 발생했습니다: {}", e.getMessage(), e);
-            // 예외 발생 시 실패 응답 반환
-            return ResponseEntity
-                    .status(e.getErrorCode().getHttpStatus())
-                    .body(ApiResponse.fail(e));
-        } catch (Exception e) {
-            logger.error("버전 시퀀스로 CP를 가져오는 동안 예기치 않은 오류가 발생했습니다: {}", e.getMessage(), e);
-            // 일반 예외 처리
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.fail(new CustomException(ErrorCode.INTERNAL_SERVER_ERROR)));
+        if (cpVersion != null) {
+            logger.info("{}번 시퀀스의 CP 버전의 {}버전을 조회하는 요청을 받았습니다.", cpVersionSeq, cpVersion);
+            return findCpByCpVersion(cpVersionSeq, cpVersion, request, response);
+        } else {
+            logger.info("{}번 시퀀스의 CP 버전을 조회하는 요청을 받았습니다.", cpVersionSeq);
+            return findCpByCpVersionSeq(cpVersionSeq, request, response);
         }
+    }
+
+    public ResponseEntity<ApiResponse<ResponseCpDTO>> findCpByCpVersion(
+            long cpVersionSeq,
+            String cpVersion,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        ResponseCpDTO dto = cpService.findCpByCpVersion(cpVersionSeq, cpVersion, request, response);
+
+        return ResponseEntity.ok(ApiResponse.ok(dto));
+    }
+
+    public ResponseEntity<ApiResponse<ResponseCpDTO>> findCpByCpVersionSeq(
+            long cpVersionSeq,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        ResponseCpDTO dto = cpService.getCpByCpVersionSeq(cpVersionSeq, request, response);
+        logger.info("DTO 조회 성공");
+
+        return ResponseEntity.ok(ApiResponse.ok(dto));
     }
 
     @PostMapping(value = "/bookmark/{cpVersionSeq}")

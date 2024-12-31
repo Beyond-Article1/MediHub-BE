@@ -49,20 +49,21 @@ public class CpOpinionService {
     private final CpOpinionRepository cpOpinionRepository;
     private final CpOpinionVoteRepository cpOpinionVoteRepository;
 
+    // etc
     private final Logger logger = LoggerFactory.getLogger("mediHub_be.cp.service.CpOpinionService");    // Logger
 
-    // FlagType
-    public static final String CP_OPINION_BOARD_FLAG = "CP_OPINION";
-
+    // 상수
+    public static final String CP_OPINION_BOARD_FLAG = "CP_OPINION";        // 플레그명 상수
 
     /**
      * 주어진 CP 버전 번호와 CP 의견 위치 번호에 따라 CP 의견 목록을 조회합니다.
      *
-     * @param cpVersionSeq         CP 버전 번호
-     * @param cpOpinionLocationSeq CP 의견 위치 번호
-     * @param isDeleted            삭제된 의견을 조회할지 여부
-     * @return ResponseCpOpinionDTO의 리스트
-     * @throws CustomException 조회된 의견이 없을 경우
+     * @param cpVersionSeq         CP 버전 번호. 의견을 조회할 CP 버전을 식별합니다.
+     * @param cpOpinionLocationSeq CP 의견 위치 번호. 조회할 CP 의견의 위치를 식별합니다.
+     * @param isDeleted            삭제된 의견을 조회할지 여부. <code>true</code>일 경우 삭제된 의견을 포함하여 조회합니다.
+     * @return ResponseCpOpinionDTO의 리스트. 요청된 조건에 맞는 CP 의견 목록입니다.
+     * @throws CustomException     조회된 의견이 없을 경우 혹은 다른 비즈니스 로직 오류 발생 시.
+     * @throws DataAccessException 데이터베이스 접근 오류가 발생할 경우.
      */
     @Transactional(readOnly = true)
     public List<ResponseCpOpinionDTO> getCpOpinionListByCpVersionSeq(
@@ -96,6 +97,8 @@ public class CpOpinionService {
             }
 
             return dtoList;
+        } catch (CustomException e) {
+            throw e;
         } catch (DataAccessException e) {
             logger.error("데이터베이스 접근 오류: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_DATA_ACCESS_ERROR);

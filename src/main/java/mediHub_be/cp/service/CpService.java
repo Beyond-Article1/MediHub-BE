@@ -298,4 +298,45 @@ public class CpService {
         return dtoList;
     }
 
+    /**
+     * 주어진 CP 버전 시퀀스와 CP 버전을 기반으로 CP 정보를 조회하고,
+     * 조회수 증가 조건에 따라 조회수를 증가시킵니다.
+     *
+     * @param cpVersionSeq CP 버전 시퀀스
+     * @param cpVersion CP 버전
+     * @param request HTTP 요청 객체
+     * @param response HTTP 응답 객체
+     * @return 조회된 CP 정보가 담긴 {@link ResponseCpDTO} 객체
+     * @throws CustomException CP가 존재하지 않을 경우 {@link ErrorCode#NOT_FOUND_CP} 예외가 발생합니다.
+     */
+    @Transactional()
+    public ResponseCpDTO findCpByCpVersion(
+            long cpVersionSeq,
+            String cpVersion,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        // 해당 데이터 조회
+        ResponseCpDTO dto = jooqCpVersionRepository.findCpVersionByCpVersionSeqAndCpVersion(cpVersionSeq, cpVersion);
+
+        // 조회수 증가를 위한 DB 조회
+        Cp entity = cpRepository.findByCpVersionSeq(cpVersionSeq)
+                .orElseThrow(() -> {
+                    logger.warn("조회된 CP가 없습니다: CP 버전 시퀀스={}", cpVersionSeq);
+                    return new CustomException(ErrorCode.NOT_FOUND_CP);
+                });
+        logger.info("조회된 CP: {}", entity);
+
+        boolean shouldIncrease = viewCountManager.shouldIncreaseViewCount(entity.getCpSeq(), request, response);
+        if (shouldIncrease) {
+            logger.info("뷰 카운트를 증가시킵니다: CP 시퀀스={}", entity.getCpSeq());
+            entity.increaseCpViewCount();
+            cpRepository.save(entity);
+            logger.info("뷰 카운트 증가 완료: CP 시퀀스={}", entity.getCpSeq());
+        } else {
+            logger.info("뷰 카운트를 증가시키지 않습니다: CP 시퀀스={} - 사유: 조건 미충족", entity.getCpSeq());
+        }
+
+        return dto;
+    }
 }
