@@ -1,6 +1,5 @@
 package mediHub_be.chatbot.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.chatbot.entity.ChatbotMessage;
@@ -9,11 +8,8 @@ import mediHub_be.chatbot.repository.ChatbotMessageRepository;
 import mediHub_be.chatbot.repository.ChatbotSessionRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
-import mediHub_be.common.utils.DateTimeUtil;
 import mediHub_be.user.entity.User;
-import mediHub_be.user.repository.UserRepository;
 import mediHub_be.user.service.UserService;
-import org.springdoc.core.service.OpenAPIService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +36,7 @@ public class ChatbotRestService {
         ChatbotSession session = ChatbotSession.builder()
                 .userSeq(user.getUserSeq())
                 .title(title)
-                .createdAt(DateTimeUtil.localDateTimeToLocalDateTime(LocalDateTime.now()))
+                .createdAt(LocalDateTime.now())
                 .build();
 
         ChatbotSession savedSession = chatbotSessionRepository.save(session);
@@ -57,7 +53,7 @@ public class ChatbotRestService {
                 .sessionId(sessionId)
                 .sender(sender)
                 .content(content)
-                .timestamp(DateTimeUtil.localDateTimeToLocalDateTime(LocalDateTime.now()))
+                .timestamp(LocalDateTime.now())
                 .build();
 
         chatbotMessageRepository.save(message);
@@ -67,7 +63,7 @@ public class ChatbotRestService {
         ChatbotSession session = chatbotSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 세션입니다."));
 
-        session.updateLastMessage(DateTimeUtil.localDateTimeToLocalDateTime(LocalDateTime.now()), content);
+        session.updateLastMessage(LocalDateTime.now(), content);
         chatbotSessionRepository.save(session);
         log.info("세션 업데이트 - ID: {}, 마지막 메시지: {}", sessionId, content);
     }
@@ -149,6 +145,7 @@ public class ChatbotRestService {
             return "질문에 대한 답변을 생성하지 못했습니다.";
         }
     }
+
 
 
     private float[] convertToFloatArray(List<Float> list) {

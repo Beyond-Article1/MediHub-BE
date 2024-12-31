@@ -1,5 +1,12 @@
 package mediHub_be.chatbot.service;
 
+import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import mediHub_be.dept.repository.DeptRepository;
+import mediHub_be.part.repository.PartRepository;
+import mediHub_be.ranking.repository.RankingRepository;
+import mediHub_be.user.repository.UserRepository;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
@@ -13,14 +20,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@RequiredArgsConstructor
 @Component
 public class VectorDatabase {
+
+    private final PartRepository partRepository;
+    private final DeptRepository deptRepository;
+    private final RankingRepository rankingRepository;
+    private final UserRepository userRepository;
 
     private IndexWriter indexWriter;
     private IndexSearcher indexSearcher;
 
-    public VectorDatabase() throws IOException {
-        // Lucene 디렉토리 생성
+    @PostConstruct
+    public void init() throws IOException {
+        // Lucene 디렉토리 생성 및 IndexWriter 초기화
         FSDirectory directory = FSDirectory.open(Paths.get("vector-index"));
         IndexWriterConfig config = new IndexWriterConfig();
         this.indexWriter = new IndexWriter(directory, config);
@@ -30,10 +44,7 @@ public class VectorDatabase {
         BooleanQuery.setMaxClauseCount(10000);
     }
 
-    /**
-     * 벡터와 메타데이터를 저장
-     */
-    public void storeVector(String tableName, String rowId, String content, List<Float> vector, List<String> columnNames) throws IOException {
+    public void storeVector(String tableName, String rowId, String content, List<Float> vector, List<String> columnNames, Map<String, String> foreignKeyData) throws IOException {
         Document document = new Document();
 
         // 테이블 이름 및 Row ID 저장
@@ -52,6 +63,12 @@ public class VectorDatabase {
                     .append(i < contentValues.length ? contentValues[i].trim() : "null")
                     .append("\n");
         }
+
+        // 외래키 데이터 추가
+        if (foreignKeyData != null) {
+            foreignKeyData.forEach((key, value) -> contentWithColumns.append(key).append(": ").append(value).append("\n"));
+        }
+
         document.add(new TextField("content", contentWithColumns.toString(), Field.Store.YES));
 
         // 벡터 저장
@@ -72,6 +89,68 @@ public class VectorDatabase {
         indexWriter.commit();
         refreshIndexSearcher();
     }
+
+
+    public Map<String, String> getForeignKeyData(Map<String, Object> rowData) {
+        Map<String, String> foreignKeyData = new HashMap<>();
+
+        // 외래키와 참조 테이블 매핑
+        Map<String, String> foreignKeyMapping = Map.of(
+                "part_seq", "part_name",
+                "dept_seq", "dept_name",
+                "ranking_seq", "ranking_name",
+                "user_seq", "user_name,user_id"
+        );
+
+        for (Map.Entry<String, String> entry : foreignKeyMapping.entrySet()) {
+            String foreignKey = entry.getKey();
+            String[] referenceFields = entry.getValue().split(",");
+
+            // 외래키 값 가져오기
+            if (rowData.containsKey(foreignKey)) {
+                Long foreignKeyValue = (Long) rowData.get(foreignKey);
+
+                // 참조 데이터 조회 (예: PartRepository 등 사용)
+                Map<String, String> referencedValues = getReferencedValues(foreignKey, foreignKeyValue);
+
+                for (String field : referenceFields) {
+                    if (referencedValues.containsKey(field)) {
+                        foreignKeyData.put(field, referencedValues.get(field));
+                    }
+                }
+            }
+        }
+
+        return foreignKeyData;
+    }
+
+    public Map<String, String> getReferencedValues(String foreignKey, Long foreignKeyValue) {
+        Map<String, String> referencedValues = new HashMap<>();
+
+        switch (foreignKey) {
+            case "part_seq":
+                partRepository.findById(foreignKeyValue).ifPresent(part ->
+                        referencedValues.put("part_name", part.getPartName()));
+                break;
+            case "dept_seq":
+                deptRepository.findById(foreignKeyValue).ifPresent(dept ->
+                        referencedValues.put("dept_name", dept.getDeptName()));
+                break;
+            case "ranking_seq":
+                rankingRepository.findById(foreignKeyValue).ifPresent(ranking ->
+                        referencedValues.put("ranking_name", ranking.getRankingName()));
+                break;
+            case "user_seq":
+                userRepository.findById(foreignKeyValue).ifPresent(user -> {
+                    referencedValues.put("user_name", user.getUserName());
+                    referencedValues.put("user_id", user.getUserId());
+                });
+                break;
+        }
+
+        return referencedValues;
+    }
+
 
     public List<Map<String, String>> search(float[] queryVector, int topK) throws IOException {
         List<Map<String, String>> results = new ArrayList<>();

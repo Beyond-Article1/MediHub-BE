@@ -1,5 +1,7 @@
 package mediHub_be.chatbot.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,9 @@ public class VectorizationService {
     private final EmbeddingService embeddingService;
     private final VectorDatabase vectorDatabase;
 
-    // 유효한 테이블 이름 목록
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // 유효한 테이블 이름 목록 (벡터화 제외 테이블 제거)
     private static final Set<String> VALID_TABLES = new HashSet<>(Arrays.asList(
             "anonymous_board",
             "case_sharing",
@@ -29,9 +33,14 @@ public class VectorizationService {
             "flag",
             "keyword",
             "medical_life",
-            "dept",
-            "part",
             "user"
+    ));
+
+    // 외래키 참조만 사용하는 테이블
+    private static final Set<String> FOREIGN_KEY_ONLY_TABLES = new HashSet<>(Arrays.asList(
+            "part",
+            "ranking",
+            "dept"
     ));
 
     public void processAllTables() {
@@ -68,6 +77,11 @@ public class VectorizationService {
             return;
         }
 
+        if (FOREIGN_KEY_ONLY_TABLES.contains(tableName)) {
+            log.info("Skipping foreign-key-only table: {}", tableName);
+            return;
+        }
+
         try {
             // 테이블의 데이터 가져오기
             List<Map<String, Object>> tableData = tableDataService.getTableData(tableName);
@@ -83,14 +97,17 @@ public class VectorizationService {
             for (Map<String, Object> row : tableData) {
                 try {
                     // Row ID 가져오기
-                    String rowId = String.valueOf(row.get(primaryKey));
-                    String content = row.values().toString(); // 모든 데이터를 텍스트로 결합
+                    String rowId = String.valueOf(row.get(primaryKey)); 
+                    String content = extractContentFromRow(tableName, row); // JSON 본문에서 값 추출
+
+                    // 외래키 데이터 추가
+                    Map<String, String> foreignKeyData = vectorDatabase.getForeignKeyData(row);
 
                     // OpenAI 임베딩 생성
                     List<Float> vector = embeddingService.getEmbedding(content);
 
                     // 벡터 데이터 저장
-                    vectorDatabase.storeVector(tableName, rowId, content, vector, new ArrayList<>(row.keySet()));
+                    vectorDatabase.storeVector(tableName, rowId, content, vector, new ArrayList<>(row.keySet()), foreignKeyData);
                     log.info("Stored vector for table: {}, row ID: {}", tableName, rowId);
                 } catch (Exception e) {
                     log.error("Error processing row in table: {}", tableName, e);
@@ -98,6 +115,50 @@ public class VectorizationService {
             }
         } catch (Exception e) {
             log.error("Error processing table: {}", tableName, e);
+        }
+    }
+
+    private String extractContentFromRow(String tableName, Map<String, Object> row) {
+        String contentField;
+        switch (tableName) {
+            case "case_sharing":
+                contentField = "case_sharing_content";
+                break;
+            case "anonymous_board":
+                contentField = "anonymous_board_content";
+                break;
+            case "medical_life":
+                contentField = "medical_life_content";
+                break;
+            default:
+                return row.values().toString(); // 기본적으로 모든 데이터`를 결합
+        }
+
+        Object rawContent = row.get(contentField);
+        if (rawContent == null) {
+            return "";
+        }
+
+        try {
+            JsonNode rootNode = objectMapper.readTree(rawContent.toString());
+            JsonNode blocks = rootNode.get("blocks");
+            if (blocks == null || !blocks.isArray()) {
+                return "";
+            }
+
+            StringBuilder extractedContent = new StringBuilder();
+            for (JsonNode block : blocks) {
+                if (block.has("type") && block.get("type").asText().equals("header")) {
+                    extractedContent.append(block.get("data").get("text").asText()).append(" ");
+                } else if (block.has("type") && block.get("type").asText().equals("paragraph")) {
+                    extractedContent.append(block.get("data").get("text").asText()).append(" ");
+                }
+            }
+
+            return extractedContent.toString().trim();
+        } catch (Exception e) {
+            log.error("Error extracting content from JSON in table: {}, row: {}", tableName, row, e);
+            return "";
         }
     }
 
@@ -117,7 +178,4 @@ public class VectorizationService {
         }
         return null; // Primary Key가 없는 경우 null 반환
     }
-
-
-
 }
