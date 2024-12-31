@@ -39,7 +39,7 @@ class CpSearchDataServiceTest {
     private static List<ResponseCpSearchDataDTO> mockedResponseCpSearchDataDtoList;
 
     @BeforeEach
-    void setUp() {
+    void setUpBeforeEach() {
         ResponseCpSearchDataDTO dto1 = ResponseCpSearchDataDTO.builder()
                 .cpSearchDataSeq(1L)
                 .cpVersionSeq(1L)
