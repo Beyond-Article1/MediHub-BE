@@ -14,7 +14,6 @@ import mediHub_be.cp.repository.CpOpinionRepository;
 import mediHub_be.cp.repository.CpOpinionVoteRepository;
 import mediHub_be.cp.service.CpOpinionService;
 import mediHub_be.security.util.SecurityUtil;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
