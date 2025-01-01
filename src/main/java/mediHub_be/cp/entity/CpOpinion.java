@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
 import mediHub_be.cp.dto.CpOpinionDTO;
 
@@ -11,6 +12,7 @@ import mediHub_be.cp.dto.CpOpinionDTO;
 @Table(name = "cp_opinion")
 @NoArgsConstructor
 @Getter
+@ToString
 public class CpOpinion extends BaseFullEntity {
 
     @Id
