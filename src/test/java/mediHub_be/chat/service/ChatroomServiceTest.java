@@ -1,9 +1,7 @@
 package mediHub_be.chat.service;
 
-import mediHub_be.chat.dto.ChatroomDTO;
-import mediHub_be.chat.dto.ResponseChatMessageDTO;
-import mediHub_be.chat.dto.ResponseChatroomDTO;
-import mediHub_be.chat.dto.UpdateChatroomDTO;
+import mediHub_be.board.service.PictureService;
+import mediHub_be.chat.dto.*;
 import mediHub_be.chat.entity.Chat;
 import mediHub_be.chat.entity.ChatMessage;
 import mediHub_be.chat.entity.Chatroom;
@@ -13,6 +11,8 @@ import mediHub_be.chat.repository.ChatroomRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.notify.service.NotifyServiceImlp;
+import mediHub_be.part.entity.Part;
+import mediHub_be.ranking.entity.Ranking;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,6 +47,9 @@ class ChatroomServiceTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private PictureService pictureService;
 
     @Mock
     private KafkaProducerService kafkaProducerService;
@@ -401,4 +404,154 @@ class ChatroomServiceTest {
         verify(chatRepository, times(1)).findByUser_UserSeq(userSeq);
     }
 
+    @DisplayName("특정 채팅방 정보 조회")
+    @Test
+    void testGetChatroomInfoBySeq_Success() {
+        // Given
+        Long userSeq = 1L;
+        Long chatroomSeq = 100L;
+
+        // Mock 채팅 객체 생성
+        Chatroom mockChatroom = mock(Chatroom.class);
+        when(mockChatroom.getChatroomSeq()).thenReturn(chatroomSeq);
+        when(mockChatroom.getChatroomDefaultName()).thenReturn("동그리 상혀니 채류니");
+
+        Chat mockChat = mock(Chat.class);
+        when(mockChat.getChatroom()).thenReturn(mockChatroom);
+        when(mockChat.getLastVisitedAt()).thenReturn(LocalDateTime.now().minusDays(9));
+        when(mockChat.getChatroomCustomName()).thenReturn("업무 공지방");
+
+        // Mock 메시지 및 사용자 수 설정
+        when(chatRepository.findByUser_UserSeqAndChatroom_ChatroomSeq(userSeq, chatroomSeq)).thenReturn(Optional.of(mockChat));
+        when(chatRepository.countByChatroom_ChatroomSeq(chatroomSeq)).thenReturn(3L);   // 참여자 수: 3명
+        when(chatMessageRepository.countByChatroomSeqAndCreatedAtAfterAndIsDeletedFalse(eq(chatroomSeq), any())).thenReturn(77L);    // 읽지 않은 메시지 수
+
+        // When
+        ResponseChatroomDTO result = chatroomService.getChatroomInfoBySeq(userSeq, chatroomSeq);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(chatroomSeq, result.getChatroomSeq());
+        assertEquals("동그리 상혀니 채류니", result.getChatroomDefaultName());
+        assertEquals("업무 공지방", result.getChatroomCustomName());
+        assertEquals(3L, result.getChatroomUsersCount());
+        assertEquals(77L, result.getUnreadMessageCount());
+
+        // Verify 호출 확인
+        verify(chatRepository, times(1)).findByUser_UserSeqAndChatroom_ChatroomSeq(userSeq, chatroomSeq);
+        verify(chatRepository, times(1)).countByChatroom_ChatroomSeq(chatroomSeq);
+        verify(chatMessageRepository, times(1)).countByChatroomSeqAndCreatedAtAfterAndIsDeletedFalse(eq(chatroomSeq), any());
+    }
+
+    @DisplayName("특정 채팅방 참여자 정보 조회")
+    @Test
+    void testGetChatUsers_Success() {
+        // Given
+        Long userSeq = 1L; // 요청 사용자 ID
+        Long chatroomSeq = 100L; // 채팅방 ID
+
+        // Mock 사용자 객체 생성
+        User mockUser1 = mock(User.class);
+        when(mockUser1.getUserSeq()).thenReturn(1L);
+        when(mockUser1.getUserName()).thenReturn("사용자1");
+        Part mockPart1 = mock(Part.class);
+        when(mockPart1.getPartName()).thenReturn("파트1");
+        when(mockUser1.getPart()).thenReturn(mockPart1);
+        Ranking mockRanking1 = mock(Ranking.class);
+        when(mockRanking1.getRankingName()).thenReturn("랭킹1");
+        when(mockUser1.getRanking()).thenReturn(mockRanking1);
+
+        User mockUser2 = mock(User.class);
+        when(mockUser2.getUserSeq()).thenReturn(2L);
+        when(mockUser2.getUserName()).thenReturn("사용자2");
+        Part mockPart2 = mock(Part.class);
+        when(mockPart2.getPartName()).thenReturn("파트2");
+        when(mockUser2.getPart()).thenReturn(mockPart2);
+        Ranking mockRanking2 = mock(Ranking.class);
+        when(mockRanking2.getRankingName()).thenReturn("랭킹2");
+        when(mockUser2.getRanking()).thenReturn(mockRanking2);
+
+        // Mock Chat 객체 생성
+        Chat mockChat1 = mock(Chat.class);
+        when(mockChat1.getUser()).thenReturn(mockUser1);
+
+        Chat mockChat2 = mock(Chat.class);
+        when(mockChat2.getUser()).thenReturn(mockUser2);
+
+        List<Chat> chats = List.of(mockChat1, mockChat2);
+
+        // Mock 동작 정의
+        when(chatRepository.findByUser_UserSeqAndChatroom_ChatroomSeq(userSeq, chatroomSeq))
+                .thenReturn(Optional.of(mock(Chat.class))); // 요청 사용자가 채팅방에 존재하는 경우
+        when(chatRepository.findByChatroom_ChatroomSeq(chatroomSeq)).thenReturn(chats); // 채팅방 참여자 목록 반환
+        when(pictureService.getUserProfileUrl(1L)).thenReturn("http://profile.url/user1");
+        when(pictureService.getUserProfileUrl(2L)).thenReturn("http://profile.url/user2");
+
+        // When
+        List<ResponseChatUserDTO> result = chatroomService.getChatUsers(userSeq, chatroomSeq);
+
+        // Then
+        assertEquals(2, result.size());
+
+        ResponseChatUserDTO user1 = result.get(0);
+        assertEquals(1L, user1.getUserSeq());
+        assertEquals("사용자1", user1.getUserName());
+        assertEquals("http://profile.url/user1", user1.getUserProfileUrl());
+        assertEquals("파트1", user1.getPartName());
+        assertEquals("랭킹1", user1.getRankingName());
+
+        ResponseChatUserDTO user2 = result.get(1);
+        assertEquals(2L, user2.getUserSeq());
+        assertEquals("사용자2", user2.getUserName());
+        assertEquals("http://profile.url/user2", user2.getUserProfileUrl());
+        assertEquals("파트2", user2.getPartName());
+        assertEquals("랭킹2", user2.getRankingName());
+
+        // Verify 호출 확인
+        verify(chatRepository, times(1)).findByUser_UserSeqAndChatroom_ChatroomSeq(userSeq, chatroomSeq);
+        verify(chatRepository, times(1)).findByChatroom_ChatroomSeq(chatroomSeq);
+    }
+
+    @DisplayName("채팅방 마지막 방문일 업데이트")
+    @Test
+    void testUpdateLastVisitedTime_Success() {
+        // Given
+        Long userSeq = 1L; // 사용자 ID
+        Long chatroomSeq = 100L; // 채팅방 ID
+
+        // Mock 채팅 객체 생성
+        Chat mockChat = mock(Chat.class);
+        when(mockChat.getLastVisitedAt()).thenReturn(LocalDateTime.now().minusDays(1));
+
+        // Mock 동작 정의
+        when(chatRepository.findByUser_UserSeqAndChatroom_ChatroomSeq(userSeq, chatroomSeq))
+                .thenReturn(Optional.of(mockChat));
+
+        // When
+        chatroomService.updateLastVisitedTime(userSeq, chatroomSeq);
+
+        // Then
+        verify(mockChat, times(1)).updateLastVisitedAt(any(LocalDateTime.class)); // 마지막 방문 시간 업데이트 확인
+        verify(chatRepository, times(1)).save(mockChat); // 저장 호출 확인
+    }
+
+    @DisplayName("채팅방 마지막 방문 시간 업데이트 실패 - 채팅방이 존재하지 않음")
+    @Test
+    void testUpdateLastVisitedTime_NotFound() {
+        // Given
+        Long userSeq = 1L; // 사용자 ID
+        Long chatroomSeq = 100L; // 채팅방 ID
+
+        when(chatRepository.findByUser_UserSeqAndChatroom_ChatroomSeq(userSeq, chatroomSeq))
+                .thenReturn(Optional.empty()); // 채팅방이 존재하지 않는 경우
+
+        // When & Then
+        CustomException exception = assertThrows(CustomException.class,
+                () -> chatroomService.updateLastVisitedTime(userSeq, chatroomSeq));
+
+        assertEquals(ErrorCode.NOT_FOUND_CHATROOM, exception.getErrorCode());
+
+        // Verify 호출 확인
+        verify(chatRepository, times(1)).findByUser_UserSeqAndChatroom_ChatroomSeq(userSeq, chatroomSeq);
+    }
 }
