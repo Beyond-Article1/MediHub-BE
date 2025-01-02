@@ -17,7 +17,7 @@ public interface AnonymousBoardRepository extends JpaRepository<AnonymousBoard, 
 
     @Query("SELECT a FROM AnonymousBoard a " +
             "WHERE a.createdAt >= :oneWeekAgo " +
-            "AND a.deletedAt IS NULL " +
+            "  AND a.deletedAt IS NULL " +
             "ORDER BY a.anonymousBoardViewCount DESC")
     List<AnonymousBoard> findTop3ByCreatedAtAfterOrderByAnonymousBoardViewCountDesc(
             @Param("oneWeekAgo") LocalDateTime oneWeekAgo,
