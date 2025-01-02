@@ -100,6 +100,7 @@ public class AnonymousBoardService {
                 .map(anonymousBoard -> new AnonymousBoardMyPageDTO(
                         anonymousBoard.getAnonymousBoardSeq(),
                         anonymousBoard.getAnonymousBoardTitle(),
+                        anonymousBoard.getAnonymousBoardContent(),
                         anonymousBoard.getAnonymousBoardViewCount(),
                         anonymousBoard.getCreatedAt()
                 ))
@@ -146,7 +147,8 @@ public class AnonymousBoardService {
                 .map(anonymousBoard -> new AnonymousBoardTop3DTO(
                         anonymousBoard.getAnonymousBoardSeq(),
                         anonymousBoard.getAnonymousBoardTitle(),
-                        anonymousBoard.getUser().getUserName()
+                        anonymousBoard.getUser().getUserName(),
+                        anonymousBoard.getCreatedAt()
                 ))
                 .toList();
     }
@@ -384,39 +386,39 @@ public class AnonymousBoardService {
     }
 
     @Transactional
-    public boolean toggleBookmark(Long anonymousBoard, String userId) {
+    public boolean toggleBookmark(Long anonymousBoardSeq, String userId) {
 
 //        userService.findUser(userSeq);
         userService.findByUserId(userId);
 
-        return bookmarkService.toggleBookmark(ANONYMOUS_BOARD_FLAG, anonymousBoard, userId);
+        return bookmarkService.toggleBookmark(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq, userId);
     }
 
     @Transactional
-    public boolean isBookmarked(Long anonymousBoard, String userId) {
+    public boolean isBookmarked(Long anonymousBoardSeq, String userId) {
 
 //        userService.findUser(userSeq);
         userService.findByUserId(userId);
 
-        return bookmarkService.isBookmarked(ANONYMOUS_BOARD_FLAG, anonymousBoard, userId);
+        return bookmarkService.isBookmarked(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq, userId);
     }
 
     @Transactional
-    public boolean togglePrefer(Long anonymousBoard, String userId) {
+    public boolean togglePrefer(Long anonymousBoardSeq, String userId) {
 
 //        userService.findUser(userSeq);
         userService.findByUserId(userId);
 
-        return preferService.togglePrefer(ANONYMOUS_BOARD_FLAG, anonymousBoard, userId);
+        return preferService.togglePrefer(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq, userId);
     }
 
     @Transactional
-    public boolean isPreferred(Long anonymousBoard, String userId) {
+    public boolean isPreferred(Long anonymousBoardSeq, String userId) {
 
 //        userService.findUser(userSeq);
         userService.findByUserId(userId);
 
-        return preferService.isPreferred(ANONYMOUS_BOARD_FLAG, anonymousBoard, userId);
+        return preferService.isPreferred(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq, userId);
     }
 
     private void saveKeywordsAndFlag(List<String> keywordList, Long entitySeq) {
