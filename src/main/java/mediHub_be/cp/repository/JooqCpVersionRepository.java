@@ -5,13 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.cp.dto.ResponseCpDTO;
-import org.jooq.Condition;
-import org.jooq.DSLContext;
+import org.jooq.*;
 import org.jooq.generated.tables.*;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.servlet.View;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -38,10 +38,21 @@ public class JooqCpVersionRepository {
             for (Long dataSeq : cpSearchCategoryDataArray) {
                 condition = condition.and(CP_SEARCH_DATA.CP_SEARCH_CATEGORY_DATA_SEQ.eq(dataSeq));
             }
-//            log.info("추가된 조건: {}", condition);
         }
         log.info("조건 추가 완료");
 
+        // 서브쿼리: 각 CP의 최신 버전만 선택
+        Table<Record3<Long, Long, LocalDateTime>> subQuery = dslContext
+                .select(
+                        CP_VERSION.CP_VERSION_SEQ,
+                        CP_VERSION.CP_SEQ,  // CP_SEQ도 포함
+                        DSL.max(CP_VERSION.CREATED_AT).as("max_created_at")
+                )
+                .from(CP_VERSION)
+                .groupBy(CP_VERSION.CP_SEQ) // CP_VERSION_SEQ와 CP_SEQ로 그룹화
+                .asTable("latest_versions");
+
+        // 메인 쿼리: 최신 버전만 선택
         List<ResponseCpDTO> dtoList = dslContext
                 .selectDistinct(
                         CP_VERSION.CP_VERSION_SEQ.as("cpVersionSeq"),
@@ -61,13 +72,14 @@ public class JooqCpVersionRepository {
                 .join(CP_SEARCH_CATEGORY_DATA).on(CP_SEARCH_CATEGORY_DATA.CP_SEARCH_CATEGORY_DATA_SEQ.eq(CP_SEARCH_DATA.CP_SEARCH_CATEGORY_DATA_SEQ))
                 .join(USER).on(CP_VERSION.USER_SEQ.eq(USER.USER_SEQ))
                 .join(PART).on(USER.PART_SEQ.eq(PART.PART_SEQ))
+                .join(subQuery).on(CP_VERSION.CP_VERSION_SEQ.eq(subQuery.field("cp_version_seq", Long.class))) // 서브쿼리 조인
                 .where(condition)
                 .fetchInto(ResponseCpDTO.class);
 
         log.info("조회 성공");
 
         // DTO 리스트 로그 출력
-//        log.info("조회된 정보: {}", dtoList);
+        log.info("조회된 정보: {}", dtoList);
         return dtoList;
     }
 
