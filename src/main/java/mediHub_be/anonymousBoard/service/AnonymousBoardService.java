@@ -108,7 +108,7 @@ public class AnonymousBoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<AnonymousBoardDTO> getBookMarkedBoardList(Long userSeq) {
+    public List<AnonymousBoardMyPageDTO> getBookMarkedBoardList(Long userSeq) {
 
         User user = userService.findUser(userSeq);
         List<BookmarkDTO> BookmarkDTOList = bookmarkService.findByUserAndFlagType(user, ANONYMOUS_BOARD_FLAG);
@@ -120,13 +120,12 @@ public class AnonymousBoardService {
         List<AnonymousBoard> anonymousBoardList = anonymousBoardRepository.findAllById(anonymousBoardSeqList);
 
         return anonymousBoardList.stream()
-                .map(anonymousBoard -> new AnonymousBoardDTO(
+                .map(anonymousBoard -> new AnonymousBoardMyPageDTO(
                         anonymousBoard.getAnonymousBoardSeq(),
-                        anonymousBoard.getUser().getUserName(),
                         anonymousBoard.getAnonymousBoardTitle(),
+                        anonymousBoard.getAnonymousBoardContent(),
                         anonymousBoard.getAnonymousBoardViewCount(),
-                        anonymousBoard.getCreatedAt(),
-                        null
+                        anonymousBoard.getCreatedAt()
                 ))
                 .collect(Collectors.toList());
     }
