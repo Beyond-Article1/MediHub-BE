@@ -260,10 +260,11 @@ public class CpService {
         logger.info("사용자 {}의 북마크 목록을 {}개 찾았습니다.", user.getUserId(), bookmarkDtoList.size());
 
         List<ResponseCpDTO> responseCpDTOList = bookmarkDtoList.stream()
-                .map(bookmarkDto ->
-                        cpVersionRepository.findByCpVersionSeq(bookmarkDto.getFlag().getFlagSeq())
-                                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CP_VERSION))
-                )
+                .map(bookmarkDto -> {
+//                    logger.info("북마크 정보: {}", bookmarkDto);
+                    return cpVersionRepository.findByCpVersionSeq(bookmarkDto.getFlag().getFlagEntitySeq())
+                            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CP_VERSION));
+                })
                 .toList();
 
         logger.info("사용자 {}의 북마크된 CP 버전 조회가 완료되었습니다.", user.getUserId());

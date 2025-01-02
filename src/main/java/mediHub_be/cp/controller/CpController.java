@@ -165,7 +165,7 @@ public class CpController {
         logger.info("다른 CP 버전들을 조회하는 요청을 수신되었습니다.");
 
         List<ResponseCpVersionDTO> dtoList = cpService.getCpVersionListByCpVersionSeq(cpVersionSeq);
-        logger.info("다른 PC 버전 {}개를 조회 완료했습니다.", dtoList.size());
+        logger.info("다른 CP 버전 {}개를 조회 완료했습니다.", dtoList.size());
 
         return ResponseEntity.ok(ApiResponse.ok(dtoList));
     }
