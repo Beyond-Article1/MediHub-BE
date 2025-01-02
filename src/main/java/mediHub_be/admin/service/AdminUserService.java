@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -202,6 +203,7 @@ public class AdminUserService {
                             .userPhone(user.getUserPhone())
                             .rankingName(user.getRanking() != null ? user.getRanking().getRankingName() : null)
                             .rankingSeq(user.getRanking() != null ? user.getRanking().getRankingSeq() : null)
+                            .rankingNum(user.getRanking() != null ? user.getRanking().getRankingNum() : 0L)
                             .partName(user.getPart() != null ? user.getPart().getPartName() : null)
                             .partSeq(user.getPart() != null ? user.getPart().getPartSeq() : null)
                             .deptName(user.getPart() != null && user.getPart().getDept() != null
@@ -210,6 +212,7 @@ public class AdminUserService {
                             .userStatus(user.getUserStatus().name())
                             .build();
                 })
+                .sorted(Comparator.comparing(AdminResponseDTO::getRankingNum))
                 .collect(Collectors.toList());
     }
 
