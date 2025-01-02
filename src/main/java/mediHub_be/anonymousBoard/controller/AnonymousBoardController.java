@@ -51,10 +51,10 @@ public class AnonymousBoardController {
 
     @Operation(summary = "내가 북마크 한 익명 게시글 목록 조회", description = "내가 북마크 한, 삭제되지 않은 익명 게시글 목록 조회")
     @GetMapping("/myPage/bookmark")
-    public ResponseEntity<ApiResponse<List<AnonymousBoardDTO>>> getBookMarkedBoards() {
+    public ResponseEntity<ApiResponse<List<AnonymousBoardMyPageDTO>>> getBookMarkedBoards() {
 
         Long userSeq = SecurityUtil.getCurrentUserSeq();
-        List<AnonymousBoardDTO> anonymousBoardDTOList = anonymousBoardService.getBookMarkedBoardList(userSeq);
+        List<AnonymousBoardMyPageDTO> anonymousBoardDTOList = anonymousBoardService.getBookMarkedBoardList(userSeq);
 
         return ResponseEntity.ok(ApiResponse.ok(anonymousBoardDTOList));
     }
