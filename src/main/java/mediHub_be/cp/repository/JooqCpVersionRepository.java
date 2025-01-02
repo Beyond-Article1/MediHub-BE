@@ -21,7 +21,6 @@ public class JooqCpVersionRepository {
 
     // jOOQ DSLContext 인스턴스
     private final DSLContext dslContext;
-    private final View error;
 
     public List<ResponseCpDTO> findCpVersionByCategory(List<Long> cpSearchCategoryDataArray) {
         log.info("DB 조회 시작");
