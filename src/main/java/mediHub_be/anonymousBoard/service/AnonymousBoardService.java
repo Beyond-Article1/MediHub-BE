@@ -67,11 +67,11 @@ public class AnonymousBoardService {
 
                     List<Flag> flagsForAnonymousBoard = flagList.stream()
                             .filter(flag -> flag.getFlagType().equals(ANONYMOUS_BOARD_FLAG))
-                            .filter(flag -> flag.getFlagEntitySeq() == anonymousBoard.getAnonymousBoardSeq())
+                            .filter(flag -> Objects.equals(flag.getFlagEntitySeq(), anonymousBoard.getAnonymousBoardSeq()))
                             .toList();
                     List<Keyword> keywordsForAnonymousBoard = keywordList.stream()
                             .filter(keyword -> flagsForAnonymousBoard.stream()
-                                    .anyMatch(flag -> flag.getFlagSeq() == keyword.getFlagSeq()))
+                                    .anyMatch(flag -> Objects.equals(flag.getFlagSeq(), keyword.getFlagSeq())))
                             .toList();
 
                     return new AnonymousBoardDTO(
