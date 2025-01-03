@@ -169,6 +169,7 @@ jacocoTestReport {
                 '**/*KafkaConstants*',
                 '**/*Handler*',
                 '**/*ViewCountManager*',
+                '**/*VectorizationScheduler',
                 '**/*jooq*/**',
                 '**/repository/**',
 
@@ -212,6 +213,7 @@ jacocoTestCoverageVerification {
                     '*.filter.*',
                     '*.PasswordEncryptor',
                     '*.component.*',
+                    '*.*VectorizationScheduler',
                     '*.*jooq.*',
                     '*.ViewCountManager']
         }

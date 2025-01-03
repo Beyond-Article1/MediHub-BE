@@ -18,7 +18,8 @@ public class CaseSharingDetailDTO {
     private String caseSharingTitle; // 제목
     private String caseSharingContent; // 본문 내용 (HTML)
 
-    private String caseAuthor; // 작성자
+    private String caseAuthor; // 작성자명
+    private String caseAuthorId;
     private String caseAuthorRankName; //작성자 직위명
     private String caseAuthorUrl; //작성자 사진 url
 

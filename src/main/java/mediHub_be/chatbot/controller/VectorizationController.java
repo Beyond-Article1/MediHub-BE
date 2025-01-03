@@ -20,15 +20,4 @@ public class VectorizationController {
         vectorizationService.processAllTables();
         return "All tables are being processed in parallel!";
     }
-
-    // 저장된 모든 벡터 데이터를 로그로 출력하는 API
-    @GetMapping("/log")
-    public ResponseEntity<String> logAllVectors() {
-        try {
-            vectorizationService.logAllVectorizedData();
-            return ResponseEntity.ok("Vectorized data logged successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("An error occurred while logging vectorized data.");
-        }
-    }
 }

@@ -2,6 +2,8 @@ package mediHub_be.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mediHub_be.board.repository.BookmarkRepository;
+import mediHub_be.board.repository.PreferRepository;
 import mediHub_be.config.amazonS3.AmazonS3Service;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
@@ -12,16 +14,21 @@ import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.follow.repository.FollowRepository;
 import mediHub_be.user.dto.UserResponseDTO;
 import mediHub_be.user.dto.UserSearchDTO;
+import mediHub_be.user.dto.UserTop3DTO;
 import mediHub_be.user.dto.UserUpdateRequestDTO;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.entity.UserAuth;
 import mediHub_be.user.repository.UserRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,6 +44,8 @@ public class UserService {
     private final AmazonS3Service amazonS3Service;
     private final BCryptPasswordEncoder passwordEncoder;
     private final FollowRepository followRepository;
+    private final BookmarkRepository bookmarkRepository;
+    private final PreferRepository preferRepository;
 
     public static final String DEFAULT_PROFILE_URL = "https://medihub.s3.ap-northeast-2.amazonaws.com/istockphoto-981306968-1024x1024.jpg";
 
@@ -178,6 +187,69 @@ public class UserService {
         return false;
     }
 
+    @Transactional(readOnly = true)
+    public List<UserTop3DTO> getTop3Users() {
+        // 현재 날짜에서 이전 달의 첫날과 마지막 날 계산
+        YearMonth previousMonth = YearMonth.now().minusMonths(1);
+        LocalDate startOfPreviousMonth = previousMonth.atDay(1);
+        LocalDate endOfPreviousMonth = previousMonth.atEndOfMonth();
+        log.info("이전달 날짜"+previousMonth);
+
+        // 이전 달에 작성된 글에 대한 유저 조회
+        List<User> users = userRepository.findAll();
+
+        // 유저별 데이터 조합
+        List<UserTop3DTO> userTop3List = users.stream()
+                .map(user -> {
+                    // 이전 달 북마크 수 조회
+                    Long bookmarkCount = bookmarkRepository.countCaseSharingBookmarksByUserAndDateRange(
+                            user, startOfPreviousMonth.atStartOfDay(), endOfPreviousMonth.atTime(23, 59, 59));
+
+                    // 이전 달 좋아요 수 조회
+                    Long likeCount = preferRepository.countMedicalLifeLikesByUserAndDateRange(
+                            user, startOfPreviousMonth.atStartOfDay(), endOfPreviousMonth.atTime(23, 59, 59));
+
+                    // 프로필 이미지 URL 조회
+                    String profileImage = null;
+                    Flag flag = flagRepository.findByFlagTypeAndFlagEntitySeq("USER", user.getUserSeq()).orElse(null);
+                    if (flag != null) {
+                        profileImage = pictureRepository.findByFlag_FlagSeqAndDeletedAtIsNull(flag.getFlagSeq())
+                                .map(Picture::getPictureUrl)
+                                .orElse(null);
+                    }
+
+                    // 파트 및 부서 정보 조회
+                    String partName = null;
+                    if (user.getPart() != null) {
+                        partName = user.getPart().getPartName();
+                    }
+
+                    // 랭킹 정보 조회
+                    String rankingName = user.getRanking() != null ? user.getRanking().getRankingName() : null;
+
+                    // 총 점수 계산
+                    Long totalScore = (bookmarkCount == null ? 0 : bookmarkCount) +
+                            (likeCount == null ? 0 : likeCount);
+
+                    // DTO 빌드
+                    return UserTop3DTO.builder()
+                            .userName(user.getUserName())
+                            .rankingName(rankingName)
+                            .partName(partName)
+                            .likeNum(likeCount)
+                            .bookmarkNum(bookmarkCount)
+                            .profileUrl(profileImage) // 프로필 이미지 추가
+                            .totalScore(totalScore)
+                            .build();
+                })
+                .sorted((a, b) -> b.getTotalScore().compareTo(a.getTotalScore())) // 총 점수 기준 내림차순 정렬
+                .limit(3) // 상위 3명
+                .collect(Collectors.toList());
+
+        return userTop3List;
+    }
+
+
     // userSeqs로 Users 조회 (한번에 여러 사용자 정보 조회)
     public List<User> findUsersBySeqs(List<Long> allUserSeqs) {
         return userRepository.findAllById(allUserSeqs);
@@ -190,6 +262,7 @@ public class UserService {
     public List<User> findFollowersByUser(User user) {
         return followRepository.findFollowersByUser(user);
     }
+
 
 }
 
