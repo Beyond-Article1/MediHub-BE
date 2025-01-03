@@ -81,9 +81,13 @@ public class UserService {
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
 
         // 이메일, 전화번호, 비밀번호 수정
-        String updatedEmail = userUpdateRequestDTO.getUserEmail() != null ? userUpdateRequestDTO.getUserEmail() : user.getUserEmail();
-        String updatedPhone = userUpdateRequestDTO.getUserPhone() != null ? userUpdateRequestDTO.getUserPhone() : user.getUserPhone();
-        String updatedPassword = userUpdateRequestDTO.getUserPassword() != null
+        String updatedEmail = (userUpdateRequestDTO.getUserEmail() != null && !userUpdateRequestDTO.getUserEmail().isEmpty())
+                ? userUpdateRequestDTO.getUserEmail()
+                : user.getUserEmail();
+        String updatedPhone = (userUpdateRequestDTO.getUserPhone() != null && !userUpdateRequestDTO.getUserPhone().isEmpty())
+                ? userUpdateRequestDTO.getUserPhone()
+                : user.getUserPhone();
+        String updatedPassword = (userUpdateRequestDTO.getUserPassword() != null && !userUpdateRequestDTO.getUserPassword().isEmpty())
                 ? passwordEncoder.encode(userUpdateRequestDTO.getUserPassword())
                 : user.getUserPassword();
 
