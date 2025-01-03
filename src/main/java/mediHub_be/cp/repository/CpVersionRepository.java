@@ -71,10 +71,10 @@ public interface CpVersionRepository extends JpaRepository<CpVersion, Long> {
             "LEFT JOIN User u ON cv.userSeq = u.userSeq " +
             "LEFT JOIN Part p ON u.part.partSeq = p.partSeq " +
             "WHERE cv.createdAt = (" +
-            "SELECT MAX(cv2.createdAt) " +
-            "FROM CpVersion cv2 " +
-            "WHERE cv2.cpSeq = cv.cpSeq) " +
-            "ORDER BY cv.createdAt DESC")
+                                    "SELECT MAX(cv2.createdAt) " +
+                                    "FROM CpVersion cv2 " +
+                                    "WHERE cv2.cpSeq = cv.cpSeq) " +
+                                    "ORDER BY cv.createdAt DESC")
     List<ResponseCpDTO> findLatestCp();
 }
 
