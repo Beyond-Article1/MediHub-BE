@@ -42,14 +42,14 @@ public class AnonymousBoardService {
 
     private final AnonymousBoardRepository anonymousBoardRepository;
     private final UserService userService;
-    private final PictureService pictureService;
-    private final KeywordService keywordService;
-    private final ViewCountManager viewCountManager;
-    private final BookmarkService bookmarkService;
-    private final PreferService preferService;
     private final FlagService flagService;
+    private final KeywordService keywordService;
+    private final BookmarkService bookmarkService;
     private final CommentRepository commentRepository;
+    private final ViewCountManager viewCountManager;
     private final NotifyServiceImlp notifyServiceImlp;
+    private final PictureService pictureService;
+    private final PreferService preferService;
 
     private static final String ANONYMOUS_BOARD_FLAG = "ANONYMOUS_BOARD";
 
@@ -57,6 +57,7 @@ public class AnonymousBoardService {
     public List<AnonymousBoardDTO> getBoardList(Long userSeq) {
 
         userService.findUser(userSeq);
+
         List<Flag> flagList = flagService.findAllFlag();
         List<Keyword> keywordList = keywordService.findAllKeyword();
 
@@ -91,6 +92,7 @@ public class AnonymousBoardService {
     public List<AnonymousBoardMyPageDTO> getMyPageBoardList(Long userSeq) {
 
         userService.findUser(userSeq);
+
         List<AnonymousBoard> anonymousBoardList = anonymousBoardRepository.
                 findByUser_UserSeqAndAnonymousBoardIsDeletedFalse(userSeq);
 
@@ -98,6 +100,7 @@ public class AnonymousBoardService {
                 .map(anonymousBoard -> new AnonymousBoardMyPageDTO(
                         anonymousBoard.getAnonymousBoardSeq(),
                         anonymousBoard.getAnonymousBoardTitle(),
+                        anonymousBoard.getAnonymousBoardContent(),
                         anonymousBoard.getAnonymousBoardViewCount(),
                         anonymousBoard.getCreatedAt()
                 ))
@@ -105,7 +108,7 @@ public class AnonymousBoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<AnonymousBoardDTO> getBookMarkedBoardList(Long userSeq) {
+    public List<AnonymousBoardMyPageDTO> getBookMarkedBoardList(Long userSeq) {
 
         User user = userService.findUser(userSeq);
         List<BookmarkDTO> BookmarkDTOList = bookmarkService.findByUserAndFlagType(user, ANONYMOUS_BOARD_FLAG);
@@ -117,13 +120,12 @@ public class AnonymousBoardService {
         List<AnonymousBoard> anonymousBoardList = anonymousBoardRepository.findAllById(anonymousBoardSeqList);
 
         return anonymousBoardList.stream()
-                .map(anonymousBoard -> new AnonymousBoardDTO(
+                .map(anonymousBoard -> new AnonymousBoardMyPageDTO(
                         anonymousBoard.getAnonymousBoardSeq(),
-                        anonymousBoard.getUser().getUserName(),
                         anonymousBoard.getAnonymousBoardTitle(),
+                        anonymousBoard.getAnonymousBoardContent(),
                         anonymousBoard.getAnonymousBoardViewCount(),
-                        anonymousBoard.getCreatedAt(),
-                        null
+                        anonymousBoard.getCreatedAt()
                 ))
                 .collect(Collectors.toList());
     }
@@ -144,7 +146,8 @@ public class AnonymousBoardService {
                 .map(anonymousBoard -> new AnonymousBoardTop3DTO(
                         anonymousBoard.getAnonymousBoardSeq(),
                         anonymousBoard.getAnonymousBoardTitle(),
-                        anonymousBoard.getUser().getUserName()
+                        anonymousBoard.getUser().getUserName(),
+                        anonymousBoard.getCreatedAt()
                 ))
                 .toList();
     }
@@ -152,14 +155,16 @@ public class AnonymousBoardService {
     @Transactional(readOnly = true)
     public List<AnonymousBoardCommentDTO> getBoardCommentList(Long anonymousBoardSeq, Long userSeq) {
 
-        User user = userService.findUser(userSeq);
+        userService.findUser(userSeq);
+
         Flag flag = flagService.findFlag(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
         List<AnonymousBoardCommentDTO> anonymousBoardCommentDTOList = commentRepository
                 .findByFlag_FlagSeqAndCommentIsDeletedFalse(flag.getFlagSeq()).stream()
                 .map(comment -> new AnonymousBoardCommentDTO(
-                        user.getUserName(),
+                        comment.getCommentSeq(),
+                        comment.getUser().getUserSeq(),
                         comment.getCommentContent(),
                         comment.getCreatedAt()))
                 .collect(Collectors.toList());
@@ -179,9 +184,10 @@ public class AnonymousBoardService {
         AnonymousBoard anonymousBoard = anonymousBoardRepository
                 .findByAnonymousBoardSeqAndAnonymousBoardIsDeletedFalse(anonymousBoardSeq);
 
-        if(anonymousBoard.getDeletedAt() != null) throw new CustomException(
-                ErrorCode.CANNOT_DELETE_DATA_ANONYMOUS_BOARD
-        );
+        if(anonymousBoard.getDeletedAt() != null) {
+
+            throw new CustomException(ErrorCode.CANNOT_DELETE_DATA_ANONYMOUS_BOARD);
+        }
 
         boolean shouldIncrease = viewCountManager.shouldIncreaseViewCount(anonymousBoardSeq, request, response);
 
@@ -223,11 +229,8 @@ public class AnonymousBoardService {
 
         anonymousBoardRepository.save(anonymousBoard);
 
-        saveKeywordsAndFlag(anonymousBoardCreateRequestDTO.getKeywords(), anonymousBoard.getAnonymousBoardSeq());
-        updateAnonymousBoardContentWithImages(
-                anonymousBoard,
-                anonymousBoardContent
-        );
+        saveKeywordsAndFlag(anonymousBoardCreateRequestDTO.getKeywordList(), anonymousBoard.getAnonymousBoardSeq());
+        updateAnonymousBoardContentWithImages(anonymousBoard, anonymousBoardContent);
 
         return anonymousBoard.getAnonymousBoardSeq();
     }
@@ -276,31 +279,24 @@ public class AnonymousBoardService {
 
         if(!anonymousBoard.getUser().equals(user)) throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
 
-        anonymousBoard.updateContent(
-                anonymousBoardUpdateRequestDTO.getAnonymousBoardTitle(),
-                null
-        );
-
+        anonymousBoard.updateContent(anonymousBoardUpdateRequestDTO.getAnonymousBoardTitle(), null);
         anonymousBoardRepository.save(anonymousBoard);
 
         Flag flag = flagService.findFlag(ANONYMOUS_BOARD_FLAG, anonymousBoard.getAnonymousBoardSeq())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
+
         pictureService.deletePictures(flag);
 
-        if(newPictureList != null && !newPictureList.isEmpty()) {
-
-            String updatedContent = pictureService.replaceBase64WithUrls(
+        String updatedContent = pictureService.replaceBase64WithUrls(
                     anonymousBoardUpdateRequestDTO.getAnonymousBoardContent(),
                     flag.getFlagType(),
                     flag.getFlagEntitySeq()
-            );
+        );
 
-            anonymousBoard.updateContent(anonymousBoardUpdateRequestDTO.getAnonymousBoardTitle(), updatedContent);
-            anonymousBoardRepository.save(anonymousBoard);
-        }
-
+        anonymousBoard.updateContent(anonymousBoardUpdateRequestDTO.getAnonymousBoardTitle(), updatedContent);
+        anonymousBoardRepository.save(anonymousBoard);
         keywordService.updateKeywords(
-                anonymousBoardUpdateRequestDTO.getKeywords(),
+                anonymousBoardUpdateRequestDTO.getKeywordList(),
                 ANONYMOUS_BOARD_FLAG,
                 anonymousBoardSeq
         );
@@ -342,9 +338,10 @@ public class AnonymousBoardService {
             if(!SecurityUtil.getCurrentUserAuthorities().equals("ADMIN")) return false;
         }
 
-        if(anonymousBoard.getDeletedAt() != null) throw new CustomException(
-                ErrorCode.CANNOT_DELETE_DATA_ANONYMOUS_BOARD
-        );
+        if(anonymousBoard.getDeletedAt() != null) {
+
+            throw new CustomException(ErrorCode.CANNOT_DELETE_DATA_ANONYMOUS_BOARD);
+        }
 
         Flag flag = flagService.findFlag(ANONYMOUS_BOARD_FLAG, anonymousBoard.getAnonymousBoardSeq())
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
@@ -388,39 +385,39 @@ public class AnonymousBoardService {
     }
 
     @Transactional
-    public boolean toggleBookmark(Long anonymousBoard, String userId) {
+    public boolean toggleBookmark(Long anonymousBoardSeq, String userId) {
 
-//        User user = userService.findUser(userSeq);
+//        userService.findUser(userSeq);
         userService.findByUserId(userId);
 
-        return bookmarkService.toggleBookmark(ANONYMOUS_BOARD_FLAG, anonymousBoard, userId);
+        return bookmarkService.toggleBookmark(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq, userId);
     }
 
     @Transactional
-    public boolean isBookmarked(Long anonymousBoard, String userId) {
+    public boolean isBookmarked(Long anonymousBoardSeq, String userId) {
 
-//        User user = userService.findUser(userSeq);
+//        userService.findUser(userSeq);
         userService.findByUserId(userId);
 
-        return bookmarkService.isBookmarked(ANONYMOUS_BOARD_FLAG, anonymousBoard, userId);
+        return bookmarkService.isBookmarked(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq, userId);
     }
 
     @Transactional
-    public boolean togglePrefer(Long anonymousBoard, String userId) {
+    public boolean togglePrefer(Long anonymousBoardSeq, String userId) {
 
-//        User user = userService.findUser(userSeq);
+//        userService.findUser(userSeq);
         userService.findByUserId(userId);
 
-        return preferService.togglePrefer(ANONYMOUS_BOARD_FLAG, anonymousBoard, userId);
+        return preferService.togglePrefer(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq, userId);
     }
 
     @Transactional
-    public boolean isPreferred(Long anonymousBoard, String userId) {
+    public boolean isPreferred(Long anonymousBoardSeq, String userId) {
 
-//        User user = userService.findUser(userSeq);
+//        userService.findUser(userSeq);
         userService.findByUserId(userId);
 
-        return preferService.isPreferred(ANONYMOUS_BOARD_FLAG, anonymousBoard, userId);
+        return preferService.isPreferred(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq, userId);
     }
 
     private void saveKeywordsAndFlag(List<String> keywordList, Long entitySeq) {
@@ -443,7 +440,6 @@ public class AnonymousBoardService {
                 anonymousBoard.getAnonymousBoardTitle(),
                 updatedAnonymousBoardContent
         );
-
         anonymousBoardRepository.save(anonymousBoard);
     }
 }

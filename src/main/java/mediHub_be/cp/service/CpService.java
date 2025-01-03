@@ -64,26 +64,19 @@ public class CpService {
 
         logger.info("CP 검색 카테고리 시퀀스: {}, 카테고리 데이터: {}", cpSearchCategorySeqArray, cpSearchCategoryDataArray);
 
-//        // DB 조회
-//        List<Map<String, Object>> entityList = cpVersionRepository.findByCategorySeqAndCategoryData(
-//                cpSearchCategorySeqArray,
-//                cpSearchCategoryDataArray
-//        );
-
         // DB 조회
         List<ResponseCpDTO> dtoList = jooqCpVersionRepository.findCpVersionByCategory(cpSearchCategoryDataArray);
-
-        logger.info("조회된 정보: {}", dtoList);
 
         if (dtoList.isEmpty()) {
             logger.info("조회 결과 없음: 카테고리 시퀀스와 데이터로 찾은 CP가 없습니다.");
             throw new CustomException(ErrorCode.NOT_FOUND_CP_VERSION);
         } else {
-            logger.info("조회된 CP 리스트 크기: {}", dtoList.size());
-
+            logger.info("조회된 정보: {}", dtoList);
+            logger.info("리스트의 북마크 설정 정보를 조회합니다.");
             // 북마크 확인
             checkBookmark(dtoList);
 
+            logger.info("검색 결과를 반환합니다.");
             return dtoList;
         }
     }
@@ -267,10 +260,11 @@ public class CpService {
         logger.info("사용자 {}의 북마크 목록을 {}개 찾았습니다.", user.getUserId(), bookmarkDtoList.size());
 
         List<ResponseCpDTO> responseCpDTOList = bookmarkDtoList.stream()
-                .map(bookmarkDto ->
-                        cpVersionRepository.findByCpVersionSeq(bookmarkDto.getFlag().getFlagSeq())
-                                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CP_VERSION))
-                )
+                .map(bookmarkDto -> {
+//                    logger.info("북마크 정보: {}", bookmarkDto);
+                    return cpVersionRepository.findByCpVersionSeq(bookmarkDto.getFlag().getFlagEntitySeq())
+                            .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_CP_VERSION));
+                })
                 .toList();
 
         logger.info("사용자 {}의 북마크된 CP 버전 조회가 완료되었습니다.", user.getUserId());
@@ -303,9 +297,9 @@ public class CpService {
      * 조회수 증가 조건에 따라 조회수를 증가시킵니다.
      *
      * @param cpVersionSeq CP 버전 시퀀스
-     * @param cpVersion CP 버전
-     * @param request HTTP 요청 객체
-     * @param response HTTP 응답 객체
+     * @param cpVersion    CP 버전
+     * @param request      HTTP 요청 객체
+     * @param response     HTTP 응답 객체
      * @return 조회된 CP 정보가 담긴 {@link ResponseCpDTO} 객체
      * @throws CustomException CP가 존재하지 않을 경우 {@link ErrorCode#NOT_FOUND_CP} 예외가 발생합니다.
      */

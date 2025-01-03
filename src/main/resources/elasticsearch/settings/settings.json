@@ -1,35 +1,39 @@
 {
+  "number_of_shards": 1,
+  "number_of_replicas": 0,
   "analysis": {
-    "tokenizer": {
-      "my-nori-tokenizer": {
-        "type": "nori_tokenizer",
-        "decompound_mode": "mixed"
+    "analyzer": {
+      "korean": {
+        "type": "custom",
+        "tokenizer": "nori_tokenizer",
+        "filter": [
+          "lowercase",
+          "my_ngram",
+          "nori_readingform"
+        ]
       },
-      "my-ngram-tokenizer": {
-        "type": "ngram",
-        "min_gram": 2,
-        "max_gram": 3,
-        "token_chars": ["letter", "digit"]
+      "prefix_analyzer": {
+        "type": "custom",
+        "tokenizer": "prefix_analyzer",
+        "filter": ["lowercase"]
       }
     },
-    "analyzer": {
-      "my-nori-analyzer": {
-        "type": "custom",
-        "tokenizer": "my-nori-tokenizer",
-        "filter": [
-          "lowercase",
-          "stop",
-          "trim",
-          "nori_part_of_speech"
+    "tokenizer": {
+      "prefix_analyzer": {
+        "type": "edge_ngram",
+        "min_gram": 1,
+        "max_gram": 10,
+        "token_chars": [
+          "letter",
+          "digit"
         ]
-      },
-      "my-ngram-analyzer": {
-        "type": "custom",
-        "tokenizer": "my-ngram-tokenizer",
-        "filter": [
-          "lowercase",
-          "trim"
-        ]
+      }
+    },
+    "filter": {
+      "my_ngram": {
+        "type": "ngram",
+        "min_gram": 1,
+        "max_gram": 2
       }
     }
   }

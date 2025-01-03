@@ -9,8 +9,6 @@ import mediHub_be.board.repository.FlagRepository;
 import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
-import mediHub_be.dept.entity.Dept;
-import mediHub_be.follow.entity.Follow;
 import mediHub_be.follow.repository.FollowRepository;
 import mediHub_be.user.dto.UserResponseDTO;
 import mediHub_be.user.dto.UserSearchDTO;

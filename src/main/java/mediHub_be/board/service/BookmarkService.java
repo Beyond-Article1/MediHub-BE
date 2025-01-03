@@ -21,9 +21,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BookmarkService {
 
-    private final BookmarkRepository bookmarkRepository;
-    private final FlagRepository flagRepository;
     private final UserRepository userRepository;
+    private final FlagRepository flagRepository;
+    private final BookmarkRepository bookmarkRepository;
     private final FlagService flagService;
 
     @Transactional
@@ -36,7 +36,7 @@ public class BookmarkService {
         // 기존 북마크 존재 여부 확인
         Optional<Bookmark> existingBookmark = bookmarkRepository.findByUserAndFlag(user, flag);
 
-        if (existingBookmark.isPresent()) {
+        if(existingBookmark.isPresent()) {
 
             // 북마크 해제 (삭제)
             bookmarkRepository.delete(existingBookmark.get());

@@ -13,6 +13,7 @@ public class AnonymousBoardMyPageDTO {
 
     private Long anonymousBoardSeq;
     private String anonymousBoardTitle;
+    private String anonymousBoardContent;
     private Long anonymousBoardViewCount;
     private LocalDateTime createdAt;
 }

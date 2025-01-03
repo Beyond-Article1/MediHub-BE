@@ -1,5 +1,6 @@
 package mediHub_be.security.filter;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,13 +35,21 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
 
-            if (jwtUtil.validateToken(jwt)) {
-                Authentication authentication = jwtUtil.getAuthentication(jwt);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("Authentication successful for user: {}", authentication.getName());
-            } else {
-                log.warn("Invalid JWT token detected.");
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+            try {
+                if (jwtUtil.validateToken(jwt)) {
+                    Authentication authentication = jwtUtil.getAuthentication(jwt);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.info("Authentication successful for user: {}", authentication.getName());
+                }
+            } catch (ExpiredJwtException e) {
+                log.info("Expired JWT Token: {}", e.getMessage());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Access token expired. Please refresh token.");
+                return;
+            } catch (Exception e) {
+                log.warn("Invalid JWT token: {}", e.getMessage());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Invalid token. Please authenticate.");
                 return;
             }
         } else {

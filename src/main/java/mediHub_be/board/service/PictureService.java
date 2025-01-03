@@ -244,17 +244,22 @@ public class PictureService {
     @Transactional(readOnly = true)
     public String getUserProfileUrl(long userSeq) {
 
+        log.info("프로필 사진 조회 요청이 생성되었습니다.");
+
         Flag flag = flagService.findFlag("USER", userSeq).orElse(null);
 
         if (flag != null) {
             Picture profile = pictureRepository.findFirstByFlag_FlagSeqOrderByCreatedAtDesc(flag.getFlagSeq()).orElse(null);
 
             if (profile != null) {
+                log.info("프로필 사진 조회가 성공하였습니다.");
                 return profile.getPictureUrl();
             } else {
+                log.warn("프로필 사진이 없습니다.");
                 return UserService.DEFAULT_PROFILE_URL;
             }
         } else {
+            log.warn("프로필 사진이 없습니다.");
             return UserService.DEFAULT_PROFILE_URL;
         }
     }

@@ -15,5 +15,5 @@ public class AnonymousBoardCreateRequestDTO {
 
     private String anonymousBoardTitle;
     private String anonymousBoardContent;
-    private List<String> keywords;
+    private List<String> keywordList;
 }

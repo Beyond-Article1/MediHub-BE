@@ -107,19 +107,18 @@ public class MedicalLifeService {
                     Dept dept = medicalLife.getUser().getPart().getDept();
                     Part part = medicalLife.getUser().getPart();
 
-                    String rankingName = rankings.stream()
-                            .filter(r -> r.getDeptSeq() == dept.getDeptSeq())
-                            .map(Ranking::getRankingName)
-                            .findFirst()
-                            .orElse("N/A");
+                    String rankingName = medicalLife.getUser().getRanking() != null
+                            ? medicalLife.getUser().getRanking().getRankingName()
+                            : "N/A";
 
                     return MedicalLifeListDTO.builder()
                             .medicalLifeSeq(medicalLife.getMedicalLifeSeq())
                             .userSeq(medicalLife.getUser().getUserSeq())
                             .userName(medicalLife.getUser().getUserName())
-                            .PartSeq(part.getPartName())
-                            .DeptSeq(dept.getDeptName())
-                            .medicalLifeName(medicalLife.getMedicalLifeTitle())
+                            .deptSeq(dept.getDeptSeq())
+                            .deptName(dept.getDeptName())
+                            .partSeq(part.getPartSeq())
+                            .partName(part.getPartName())
                             .medicalLifeTitle(medicalLife.getMedicalLifeTitle())
                             .medicalLifeContent(medicalLife.getMedicalLifeContent())
                             .medicalLifeIsDeleted(medicalLife.getMedicalLifeIsDeleted())
@@ -131,7 +130,6 @@ public class MedicalLifeService {
                 })
                 .collect(Collectors.toList());
     }
-
 
     // 메디컬 라이프 상세 조회
     @Transactional
@@ -317,21 +315,25 @@ public class MedicalLifeService {
             List<MultipartFile> newImageList,
             Long userSeq
     ) {
+        // 사용자 인증 확인
         User user = userRepository.findById(userSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
+        // 수정 대상 게시글 조회
         MedicalLife medicalLife = medicalLifeRepository
                 .findById(medicalLifeSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_MEDICAL_LIFE));
 
+        // 작성자 확인
         if (!medicalLife.getUser().equals(user)) {
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
-        // 기존 이미지 삭제
+        // 플래그 조회
         Flag flag = flagService.findFlag(MEDICAL_LIFE_FLAG, medicalLifeSeq)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_FLAG));
 
+        // 기존 이미지 삭제
         List<Picture> pictureList = pictureRepository.findAllByFlag_FlagSeqAndPictureIsDeletedFalse(flag.getFlagSeq());
         for (Picture picture : pictureList) {
             amazonS3Service.deleteImageFromS3(picture.getPictureUrl());
@@ -339,15 +341,12 @@ public class MedicalLifeService {
             pictureRepository.save(picture);
         }
 
-        // 새 이미지 처리 및 업데이트된 내용 저장
-        String updatedContent = null;
-        if (newImageList != null && !newImageList.isEmpty()) {
-            updatedContent = pictureService.replaceBase64WithUrls(
-                    medicalLifeUpdateRequestDTO.getMedicalLifeContent(),
-                    flag.getFlagType(),
-                    flag.getFlagEntitySeq()
-            );
-        }
+        // Base64 이미지를 URL로 변환하여 content 업데이트
+        String updatedContent = pictureService.replaceBase64WithUrls(
+                medicalLifeUpdateRequestDTO.getMedicalLifeContent(),
+                MEDICAL_LIFE_FLAG,
+                flag.getFlagEntitySeq()
+        );
 
         // 게시글 업데이트
         medicalLife.update(
@@ -368,6 +367,7 @@ public class MedicalLifeService {
         return medicalLife.getMedicalLifeSeq();
     }
 
+
     // 댓글 수정
     @Transactional
     public Long updateMedicalLifeComment(
@@ -384,9 +384,7 @@ public class MedicalLifeService {
             throw new CustomException(ErrorCode.NOT_FOUND_COMMENT);
         }
 
-        log.info("User attempting update - User ID: {}, Comment Owner ID: {}", user.getUserSeq(), comment.getUser().getUserSeq());
         if (!comment.getUser().equals(user)) {
-            log.error("Unauthorized access - User ID: {}, Comment Owner ID: {}", user.getUserSeq(), comment.getUser().getUserSeq());
             throw new CustomException(ErrorCode.UNAUTHORIZED_USER);
         }
 
@@ -553,12 +551,15 @@ public class MedicalLifeService {
                 .toList();
     }
 
-
+    // 내가 북마크한 게시글
     @Transactional(readOnly = true)
-    public List<MedicalLifeListDTO> getBookMarkedMedicalLifeList(Long userSeq) {
+    public List<MedicalLifeBookMarkDTO> getBookMarkedMedicalLifeList(Long userSeq) {
 
-        User user = userRepository.findById(userSeq).orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
+        // 사용자 정보 가져오기
+        User user = userRepository.findById(userSeq)
+                .orElseThrow(() -> new CustomException(ErrorCode.NEED_LOGIN));
 
+        // 북마크 정보 가져오기
         List<BookmarkDTO> bookmarkDTOList = bookmarkService.findByUserAndFlagType(user, MEDICAL_LIFE_FLAG);
 
         List<Long> medicalLifeSeqList = bookmarkDTOList.stream()
@@ -568,17 +569,16 @@ public class MedicalLifeService {
         List<MedicalLife> medicalLifeList = medicalLifeRepository.findAllById(medicalLifeSeqList);
 
         return medicalLifeList.stream()
-                .map(medicalLife -> MedicalLifeListDTO.builder()
+                .map(medicalLife -> MedicalLifeBookMarkDTO.builder()
                         .medicalLifeSeq(medicalLife.getMedicalLifeSeq())
                         .userSeq(medicalLife.getUser().getUserSeq())
                         .userName(medicalLife.getUser().getUserName())
-                        .PartSeq(medicalLife.getUser().getPart().getPartName())
-                        .DeptSeq(medicalLife.getUser().getPart().getDept().getDeptName())
+                        .partName(medicalLife.getUser().getPart().getPartName())
                         .medicalLifeName(medicalLife.getMedicalLifeTitle())
                         .medicalLifeTitle(medicalLife.getMedicalLifeTitle())
                         .medicalLifeContent(medicalLife.getMedicalLifeContent())
-                        .medicalLifeIsDeleted(medicalLife.getMedicalLifeIsDeleted())
                         .medicalLifeViewCount(medicalLife.getMedicalLifeViewCount())
+                        .createdAt(medicalLife.getCreatedAt())
                         .build())
                 .toList();
     }
