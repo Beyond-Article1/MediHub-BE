@@ -8,6 +8,7 @@ import mediHub_be.common.response.ApiResponse;
 import mediHub_be.security.util.SecurityUtil;
 import mediHub_be.user.dto.UserResponseDTO;
 import mediHub_be.user.dto.UserSearchDTO;
+import mediHub_be.user.dto.UserTop3DTO;
 import mediHub_be.user.dto.UserUpdateRequestDTO;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.service.UserService;
@@ -73,6 +74,14 @@ public class UserController {
 
         // 성공 응답 반환
         return ResponseEntity.ok(ApiResponse.ok(isDoctor));
+    }
+
+    @Operation(summary = "메인화면 monthly top3 반환")
+    @GetMapping(value = "/top3")
+    public ResponseEntity<ApiResponse<List<UserTop3DTO>>> getTop3Users() {
+        List<UserTop3DTO> top3User = userService.getTop3Users();
+
+        return ResponseEntity.ok(ApiResponse.ok(top3User));
     }
 
 

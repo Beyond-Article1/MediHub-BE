@@ -1,5 +1,6 @@
 package mediHub_be.chatbot.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +20,9 @@ public class ChatbotSession {
 
     private Long userSeq; // 사용자 Seq
     private String title; // 세션 제목
+
     private LocalDateTime createdAt; // 세션 생성 시간
+
     private LocalDateTime lastMessageAt; // 마지막 메시지 시간
     private String lastMessageContent; // 마지막 메시지 내용
 

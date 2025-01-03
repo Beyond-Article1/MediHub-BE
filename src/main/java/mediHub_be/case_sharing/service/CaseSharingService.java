@@ -132,6 +132,7 @@ public class CaseSharingService {
                 false
         );
         caseSharingRepository.save(caseSharing);
+
         saveKeywordsAndFlag(requestDTO.getKeywords(), caseSharing.getCaseSharingSeq());
         updateContentWithImages(caseSharing,content);
 
@@ -463,6 +464,7 @@ public class CaseSharingService {
 
     private void updateContentWithImages(CaseSharing caseSharing, String content) {
         // Base64 이미지 -> S3 URL 변환
+        log.info("replaceBase64 호출");
         String updatedContent = pictureService.replaceBase64WithUrls(
                 content,
                 CASE_SHARING_FLAG,
