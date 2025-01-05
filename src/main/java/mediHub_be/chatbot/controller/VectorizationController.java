@@ -10,7 +10,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/chatbot")
+@RequestMapping("/api/chatbot")
 public class VectorizationController {
 
     private final VectorizationService vectorizationService;

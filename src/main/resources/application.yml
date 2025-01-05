@@ -44,7 +44,7 @@ spring:
   # MongoDB 설정
   data:
     mongodb:
-      uri: mongodb://${mongodb.host}:${mongodb.port.number}/${db.name}?authSource=admin
+      uri: mongodb://${db.name}:${db.password}@${mongodb.host}:${mongodb.port.number}/${db.name}?authSource=admin
       database: ${db.name}
       username: ${db.name}
       password: ${db.password}
@@ -89,7 +89,7 @@ spring:
   logstash:
     enabled: false
     destination:
-      host: localhost
+      host: ${logstash_host_name}
       port: 5000
 
   #  logback.xml 사용 여부 결정
@@ -118,3 +118,13 @@ logging:
       jooq:
         tools:
           LoggerListener: debug
+
+# health check
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health"
+  endpoint:
+    health:
+      path: /actuator/health  # 기본 경로를 설정

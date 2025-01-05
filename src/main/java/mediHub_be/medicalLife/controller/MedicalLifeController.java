@@ -23,7 +23,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "medical-life")
+@RequestMapping(value = "/api/medical-life")
 @RequiredArgsConstructor
 @Tag(name = "메디컬 라이프", description = "메디컬 라이프 API")
 public class MedicalLifeController {

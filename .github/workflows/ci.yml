@@ -77,3 +77,17 @@ jobs:
         if: always()
         with:
           report_paths: '**/build/test-results/test/TEST-*.html'
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 슬랙 CI 완료 알림
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ github.event.workflow_run.conclusion }}
+          author_name: www-be
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          if_mention: failure,cancelled
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
+

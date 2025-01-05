@@ -22,7 +22,7 @@ import java.util.List;
 @Tag(name = "논문", description = "논문과 북마크")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/journal")
+@RequestMapping("/api/journal")
 public class JournalController {
 
     private final JournalServiceImpl journalService;

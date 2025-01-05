@@ -45,6 +45,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                                 .requestMatchers("/**").permitAll()
+                                .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/login")).permitAll() // 로그인 API 허용
 //                        .requestMatchers(new AntPathRequestMatcher("/api/**")).permitAll() // 로그인 API 허용
                         .requestMatchers(new AntPathRequestMatcher("/api/v1/token/reissue")).permitAll()
@@ -99,6 +100,8 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         config.addAllowedOrigin("http://localhost:5173"); // 허용할 도메인
         config.addAllowedOrigin("https://medihub.s3.ap-northeast-2.amazonaws.com"); // S3 URL 추가
+        config.addAllowedOrigin("https://www.medihub.info");
+        config.addAllowedOrigin("https://medihub.info");
         config.addAllowedHeader("*"); // 모든 헤더 허용
         config.addAllowedMethod("*"); // 모든 HTTP 메소드 허용
         config.addExposedHeader("Access-Token");
