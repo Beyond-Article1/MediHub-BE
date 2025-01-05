@@ -15,14 +15,30 @@ public class TableDataService {
 
     private final JdbcTemplate jdbcTemplate;
 
-    // 모든 테이블 이름 가져오기
+    // 유효한 테이블 이름 목록
+    private static final Set<String> VALID_TABLES = new HashSet<>(Arrays.asList(
+            "anonymous_board",
+            "case_sharing",
+            "cp",
+            "flag",
+            "keyword",
+            "medical_life",
+            "dept",
+            "part",
+            "user"
+    ));
+
+    // 모든 테이블 이름 가져오기 (필터링 적용)
     public List<String> getAllTableNames() {
         List<String> tableNames = new ArrayList<>();
         try {
             DatabaseMetaData metaData = Objects.requireNonNull(jdbcTemplate.getDataSource()).getConnection().getMetaData();
             ResultSet tables = metaData.getTables(null, null, "%", new String[]{"TABLE"});
             while (tables.next()) {
-                tableNames.add(tables.getString("TABLE_NAME"));
+                String tableName = tables.getString("TABLE_NAME");
+                if (VALID_TABLES.contains(tableName)) { // 유효한 테이블만 추가
+                    tableNames.add(tableName);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -32,8 +48,11 @@ public class TableDataService {
 
     // 특정 테이블의 데이터 가져오기
     public List<Map<String, Object>> getTableData(String tableName) {
+        if (!VALID_TABLES.contains(tableName)) {
+            throw new IllegalArgumentException("Invalid table name: " + tableName);
+        }
         try {
-            String query = "SELECT * FROM " + tableName; // SQL Injection 주의 필요
+            String query = "SELECT * FROM " + tableName;
             return jdbcTemplate.queryForList(query);
         } catch (Exception e) {
             System.err.println("Error processing table: " + tableName);
@@ -45,4 +64,7 @@ public class TableDataService {
     public DataSource getDataSource() {
         return jdbcTemplate.getDataSource();
     }
+
+
+
 }

@@ -13,6 +13,7 @@ public class AdminResponseDTO {
     private String userPhone;
     private String rankingName;
     private Long rankingSeq;
+    private Long rankingNum;
     private String partName;
     private Long partSeq;
     private String deptName;

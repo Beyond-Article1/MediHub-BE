@@ -91,6 +91,7 @@ public class CaseSharingService {
                 .caseSharingTitle(caseSharing.getCaseSharingTitle())
                 .caseSharingContent(caseSharing.getCaseSharingContent())
                 .caseAuthor(caseSharing.getUser().getUserName())
+                .caseAuthorId(caseSharing.getUser().getUserId())
                 .caseAuthorRankName(caseSharing.getUser().getRanking().getRankingName())
                 .keywords(keywordDTOs)
                 .createdAt(caseSharing.getCreatedAt())
@@ -98,7 +99,7 @@ public class CaseSharingService {
                 .templateSeq(caseSharing.getTemplate().getTemplateSeq())
                 .isLatestVersion(caseSharing.getCaseSharingIsLatest())
                 .caseSharingViewCount(caseSharing.getCaseSharingViewCount())
-                .caseAuthorUrl(pictureService.getUserProfileUrl(user.getUserSeq()))
+                .caseAuthorUrl(pictureService.getUserProfileUrl(caseSharing.getUser().getUserSeq()))
                 .build();
     }
 
@@ -131,6 +132,7 @@ public class CaseSharingService {
                 false
         );
         caseSharingRepository.save(caseSharing);
+
         saveKeywordsAndFlag(requestDTO.getKeywords(), caseSharing.getCaseSharingSeq());
         updateContentWithImages(caseSharing,content);
 
@@ -227,7 +229,6 @@ public class CaseSharingService {
                             caseSharingGroup.getCaseSharingGroupSeq(),
                             caseSharingSeq
                     ).orElse(null);
-            log.info("seq값"+previousVersion.getCaseSharingSeq());
             if (previousVersion != null) {
                 previousVersion.markAsLatest();
                 caseSharingRepository.save(previousVersion);
@@ -463,6 +464,7 @@ public class CaseSharingService {
 
     private void updateContentWithImages(CaseSharing caseSharing, String content) {
         // Base64 이미지 -> S3 URL 변환
+        log.info("replaceBase64 호출");
         String updatedContent = pictureService.replaceBase64WithUrls(
                 content,
                 CASE_SHARING_FLAG,
@@ -518,7 +520,5 @@ public class CaseSharingService {
                 caseSharing.getCaseSharingViewCount()
         );
     }
-
-
 
 }

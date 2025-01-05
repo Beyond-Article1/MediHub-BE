@@ -217,19 +217,6 @@ INSERT INTO case_sharing (user_seq, part_seq, template_seq, case_sharing_group_s
                                                        (9, 1, 1, 9, '사례 공유 제목 9', '사례 공유 내용 9', false, true, NOW(), NULL, 0),
                                                        (10, 1, 1, 10, '사례 공유 제목 10', '사례 공유 내용 10', false, true, NOW(), NULL, 0);
 
-INSERT INTO case_sharing_comment (user_seq, case_sharing_seq, case_sharing_comment_content,
-                                  case_sharing_comment_start_offset, case_sharing_comment_end_offset, created_at,
-                                  updated_at, deleted_at) VALUES
-                                                              (1, 1, 'This is a comment on case study 1.', 10, 50, NOW(), NOW(), NULL),
-                                                              (2, 2, 'This is a comment on case study 2.', 20, 60, NOW(), NOW(), NULL),
-                                                              (3, 3, 'Another comment on case study 1.', 30, 70, NOW(), NOW(), NULL),
-                                                              (4, 4, '댓글 내용 4', 30, 40, NOW(), NULL, NULL),
-                                                              (5, 5, '댓글 내용 5', 40, 50, NOW(), NULL, NULL),
-                                                              (6, 6, '댓글 내용 6', 50, 60, NOW(), NULL, NULL),
-                                                              (7, 7, '댓글 내용 7', 60, 70, NOW(), NULL, NULL),
-                                                              (8, 8, '댓글 내용 8', 70, 80, NOW(), NULL, NULL),
-                                                              (9, 9, '댓글 내용 9', 80, 90, NOW(), NULL, NULL),
-                                                              (10, 10, '댓글 내용 10', 90, 100, NOW(), NULL, NULL);
 
 INSERT INTO cp (user_seq, cp_name, cp_description, cp_view_count) VALUES
                                                                       (1, 'CP 이름 1', 'CP 설명 1', 0),

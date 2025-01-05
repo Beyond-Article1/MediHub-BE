@@ -82,9 +82,9 @@ public class ChatroomService {
         String chatroomDefaultName = usersInChatGroup.toString().trim();
         savedChatroom.updateChatroomDefaultName(chatroomDefaultName);
 
-        notifyServiceImlp.sendChat(users);
-
         sendNotifyMessage(chatroomSeq, myUserSeq, chatroomDTO.getUsers(), "create");
+
+        notifyServiceImlp.sendChat(users);
 
         return chatroomSeq;
     }
@@ -122,9 +122,9 @@ public class ChatroomService {
         String chatroomDefaultName = usersInChatGroup.toString().trim();
         chatroom.updateChatroomDefaultName(chatroomDefaultName);
 
-        notifyServiceImlp.sendChat(users);
-
         sendNotifyMessage(chatroomSeq, myUserSeq, chatroomDTO.getUsers(), "invite");
+
+        notifyServiceImlp.sendChat(users);
     }
 
     // 사용자별 채팅방 이름 변경(설정)

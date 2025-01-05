@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    if: github.event.action == 'opened' || github.event.action == 'synchronize
+    if: github.event.action == 'opened' || github.event.action == 'synchronize'
     runs-on: ubuntu-latest
     steps:
       - name: checkout the code
@@ -165,17 +165,20 @@ jobs:
   create-pr:
     if: needs.set-environment.outputs.environment == 'develop'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write      # 레포지토리 내용 수정 권한
+      pull-requests: write # PR 생성 권한
     needs: [set-environment, deploy]
     steps:
       - name: checkout
         uses: actions/checkout@v4
       - name: gh auth login
         run: |
-          echo ${{ secrets.AWS_ACCESS_KEY_ID }} | gh auth login --with-token
+          echo ${{ secrets.PERSONAL_ACCESS_TOKEN }} | gh auth login --with-token
       - name: create branch
         run: |
           git checkout -b release/${{ github.run_id }}
-          git push origin -b release/${{ github.run_id }}
+          git push origin release/${{ github.run_id }}
       - name: create pr
         run: |
           gh pr create --base master --head release/${{ github.run_id }} --title "[DEPLOY] release/${{ github.run_id }} -> master" --body "release pr"

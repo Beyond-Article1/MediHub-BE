@@ -92,6 +92,7 @@ public class TokenController {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Access-Token", newAccessToken);
         headers.add("Refresh-Token", newRefreshToken);
+        headers.add("Refresh-Token-Expiration", String.valueOf(System.currentTimeMillis() + refreshTokenExpiration));
 
         return ResponseEntity.ok()
                 .headers(headers)

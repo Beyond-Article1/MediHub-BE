@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -39,6 +38,7 @@ public class PictureService {
             JsonNode contentNode = objectMapper.readTree(content);
 
             Flag flag = flagService.findFlag(flagType, entitySeq).orElse(null);
+            log.info("flag 정보:"+ flag);
 
             // Base64 이미지 처리
             List<String> uploadedUrls = new ArrayList<>();
@@ -46,9 +46,10 @@ public class PictureService {
                 if ("image".equals(block.get("type").asText())) {
                     JsonNode fileNode = block.get("data").get("file");
                     String base64Url = fileNode.get("url").asText();
-
+                    log.info("베이스이미지" + base64Url);
                     if (base64Url.startsWith("data:image")) {
                         String uploadedUrl = uploadBase64Image(base64Url, flag);
+                        log.info("업로드 url" + uploadedUrl);
                         uploadedUrls.add(uploadedUrl);
 
                         // JSON 노드 URL 교체
@@ -73,6 +74,8 @@ public class PictureService {
             String base64Image = parts[1];
             String fileExtension = parts[0].split(";")[0].split("/")[1];
 
+            System.out.println("File Extension: " + fileExtension);
+
             byte[] decodedBytes = java.util.Base64.getDecoder().decode(base64Image);
             String fileName = "uploaded_image_" + System.currentTimeMillis() + "." + fileExtension;
 
@@ -96,60 +99,8 @@ public class PictureService {
         }
     }
 
-
-    // 이미지 업로드 및 Picture 엔터티 생성
     @Transactional
-    public List<String> uploadPictureWithFlag(String flagType, Long entitySeq, List<MultipartFile> pictures) {
-        Flag flag = flagService.findFlag(flagType, entitySeq).orElse(null);
-        List<String> uploadedUrls = new ArrayList<>(); // 업로드된 S3 파일 URL 추적
-
-        try {
-            // S3 업로드 및 URL 저장
-            List<String> urls = pictures.stream()
-                    .map(image -> {
-                        String url = uploadPicture(image, flag);
-                        uploadedUrls.add(url); // 업로드된 URL 추가
-                        return url;
-                    })
-                    .collect(Collectors.toList());
-
-            // 트랜잭션 롤백 시 S3에서 업로드된 파일 삭제
-            registerRollbackHandler(uploadedUrls);
-
-            return urls;
-        } catch (Exception e) {
-            // S3 업로드 중 에러 발생 시 업로드된 파일 삭제
-            cleanupUploadedFiles(uploadedUrls);
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_IO_UPLOAD_ERROR);
-        }
-    }
-
-    // 본문 내 placeholder -> S3 url로 치환
-    @Transactional
-    public String replacePlaceHolderWithUrls(String content, List<MultipartFile> images, String flagType, Long entitySeq) {
-        List<String> urls = uploadPictureWithFlag(flagType, entitySeq, images);
-
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode contentNode = objectMapper.readTree(content);
-
-            int imageIndex = 0;
-            for (JsonNode block : contentNode.get("blocks")) {
-                if ("image".equals(block.get("type").asText()) && imageIndex < urls.size()) {
-                    ((ObjectNode) block.get("data")).put("file", urls.get(imageIndex));
-                    imageIndex++;
-                }
-            }
-
-            return objectMapper.writeValueAsString(contentNode);
-        } catch (IOException e) {
-            throw new CustomException(ErrorCode.INTERNAL_SERVER_IO_UPLOAD_ERROR);
-        }
-    }
-
-
-    @Transactional
-    public String uploadPicture(MultipartFile picture, Flag flag) {
+    public void uploadPicture(MultipartFile picture, Flag flag) {
         try {
             //S3에 업로드
             AmazonS3Service.MetaData metaData = amazonS3Service.upload(picture);
@@ -165,7 +116,6 @@ public class PictureService {
                     .build();
             pictureRepository.save(pic);
 
-            return metaData.getUrl();
         } catch (IOException e) {
             throw new CustomException(ErrorCode.INTERNAL_SERVER_IO_UPLOAD_ERROR);
         }
@@ -222,10 +172,10 @@ public class PictureService {
     }
     @Transactional(readOnly = true)
     public String getCaseSharingFirstImageUrl(Long caseSharingSeq ){
-        Flag flag = flagService.findFlag("case_sharing", caseSharingSeq).orElse(null);
+        Flag flag = flagService.findFlag("CASE_SHARING", caseSharingSeq).orElse(null);
+
         if (flag != null) {
             Picture profile = pictureRepository.findFirstByFlag_FlagSeqOrderByCreatedAtDesc(flag.getFlagSeq()).orElse(null);
-
             if (profile != null) {
                 return profile.getPictureUrl();
             } else {
@@ -239,17 +189,22 @@ public class PictureService {
     @Transactional(readOnly = true)
     public String getUserProfileUrl(long userSeq) {
 
+        log.info("프로필 사진 조회 요청이 생성되었습니다.");
+
         Flag flag = flagService.findFlag("USER", userSeq).orElse(null);
 
         if (flag != null) {
             Picture profile = pictureRepository.findFirstByFlag_FlagSeqOrderByCreatedAtDesc(flag.getFlagSeq()).orElse(null);
 
             if (profile != null) {
+                log.info("프로필 사진 조회가 성공하였습니다.");
                 return profile.getPictureUrl();
             } else {
+                log.warn("프로필 사진이 없습니다.");
                 return UserService.DEFAULT_PROFILE_URL;
             }
         } else {
+            log.warn("프로필 사진이 없습니다.");
             return UserService.DEFAULT_PROFILE_URL;
         }
     }

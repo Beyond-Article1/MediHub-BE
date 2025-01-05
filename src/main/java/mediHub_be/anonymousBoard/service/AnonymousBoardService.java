@@ -67,11 +67,11 @@ public class AnonymousBoardService {
 
                     List<Flag> flagsForAnonymousBoard = flagList.stream()
                             .filter(flag -> flag.getFlagType().equals(ANONYMOUS_BOARD_FLAG))
-                            .filter(flag -> flag.getFlagEntitySeq() == anonymousBoard.getAnonymousBoardSeq())
+                            .filter(flag -> Objects.equals(flag.getFlagEntitySeq(), anonymousBoard.getAnonymousBoardSeq()))
                             .toList();
                     List<Keyword> keywordsForAnonymousBoard = keywordList.stream()
                             .filter(keyword -> flagsForAnonymousBoard.stream()
-                                    .anyMatch(flag -> flag.getFlagSeq() == keyword.getFlagSeq()))
+                                    .anyMatch(flag -> Objects.equals(flag.getFlagSeq(), keyword.getFlagSeq())))
                             .toList();
 
                     return new AnonymousBoardDTO(
@@ -100,6 +100,7 @@ public class AnonymousBoardService {
                 .map(anonymousBoard -> new AnonymousBoardMyPageDTO(
                         anonymousBoard.getAnonymousBoardSeq(),
                         anonymousBoard.getAnonymousBoardTitle(),
+                        anonymousBoard.getAnonymousBoardContent(),
                         anonymousBoard.getAnonymousBoardViewCount(),
                         anonymousBoard.getCreatedAt()
                 ))
@@ -107,7 +108,7 @@ public class AnonymousBoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<AnonymousBoardDTO> getBookMarkedBoardList(Long userSeq) {
+    public List<AnonymousBoardMyPageDTO> getBookMarkedBoardList(Long userSeq) {
 
         User user = userService.findUser(userSeq);
         List<BookmarkDTO> BookmarkDTOList = bookmarkService.findByUserAndFlagType(user, ANONYMOUS_BOARD_FLAG);
@@ -119,13 +120,12 @@ public class AnonymousBoardService {
         List<AnonymousBoard> anonymousBoardList = anonymousBoardRepository.findAllById(anonymousBoardSeqList);
 
         return anonymousBoardList.stream()
-                .map(anonymousBoard -> new AnonymousBoardDTO(
+                .map(anonymousBoard -> new AnonymousBoardMyPageDTO(
                         anonymousBoard.getAnonymousBoardSeq(),
-                        anonymousBoard.getUser().getUserName(),
                         anonymousBoard.getAnonymousBoardTitle(),
+                        anonymousBoard.getAnonymousBoardContent(),
                         anonymousBoard.getAnonymousBoardViewCount(),
-                        anonymousBoard.getCreatedAt(),
-                        null
+                        anonymousBoard.getCreatedAt()
                 ))
                 .collect(Collectors.toList());
     }
@@ -146,7 +146,8 @@ public class AnonymousBoardService {
                 .map(anonymousBoard -> new AnonymousBoardTop3DTO(
                         anonymousBoard.getAnonymousBoardSeq(),
                         anonymousBoard.getAnonymousBoardTitle(),
-                        anonymousBoard.getUser().getUserName()
+                        anonymousBoard.getUser().getUserName(),
+                        anonymousBoard.getCreatedAt()
                 ))
                 .toList();
     }
@@ -384,39 +385,39 @@ public class AnonymousBoardService {
     }
 
     @Transactional
-    public boolean toggleBookmark(Long anonymousBoard, String userId) {
+    public boolean toggleBookmark(Long anonymousBoardSeq, String userId) {
 
 //        userService.findUser(userSeq);
         userService.findByUserId(userId);
 
-        return bookmarkService.toggleBookmark(ANONYMOUS_BOARD_FLAG, anonymousBoard, userId);
+        return bookmarkService.toggleBookmark(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq, userId);
     }
 
     @Transactional
-    public boolean isBookmarked(Long anonymousBoard, String userId) {
+    public boolean isBookmarked(Long anonymousBoardSeq, String userId) {
 
 //        userService.findUser(userSeq);
         userService.findByUserId(userId);
 
-        return bookmarkService.isBookmarked(ANONYMOUS_BOARD_FLAG, anonymousBoard, userId);
+        return bookmarkService.isBookmarked(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq, userId);
     }
 
     @Transactional
-    public boolean togglePrefer(Long anonymousBoard, String userId) {
+    public boolean togglePrefer(Long anonymousBoardSeq, String userId) {
 
 //        userService.findUser(userSeq);
         userService.findByUserId(userId);
 
-        return preferService.togglePrefer(ANONYMOUS_BOARD_FLAG, anonymousBoard, userId);
+        return preferService.togglePrefer(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq, userId);
     }
 
     @Transactional
-    public boolean isPreferred(Long anonymousBoard, String userId) {
+    public boolean isPreferred(Long anonymousBoardSeq, String userId) {
 
 //        userService.findUser(userSeq);
         userService.findByUserId(userId);
 
-        return preferService.isPreferred(ANONYMOUS_BOARD_FLAG, anonymousBoard, userId);
+        return preferService.isPreferred(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq, userId);
     }
 
     private void saveKeywordsAndFlag(List<String> keywordList, Long entitySeq) {

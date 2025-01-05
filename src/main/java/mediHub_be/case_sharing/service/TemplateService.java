@@ -233,6 +233,9 @@ public class TemplateService {
                 .templateSeq(template.getTemplateSeq())
                 .templateTitle(template.getTemplateTitle())
                 .templatePreviewImgUrl(url)
+                .userName(template.getUser().getUserName()) // 작성자 이름
+                .authorRankName(template.getUser().getRanking().getRankingName()) // 작성자 직위명
+                .createdAt(template.getCreatedAt()) // 생성 시간
                 .build();
     }
 }

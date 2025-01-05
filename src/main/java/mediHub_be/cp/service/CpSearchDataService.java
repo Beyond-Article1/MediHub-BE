@@ -94,6 +94,7 @@ public class CpSearchDataService {
     public void deleteCpSearchData(long cpSearchDataSeq) {
         // 1. 권한 확인
         validateUserAccess();
+        logger.info("권한이 있습니다.");
 
         // 2. 삭제할 데이터 존재 여부 확인
         if (!cpSearchDataRepository.existsById(cpSearchDataSeq)) {

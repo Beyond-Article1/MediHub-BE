@@ -2,6 +2,8 @@ package mediHub_be.cp.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.common.response.ApiResponse;
@@ -54,11 +56,13 @@ public class CpOpinionController {
     public ResponseEntity<ApiResponse<ResponseCpOpinionDTO>> getCpOpinionByCpOpinionSeq(
             @PathVariable long cpVersionSeq,
             @PathVariable long cpOpinionLocationSeq,
-            @PathVariable long cpOpinionSeq) {
+            @PathVariable long cpOpinionSeq,
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
         logger.info("CP 버전 번호: {}, CP 의견 위치 번호: {}, CP 의견 번호: {}로 조회 요청했습니다.", cpVersionSeq, cpOpinionLocationSeq, cpOpinionSeq);
 
-        ResponseCpOpinionDTO cpOpinion = cpOpinionService.findCpOpinionByCpOpinionSeq(cpOpinionSeq);
+        ResponseCpOpinionDTO cpOpinion = cpOpinionService.findCpOpinionByCpOpinionSeq(cpOpinionSeq, request, response);
 
         logger.info("CP 의견 번호로 CP 의견 조회 성공");
         return ResponseEntity.ok(ApiResponse.ok(cpOpinion));
