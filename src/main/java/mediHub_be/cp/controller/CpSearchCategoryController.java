@@ -80,6 +80,8 @@ public class CpSearchCategoryController {
 
     // CP 검색 카테고리 수정
     @PutMapping(value = "{cpSearchCategorySeq}")
+    @Operation(summary = "CP 검색 카테고리 수정",
+            description = "제공된 이름으로 CP 검색 카테고리를 수정합니다.")
     public ResponseEntity<ApiResponse<ResponseCpSearchCategoryDTO>> updateCpSearchCategory(
             @PathVariable long cpSearchCategorySeq,
             @RequestBody String cpSearchCategoryName) {
