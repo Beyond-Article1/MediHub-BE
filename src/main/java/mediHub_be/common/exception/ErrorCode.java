@@ -28,7 +28,7 @@ public enum ErrorCode {
     CANNOT_DELETE_DATA_COMMENT(40006,HttpStatus.CONFLICT, "이미 삭제된 댓글입니다."),
 
     // 입력 오류
-    BAD_REQUEST_INPUT(40907, HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
+    BAD_REQUEST_INPUT(40007, HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
 
     /**
      * == 401 UNAUTHORIZED ==
@@ -65,44 +65,44 @@ public enum ErrorCode {
     NOT_FOUND_CP_SEARCH_DATA(40409, HttpStatus.NOT_FOUND, "CP 검색 데이터를 찾을 수 없습니다."),
 
     // 알림 (notify)
-    NOT_FOUND_NOTIFY(40409, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
+    NOT_FOUND_NOTIFY(40410, HttpStatus.NOT_FOUND, "존재하지 않는 알림입니다."),
 
     // 채팅 (chat)
-    NOT_FOUND_CHATROOM(40410, HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
-    NOT_FOUND_CHATMESSAGE(40411, HttpStatus.NOT_FOUND, "채팅 메시지를 찾을 수 없습니다."),
+    NOT_FOUND_CHATROOM(40411, HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."),
+    NOT_FOUND_CHATMESSAGE(40412, HttpStatus.NOT_FOUND, "채팅 메시지를 찾을 수 없습니다."),
 
     // 익명 게시판 (anonymous_board)
-    NOT_FOUND_ANONYMOUS_BOARD(40412, HttpStatus.NOT_FOUND, "익명 게시글을 찾을 수 없습니다."),
+    NOT_FOUND_ANONYMOUS_BOARD(40413, HttpStatus.NOT_FOUND, "익명 게시글을 찾을 수 없습니다."),
 
     // 사용자 부서 및 랭킹
-    NOT_FOUND_PART(40413, HttpStatus.NOT_FOUND, "존재하지 않는 부서 입니다."),
+    NOT_FOUND_PART(40414, HttpStatus.NOT_FOUND, "존재하지 않는 부서 입니다."),
 
-    NOT_FOUND_RANKING(40414,HttpStatus.NOT_FOUND, "존재하지 않는 직급 입니다."),
+    NOT_FOUND_RANKING(40415,HttpStatus.NOT_FOUND, "존재하지 않는 직급 입니다."),
 
     // 플레그 없음
-    NOT_FOUND_FLAG(40415,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
+    NOT_FOUND_FLAG(40416,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
 
-    FILE_DELETE_FAILED(40410,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
+    FILE_DELETE_FAILED(40417,HttpStatus.NOT_FOUND,"존재하지 않는 플래그 입니다."),
 
     // 댓글 (comment)
-    NOT_FOUND_COMMENT(40416, HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
+    NOT_FOUND_COMMENT(40418, HttpStatus.NOT_FOUND, "댓글을 찾을 수 없습니다."),
 
     // 사진 (picture)
-    NOT_FOUND_PICTURE(40417, HttpStatus.NOT_FOUND, "사진을 찾을 수 없습니다."),
+    NOT_FOUND_PICTURE(40419, HttpStatus.NOT_FOUND, "사진을 찾을 수 없습니다."),
     // 논문
-    NOT_FOUND_JOURNAL(40418, HttpStatus.NOT_FOUND, "해당 논문이 존재하지 않습니다."),
+    NOT_FOUND_JOURNAL(40420, HttpStatus.NOT_FOUND, "해당 논문이 존재하지 않습니다."),
     // Medical_Life
-    NOT_FOUND_MEDICAL_LIFE(40419,HttpStatus.NOT_FOUND, "해당 메디컬 라이프가 존재하지 않습니다."),
+    NOT_FOUND_MEDICAL_LIFE(40421,HttpStatus.NOT_FOUND, "해당 메디컬 라이프가 존재하지 않습니다."),
 
-    NOT_FOUND_CASE(40419,  HttpStatus.NOT_FOUND, "해당 케이스 공유글이 존재하지 않습니다."),
+    NOT_FOUND_CASE(40422,  HttpStatus.NOT_FOUND, "해당 케이스 공유글이 존재하지 않습니다."),
 
-    NOT_FOUND_TEMPLATE(40420,  HttpStatus.NOT_FOUND, "해당 케이스 공유 템플릿이 존재하지 않습니다."),
+    NOT_FOUND_TEMPLATE(40423,  HttpStatus.NOT_FOUND, "해당 케이스 공유 템플릿이 존재하지 않습니다."),
 
     // 팔로우
-    NOT_FOUND_FOLLOW(40421, HttpStatus.NOT_FOUND, "팔로우한 사용자가 아닙니다."),
+    NOT_FOUND_FOLLOW(40424, HttpStatus.NOT_FOUND, "팔로우한 사용자가 아닙니다."),
 
     // 챗봇 세션
-    NOT_FOUND_CHATBOT_SESSION(40422, HttpStatus.NOT_FOUND, "챗봇 세션을 찾을 수 없습니다."),
+    NOT_FOUND_CHATBOT_SESSION(40425, HttpStatus.NOT_FOUND, "챗봇 세션을 찾을 수 없습니다."),
 
     /**
      * == 409 CONFLICT ==

@@ -14,7 +14,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(value = "find")
+@RequestMapping(value = "/api/find")
 @Tag(name = "엘라스틱서치", description = "엘라스틱서치 조회 API")
 @ConditionalOnProperty(
         name = "spring.data.elasticsearch.repositories.enabled",
