@@ -159,7 +159,7 @@ jobs:
         with:
           custom_payload: |
             {
-              "test": "message"
+              "test": "message",
               "blocks": [
                 {
                   "type": "section",
@@ -170,7 +170,7 @@ jobs:
                 }
               ]
             }
-          status: ${{ github.event.workflow_run.conclusion }}
+          status: ${{ job.status }}  # 'success' 또는 'failure'와 같은 상태를 사용
           author_name: www-be
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
           if_mention: failure,cancelled
