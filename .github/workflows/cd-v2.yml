@@ -10,6 +10,9 @@ jobs:
   test:
     if: github.event.action == 'opened' || github.event.action == 'synchronize'
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - name: checkout the code
         uses: actions/checkout@v4
