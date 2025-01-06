@@ -1,0 +1,195 @@
+name: cicd-2
+on:
+  pull_request:
+    types: [opened, synchronize, closed]
+    branches: [develop, master]
+    paths:
+      - 'src/**'
+
+jobs:
+  test:
+    if: github.event.action == 'opened' || github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    steps:
+      - name: checkout the code
+        uses: actions/checkout@v4
+      - name: JDK 17 설정
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+      - name: Gradle 설정
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.8'  # 사용하려는 Gradle 버전 명시
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Add application-key.properties
+        run: |
+          cd ./src/main/resources
+          touch ./application-secret.properties
+          echo "${{ secrets.APPLICATION_KEY_PROPERTIES }}" > ./application-key.properties
+
+      - name: Run Gradle build and tests
+        run: |
+          ./gradlew build
+          ./gradlew test
+          ./gradlew jacocoTestReport
+      - name: Jacoco Report to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.6.1
+        with:
+          title: 📝 Code Coverage
+          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 0
+          min-coverage-changed-files: 60
+          update-comment: true
+      - name: Upload jacoco HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-html-report
+          path: ${{ github.workspace }}/build/jacocoReport/test/html
+      - name: Get the Coverage info
+        run: |
+          echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
+          echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
+      - name: 테스트 결과 PR 코멘트에 등록
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: '**/build/test-results/test/TEST-*.xml'
+      - name: 테스트 실패시 코드 라인에 대한 체크 추가
+        uses: mikepenz/action-junit-report@v3
+        if: always()
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.html'
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 슬랙 CI 완료 알림
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "GitHub Action 빌드 결과",
+              "attachments": [{
+                "color": "${{ job.status == 'success' && 'good' || job.status == 'failure' && 'danger' || 'warning' }}",
+                "text": "Job ${{ job.status == 'success' && '성공 ✅' || '실패 ❌' }}\n${{ github.repository }}"
+              }]
+            }
+          author_name: www-be
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          if_mention: failure,cancelled
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
+
+  set-environment:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+    steps:
+      - name: set env
+        id: set-env
+        run: |
+          echo ${{ github.base_ref }}
+          echo "environment=develop" >> $GITHUB_OUTPUT
+          
+          if [[ ${{ github.base_ref }} == "master" ]]; then
+            echo "environment=prod" >> $GITHUB_OUTPUT
+          fi
+      - name: check env
+        run: echo ${{ steps.set-env.outputs.environment }}
+
+  image-build:
+    runs-on: ubuntu-latest
+    needs: [set-environment]
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      matrix:
+        environment: ["${{ needs.set-environment.outputs.environment }}"]
+    environment: ${{ matrix.environment }}
+    steps:
+      - name: checkout the code
+        uses: actions/checkout@v4
+      - name: AWS 설정
+        id: credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Build and Push Docker Image with Jib
+        run: ./gradlew jib
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [set-environment, image-build]
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      matrix:
+        environment: ["${{ needs.set-environment.outputs.environment }}"]
+    environment: ${{ matrix.environment }}
+    steps:
+      - name: checkout the code
+        uses: actions/checkout@v4
+      - name: AWS 설정
+        id: credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: 슬랙 CI 완료 알림
+        uses: 8398a7/action-slack@v3
+        with:
+          custom_payload: |
+            {
+              "test": "message"
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Environment : ${{ needs.set-environment.outputs.environment }}, Deploy Result"
+                  }
+                }
+              ]
+            }
+          status: ${{ github.event.workflow_run.conclusion }}
+          author_name: www-be
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          if_mention: failure,cancelled
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        if: always()
+  create-pr:
+    if: needs.set-environment.outputs.environment == 'develop'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # 레포지토리 내용 수정 권한
+      pull-requests: write # PR 생성 권한
+    needs: [set-environment, deploy]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: gh auth login
+        run: |
+          echo ${{ secrets.PERSONAL_ACCESS_TOKEN }} | gh auth login --with-token
+      - name: create branch
+        run: |
+          git checkout -b release/${{ github.run_id }}
+          git push origin release/${{ github.run_id }}
+      - name: create pr
+        run: |
+          gh pr create --base master --head release/${{ github.run_id }} --title "[DEPLOY] release/${{ github.run_id }} -> master" --body "release pr"

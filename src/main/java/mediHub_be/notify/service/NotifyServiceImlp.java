@@ -73,7 +73,7 @@ public class NotifyServiceImlp implements NotifyService{
     }
 
     // 알림 보내기
-    private void sendNotification(String eventName, SseEmitter emitter, String eventId, String emitterId, Object data) {
+    public void sendNotification(String eventName, SseEmitter emitter, String eventId, String emitterId, Object data) {
         try {
             // 데이터를 JSON 문자열로 직렬화
             String jsonData = objectMapper.writeValueAsString(data);

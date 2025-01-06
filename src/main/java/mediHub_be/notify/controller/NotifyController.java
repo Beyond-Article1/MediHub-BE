@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/notify")
+@RequestMapping("/api/notify")
 @Slf4j
 @RequiredArgsConstructor
 @Tag(name = "SSE 연결과 알림", description = "SSE 연결과 알림")
