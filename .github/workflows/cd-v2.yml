@@ -70,7 +70,15 @@ jobs:
       - name: 슬랙 CI 완료 알림
         uses: 8398a7/action-slack@v3
         with:
-          status: ${{ github.event.workflow_run.conclusion }}
+          status: custom
+          custom_payload: |
+            {
+              "text": "GitHub Action 빌드 결과",
+              "attachments": [{
+                "color": "${{ job.status == 'success' && 'good' || job.status == 'failure' && 'danger' || 'warning' }}",
+                "text": "Job ${{ job.status == 'success' && '성공 ✅' || '실패 ❌' }}\n${{ github.repository }}"
+              }]
+            }
           author_name: www-be
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
           if_mention: failure,cancelled
