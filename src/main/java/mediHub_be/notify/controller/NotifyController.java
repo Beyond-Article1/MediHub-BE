@@ -118,18 +118,18 @@ public class NotifyController {
         notifyService.send(user, user, flag, NotiType.BOARD, "/journal/best");
     }
 
-    @Operation(summary = "채팅방 생성 알림 테스트", description = "채팅방 생성시 알림을 생성하고, SSE를 확인한다")
-    @GetMapping("/send/chat")
-    public void sendChat(){
-
-        Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
-
-        User user = userRepository.findByUserSeq(currentUserSeq).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
-
-        List<User> listUser = new ArrayList<>();
-
-        listUser.add(user);
-
-        notifyService.sendChat(listUser);
-    }
+//    @Operation(summary = "채팅방 생성 알림 테스트", description = "채팅방 생성시 알림을 생성하고, SSE를 확인한다")
+//    @GetMapping("/send/chat")
+//    public void sendChat(){
+//
+//        Long currentUserSeq = SecurityUtil.getCurrentUserSeq();
+//
+//        User user = userRepository.findByUserSeq(currentUserSeq).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER));
+//
+//        List<User> listUser = new ArrayList<>();
+//
+//        listUser.add(user);
+//
+//        notifyService.sendChat(listUser);
+//    }
 }
