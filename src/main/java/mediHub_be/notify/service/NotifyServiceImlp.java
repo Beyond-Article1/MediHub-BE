@@ -167,7 +167,6 @@ public class NotifyServiceImlp implements NotifyService{
     }
 
     // 알림 생성 로직
-//    private Notify createNotification(User receiver, NotiType notificationType, String content, String url, String senderUserName, String senderUserPart) {
     private Notify createNotification(User receiver, Flag flag, NotiType notificationType, String content, String url, String senderUserName, String senderUserPart) {
         return Notify.builder()
                 .receiver(receiver)
