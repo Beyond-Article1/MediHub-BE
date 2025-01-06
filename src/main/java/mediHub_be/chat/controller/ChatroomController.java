@@ -21,7 +21,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/chatroom")
+@RequestMapping("/api/chatroom")
 @Tag(name = "채팅방", description = "채팅방 API")
 public class ChatroomController {
 

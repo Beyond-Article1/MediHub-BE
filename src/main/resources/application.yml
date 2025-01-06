@@ -1,9 +1,11 @@
 springdoc:
   swagger-ui:
-    path: /swagger-ui
-    groups-order: DESC # path, query, body, response 순으로 출력
-    tags-sorter: alpha # 태그 알파벳 순서
-    operations-sorter: method  # delete - get - patch - post - put 순으로 정렬
+    path: /swagger-ui/index.html  # 경로 수정
+    groups-order: DESC
+    tags-sorter: alpha
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs
 
 server:
   port: 8088
@@ -44,7 +46,7 @@ spring:
   # MongoDB 설정
   data:
     mongodb:
-      uri: mongodb://${db.name}:${db.password}@localhost:${mongodb.port}/${db.name}?authSource=admin
+      uri: mongodb://${db.name}:${db.password}@${mongodb.host}:${mongodb.port.number}/${db.name}?authSource=admin
       database: ${db.name}
       username: ${db.name}
       password: ${db.password}
@@ -56,7 +58,7 @@ spring:
 
     elasticsearch:
       repositories:
-        enabled: false
+        enabled: true
 
   web:
     resources:
@@ -89,7 +91,7 @@ spring:
   logstash:
     enabled: false
     destination:
-      host: localhost
+      host: ${logstash_host_name}
       port: 5000
 
   #  logback.xml 사용 여부 결정
@@ -118,3 +120,13 @@ logging:
       jooq:
         tools:
           LoggerListener: debug
+
+# health check
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health"
+  endpoint:
+    health:
+      path: /actuator/health  # 기본 경로를 설정

@@ -7,5 +7,5 @@ public class KafkaConstants {
     private static String name = UUID.randomUUID().toString();
     public static final String GROUP_ID = "Group_" + name;
     public static final String KAFKA_TOPIC = "chat-topic";
-    public static final String KAFKA_BROKER = "localhost:10000";
+    public static final String KAFKA_BROKER = "kafka:10000";
 }

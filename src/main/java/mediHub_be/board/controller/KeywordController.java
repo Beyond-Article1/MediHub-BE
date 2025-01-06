@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("keyword")
+@RequestMapping("/api/keyword")
 @RequiredArgsConstructor
 @Tag(name = "키워드", description = "키워드 API")
 public class KeywordController {

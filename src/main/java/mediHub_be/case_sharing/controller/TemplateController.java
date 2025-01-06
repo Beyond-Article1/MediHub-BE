@@ -18,7 +18,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("template")
+@RequestMapping("/api/template")
 @RequiredArgsConstructor
 @Tag(name = "케이스 공유 템플릿", description = "케이스 공유 템플릿 관련 API")
 public class TemplateController {
