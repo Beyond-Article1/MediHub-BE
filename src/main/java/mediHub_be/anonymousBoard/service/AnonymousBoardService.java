@@ -202,7 +202,8 @@ public class AnonymousBoardService {
         List<Keyword> keywordList = keywordService.getKeywordList(ANONYMOUS_BOARD_FLAG, anonymousBoardSeq);
 
         return AnonymousBoardDetailDTO.builder()
-                .userName(user.getUserName())
+                .userSeq(anonymousBoard.getUser().getUserSeq())
+                .userName(anonymousBoard.getUser().getUserName())
                 .anonymousBoardTitle(anonymousBoard.getAnonymousBoardTitle())
                 .anonymousBoardContent(anonymousBoard.getAnonymousBoardContent())
                 .anonymousBoardViewCount(anonymousBoard.getAnonymousBoardViewCount())

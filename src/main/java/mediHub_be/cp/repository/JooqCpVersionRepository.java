@@ -33,10 +33,10 @@ public class JooqCpVersionRepository {
 
         Condition condition = DSL.trueCondition();
 
+        // cpSearchCategoryDataArray가 비어있지 않은 경우 IN 조건 추가
         if (!cpSearchCategoryDataArray.isEmpty()) {
-            for (Long dataSeq : cpSearchCategoryDataArray) {
-                condition = condition.and(CP_SEARCH_DATA.CP_SEARCH_CATEGORY_DATA_SEQ.eq(dataSeq));
-            }
+            // IN 조건으로 변경
+            condition = condition.and(CP_SEARCH_DATA.CP_SEARCH_CATEGORY_DATA_SEQ.in(cpSearchCategoryDataArray));
         }
         log.info("조건 추가 완료");
 
@@ -44,7 +44,7 @@ public class JooqCpVersionRepository {
         Table<Record3<Long, Long, LocalDateTime>> subQuery = dslContext
                 .select(
                         CP_VERSION.CP_VERSION_SEQ,
-                        CP_VERSION.CP_SEQ,  // CP_SEQ도 포함
+                        CP_VERSION.CP_SEQ,
                         DSL.max(CP_VERSION.CREATED_AT).as("max_created_at")
                 )
                 .from(CP_VERSION)
