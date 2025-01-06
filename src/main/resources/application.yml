@@ -1,9 +1,11 @@
 springdoc:
   swagger-ui:
-    path: /swagger-ui
-    groups-order: DESC # path, query, body, response 순으로 출력
-    tags-sorter: alpha # 태그 알파벳 순서
-    operations-sorter: method  # delete - get - patch - post - put 순으로 정렬
+    path: /swagger-ui/index.html  # 경로 수정
+    groups-order: DESC
+    tags-sorter: alpha
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs
 
 server:
   port: 8088
@@ -56,7 +58,7 @@ spring:
 
     elasticsearch:
       repositories:
-        enabled: false
+        enabled: true
 
   web:
     resources:

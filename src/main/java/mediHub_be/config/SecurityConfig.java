@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                                 .requestMatchers("/**").permitAll()
                                 .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/login")).permitAll() // 로그인 API 허용
+                        .requestMatchers(new AntPathRequestMatcher("/api/login")).permitAll() // 로그인 API 허용
                         .requestMatchers(new AntPathRequestMatcher("/api/v1/token/reissue")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()

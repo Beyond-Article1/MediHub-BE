@@ -119,6 +119,12 @@ jib {
         jvmFlags = ["-Xms512m", "-Xmx512m"]
         creationTime = "USE_CURRENT_TIMESTAMP"
     }
+    extraDirectories {
+        paths = ["src/main/resources"] // 파일 경로 지정
+        permissions = [
+                "/chatbot-prompts.json": "644" // 권한 설정 (선택)
+        ]
+    }
 }
 
 test {
@@ -202,22 +208,22 @@ jacocoTestCoverageVerification {
 }
 
 // application-key.properties 파일 경로
-//def propertiesFile = file('src/main/resources/application-key.properties')
+def propertiesFile = file('src/main/resources/application-key.properties')
 
 // Properties 객체 생성
-//def properties = new Properties()
-//properties.load(new FileInputStream(propertiesFile))
+def properties = new Properties()
+properties.load(new FileInputStream(propertiesFile))
 
 // 프로퍼티 읽기
-//String dbHost = properties.getProperty("mariadb.host") ?: "localhost"
-//String dbPort = properties.getProperty("mariadb.port") ?: "3306"
-//String dbName = properties.getProperty("db.name") ?: "root"
-//String dbPassword = properties.getProperty("db.password") ?: "passwd"
+String dbHost = properties.getProperty("mariadb.host") ?: "localhost"
+String dbPort = properties.getProperty("mariadb.port") ?: "3306"
+String dbName = properties.getProperty("db.name") ?: "root"
+String dbPassword = properties.getProperty("db.password") ?: "passwd"
 
-//println(dbHost);
-//println(dbPort);
-//println(dbName);
-//println(dbPassword);
+println(dbHost);
+println(dbPort);
+println(dbName);
+println(dbPassword);
 
 jooq {
     version = "${jooqVersion}"
