@@ -33,6 +33,9 @@ public class CaseSharingDocument extends BaseSearchDocument {
     @Field(name = "case_author", type = FieldType.Text)
     private String caseAuthor;
 
+    @Field(name = "case_author_part_name", type = FieldType.Text)
+    private String caseAuthorPartName;
+
     @Field(name = "case_author_rank_name", type = FieldType.Text)
     private String caseAuthorRankName;
 
@@ -53,6 +56,7 @@ public class CaseSharingDocument extends BaseSearchDocument {
                 .caseSharingTitle(caseSharing.getCaseSharingTitle())
                 .caseSharingContent(caseSharing.getCaseSharingContent())
                 .caseAuthor(user.getUserName())
+                .caseAuthorPartName(user.getPart().getPartName())
                 .caseAuthorRankName(user.getRanking().getRankingName())
                 .caseSharingViewCount(String.valueOf(caseSharing.getCaseSharingViewCount()))
                 .regDate(String.valueOf(caseSharing.getCreatedAt()))
