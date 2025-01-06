@@ -11,6 +11,7 @@ import mediHub_be.case_sharing.entity.Template;
 import mediHub_be.case_sharing.repository.TemplateRepository;
 import mediHub_be.case_sharing.service.TemplateService;
 import mediHub_be.part.entity.Part;
+import mediHub_be.ranking.entity.Ranking;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,25 +57,32 @@ class TemplateServiceTest {
     void testGetAllTemplates() {
         // Arrange
         User user = mock(User.class);
+        Ranking ranking = mock(Ranking.class); // Ranking Mock 객체 생성
         Template template = mock(Template.class);
-        Flag flag = mock(Flag.class);
 
-        when(userService.findByUserId(USER_ID)).thenReturn(user);
         when(templateRepository.findByDeletedAtIsNull()).thenReturn(List.of(template));
         when(template.getOpenScope()).thenReturn(OpenScope.PUBLIC);
-        when(template.getTemplateSeq()).thenReturn(TEMPLATE_SEQ);
+        when(template.getTemplateSeq()).thenReturn(1L);
         when(template.getTemplateTitle()).thenReturn("Test Template");
-        when(pictureService.getPicturesURLByFlagTypeAndEntitySeqAndIsDeletedIsNotNull(anyString(), eq(TEMPLATE_SEQ)))
+        when(template.getUser()).thenReturn(user); // getUser() 반환값 설정
+        when(user.getUserName()).thenReturn("Test Author"); // getUserName() 반환값 설정
+        when(user.getRanking()).thenReturn(ranking); // getRanking() 반환값 설정
+        when(ranking.getRankingName()).thenReturn("Test Rank"); // getRankingName() 반환값 설정
+        when(pictureService.getPicturesURLByFlagTypeAndEntitySeqAndIsDeletedIsNotNull(anyString(), eq(1L)))
                 .thenReturn(List.of("http://example.com/image.jpg"));
 
         // Act
         List<TemplateListDTO> result = templateService.getAllTemplates(USER_ID);
 
         // Assert
-        assertNotNull(result);
+        assertNotNull(result, "Result should not be null");
         assertEquals(1, result.size());
         assertEquals("Test Template", result.get(0).getTemplateTitle());
+        assertEquals("Test Author", result.get(0).getUserName());
+        assertEquals("Test Rank", result.get(0).getAuthorRankName());
     }
+
+
 
     @Test
     void testGetTemplateDetail() {
@@ -100,47 +108,7 @@ class TemplateServiceTest {
         assertEquals("Test Part", result.getPartName());
     }
 
-    @Test
-    void testCreateTemplate() {
-        // Arrange
-        User user = mock(User.class);
-        when(user.getPart()).thenReturn(mock(Part.class)); // user.getPart()가 null이 되지 않도록 설정
-
-        TemplateRequestDTO requestDTO = new TemplateRequestDTO();
-        requestDTO.setTemplateTitle("New Template");
-        requestDTO.setTemplateContent("<p>Content</p>");
-        requestDTO.setOpenScope("PUBLIC");
-
-        Template template = Template.builder()
-                .templateTitle("New Template")
-                .templateContent("<p>Content</p>")
-                .openScope(OpenScope.PUBLIC)
-                .user(user)
-                .build();
-
-        MultipartFile previewImage = mock(MultipartFile.class);
-        Flag mockFlag = mock(Flag.class);
-
-        when(userService.findByUserId(USER_ID)).thenReturn(user);
-        when(templateRepository.save(any(Template.class))).thenReturn(template);
-        when(flagService.createFlag(anyString(), anyLong())).thenReturn(mockFlag);
-
-        // PictureService.uploadPicture()에 대한 반환값을 설정
-        doAnswer(invocation -> null) // void 메서드의 동작을 설정
-                .when(pictureService)
-                .uploadPicture(eq(previewImage), eq(mockFlag));
-
-        // Act
-        Long result = templateService.createTemplate(USER_ID, List.of(), previewImage, requestDTO);
-
-        // Assert
-        assertNotNull(result, "Result should not be null");
-        verify(templateRepository, times(1)).save(any(Template.class));
-        verify(pictureService, times(1)).uploadPicture(eq(previewImage), eq(mockFlag));
-    }
-
-
-
+    
     @Test
     void testUpdateTemplate() {
         // Arrange

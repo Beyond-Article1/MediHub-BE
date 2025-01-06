@@ -95,14 +95,22 @@ class CaseSharingServiceTest {
         // Arrange
         String userId = "user1";
         User user = mock(User.class);
+        Ranking ranking = mock(Ranking.class);
+        CaseSharing caseSharing = mock(CaseSharing.class);
+
         when(userService.findByUserId(userId)).thenReturn(user);
-
-        CaseSharing case1 = mock(CaseSharing.class);
-        when(case1.getUser()).thenReturn(user);
-        when(case1.getCaseSharingSeq()).thenReturn(1L);
-
         when(caseSharingRepository.findAllLatestVersionsNotDraftAndDeletedAtIsNull())
-                .thenReturn(List.of(case1));
+                .thenReturn(List.of(caseSharing));
+
+        when(caseSharing.getCaseSharingSeq()).thenReturn(1L);
+        when(caseSharing.getCaseSharingTitle()).thenReturn("Test Case");
+        when(caseSharing.getUser()).thenReturn(user);
+        when(caseSharing.getCreatedAt()).thenReturn(null);
+        when(caseSharing.getCaseSharingViewCount()).thenReturn(10L);
+
+        when(user.getUserName()).thenReturn("Test Author");
+        when(user.getRanking()).thenReturn(ranking);
+        when(ranking.getRankingName()).thenReturn("Test Rank");
 
         // Act
         List<CaseSharingListDTO> result = caseSharingService.getCaseList(userId);
@@ -110,6 +118,9 @@ class CaseSharingServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
+        assertEquals("Test Case", result.get(0).getCaseSharingTitle());
+        assertEquals("Test Author", result.get(0).getCaseAuthor());
+        assertEquals("Test Rank", result.get(0).getCaseAuthorRankName());
     }
 
     @Test
