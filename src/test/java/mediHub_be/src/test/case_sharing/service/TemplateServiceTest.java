@@ -1,4 +1,3 @@
-/*
 package mediHub_be.src.test.case_sharing.service;
 
 import mediHub_be.board.entity.Flag;
@@ -189,4 +188,3 @@ class TemplateServiceTest {
         verify(pictureService, times(2)).deletePictures(any(Flag.class));
     }
 }
-*/
