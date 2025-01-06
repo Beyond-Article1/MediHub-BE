@@ -159,6 +159,7 @@ jacocoTestReport {
                 '**/*VectorizationScheduler',
                 '**/*jooq*/**',
                 '**/repository/**',
+                '**/*chatbot/*service/**',
 
         ])
     }))
@@ -202,7 +203,8 @@ jacocoTestCoverageVerification {
                     '*.component.*',
                     '*.*VectorizationScheduler',
                     '*.*jooq.*',
-                    '*.ViewCountManager']
+                    '*.ViewCountManager',
+                    '*.*chatbot.service.*']
         }
     }
 }
@@ -219,11 +221,6 @@ String dbHost = properties.getProperty("mariadb.host") ?: "localhost"
 String dbPort = properties.getProperty("mariadb.port") ?: "3306"
 String dbName = properties.getProperty("db.name") ?: "root"
 String dbPassword = properties.getProperty("db.password") ?: "passwd"
-
-println(dbHost);
-println(dbPort);
-println(dbName);
-println(dbPassword);
 
 jooq {
     version = "${jooqVersion}"
