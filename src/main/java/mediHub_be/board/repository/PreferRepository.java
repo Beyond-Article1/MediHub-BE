@@ -31,15 +31,5 @@ public interface PreferRepository extends JpaRepository<Prefer, Long> {
     @Query("DELETE FROM Prefer b WHERE b.flag.flagSeq = :flagSeq")
     void deleteAllByFlagSeq(Long flagSeq);
 
-
-    @Query("SELECT COUNT(p) " +
-            "FROM Prefer p " +
-            "JOIN p.flag f " +
-            "WHERE f.flagType = 'MEDICAL_LIFE' " +
-            "AND p.user = :user " +
-            "AND p.createdAt BETWEEN :startDate AND :endDate")
-    Long countMedicalLifeLikesByUserAndDateRange(
-            @Param("user") User user,
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate);
+    Long countByFlag_FlagEntitySeqInAndFlag_FlagType(List<Long> medicalLifeIds, String medicalLife);
 }

@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mediHub_be.board.repository.BookmarkRepository;
 import mediHub_be.board.repository.PreferRepository;
+import mediHub_be.case_sharing.repository.CaseSharingRepository;
+import mediHub_be.case_sharing.entity.CaseSharing;
 import mediHub_be.config.amazonS3.AmazonS3Service;
 import mediHub_be.board.entity.Flag;
 import mediHub_be.board.entity.Picture;
@@ -12,6 +14,8 @@ import mediHub_be.board.repository.PictureRepository;
 import mediHub_be.common.exception.CustomException;
 import mediHub_be.common.exception.ErrorCode;
 import mediHub_be.follow.repository.FollowRepository;
+import mediHub_be.medicalLife.entity.MedicalLife;
+import mediHub_be.medicalLife.repository.MedicalLifeRepository;
 import mediHub_be.user.dto.UserResponseDTO;
 import mediHub_be.user.dto.UserSearchDTO;
 import mediHub_be.user.dto.UserTop3DTO;
@@ -19,8 +23,6 @@ import mediHub_be.user.dto.UserUpdateRequestDTO;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.entity.UserAuth;
 import mediHub_be.user.repository.UserRepository;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +30,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,6 +50,8 @@ public class UserService {
     private final FollowRepository followRepository;
     private final BookmarkRepository bookmarkRepository;
     private final PreferRepository preferRepository;
+    private final CaseSharingRepository caseSharingRepository;
+    private final MedicalLifeRepository medicalLifeRepository;
 
     public static final String DEFAULT_PROFILE_URL = "https://medihub.s3.ap-northeast-2.amazonaws.com/istockphoto-981306968-1024x1024.jpg";
 
@@ -189,25 +195,35 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<UserTop3DTO> getTop3Users() {
-        // 현재 날짜에서 이전 달의 첫날과 마지막 날 계산
-        YearMonth previousMonth = YearMonth.now().minusMonths(1);
-        LocalDate startOfPreviousMonth = previousMonth.atDay(1);
-        LocalDate endOfPreviousMonth = previousMonth.atEndOfMonth();
-        log.info("이전달 날짜"+previousMonth);
-
-        // 이전 달에 작성된 글에 대한 유저 조회
+        // 현재 날짜 계산
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfPreviousMonth = now.minusMonths(1).with(TemporalAdjusters.firstDayOfMonth()).toLocalDate().atStartOfDay();
+        LocalDateTime endOfPreviousMonth = now.minusMonths(1).with(TemporalAdjusters.lastDayOfMonth()).toLocalDate().atTime(23, 59, 59);
         List<User> users = userRepository.findAll();
-
         // 유저별 데이터 조합
         List<UserTop3DTO> userTop3List = users.stream()
                 .map(user -> {
-                    // 이전 달 북마크 수 조회
-                    Long bookmarkCount = bookmarkRepository.countCaseSharingBookmarksByUserAndDateRange(
-                            user, startOfPreviousMonth.atStartOfDay(), endOfPreviousMonth.atTime(23, 59, 59));
+                    // 유저가 작성한 이전 달의 CaseSharing 조회
+                    List<Long> caseSharingIds = caseSharingRepository.findAllByUserAndCreatedAtBetween(
+                            user, startOfPreviousMonth, endOfPreviousMonth
+                    ).stream().map(CaseSharing::getCaseSharingSeq).collect(Collectors.toList());
 
-                    // 이전 달 좋아요 수 조회
-                    Long likeCount = preferRepository.countMedicalLifeLikesByUserAndDateRange(
-                            user, startOfPreviousMonth.atStartOfDay(), endOfPreviousMonth.atTime(23, 59, 59));
+                    // 유저가 작성한 이전 달의 MedicalLife 조회
+                    List<Long> medicalLifeIds = medicalLifeRepository.findAllByUserAndCreatedAtBetween(
+                            user, startOfPreviousMonth, endOfPreviousMonth
+                    ).stream().map(MedicalLife::getMedicalLifeSeq).collect(Collectors.toList());
+
+                    // 작성한 CaseSharing 글들에 대한 북마크 수 합산
+                    Long caseSharingBookmarkCount = bookmarkRepository.countByFlag_FlagEntitySeqInAndFlag_FlagType(
+                            caseSharingIds, "CASE_SHARRING");
+
+                    // 작성한 MedicalLife 글들에 대한 북마크 수 합산
+                    Long medicalLifeBookmarkCount = bookmarkRepository.countByFlag_FlagEntitySeqInAndFlag_FlagType(
+                            medicalLifeIds, "MEDICAL_LIFE");
+
+                    // 작성한 MedicalLife 글들에 대한 좋아요 수 합산
+                    Long medicalLifeLikeCount = preferRepository.countByFlag_FlagEntitySeqInAndFlag_FlagType(
+                            medicalLifeIds, "MEDICAL_LIFE");
 
                     // 프로필 이미지 URL 조회
                     String profileImage = null;
@@ -219,26 +235,25 @@ public class UserService {
                     }
 
                     // 파트 및 부서 정보 조회
-                    String partName = null;
-                    if (user.getPart() != null) {
-                        partName = user.getPart().getPartName();
-                    }
+                    String partName = user.getPart() != null ? user.getPart().getPartName() : null;
 
                     // 랭킹 정보 조회
                     String rankingName = user.getRanking() != null ? user.getRanking().getRankingName() : null;
 
                     // 총 점수 계산
-                    Long totalScore = (bookmarkCount == null ? 0 : bookmarkCount) +
-                            (likeCount == null ? 0 : likeCount);
+                    Long totalScore = (caseSharingBookmarkCount == null ? 0 : caseSharingBookmarkCount) +
+                            (medicalLifeBookmarkCount == null ? 0 : medicalLifeBookmarkCount) +
+                            (medicalLifeLikeCount == null ? 0 : medicalLifeLikeCount);
 
                     // DTO 빌드
                     return UserTop3DTO.builder()
                             .userName(user.getUserName())
                             .rankingName(rankingName)
                             .partName(partName)
-                            .likeNum(likeCount)
-                            .bookmarkNum(bookmarkCount)
-                            .profileUrl(profileImage) // 프로필 이미지 추가
+                            .likeNum(medicalLifeLikeCount == null ? 0 : medicalLifeLikeCount)
+                            .bookmarkNum((caseSharingBookmarkCount == null ? 0 : caseSharingBookmarkCount) +
+                                    (medicalLifeBookmarkCount == null ? 0 : medicalLifeBookmarkCount))
+                            .profileUrl(profileImage)
                             .totalScore(totalScore)
                             .build();
                 })
@@ -247,6 +262,7 @@ public class UserService {
                 .collect(Collectors.toList());
 
         return userTop3List;
+
     }
 
 
