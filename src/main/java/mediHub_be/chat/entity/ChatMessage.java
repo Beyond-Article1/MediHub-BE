@@ -31,7 +31,7 @@ public class ChatMessage {
         this.senderUserSeq = senderUserSeq;
         this.type = type;
         this.message = message;
-        this.createdAt = DateTimeUtil.localDateTimeToLocalDateTime(LocalDateTime.now());
+        this.createdAt = LocalDateTime.now();
         this.isDeleted = isDeleted;
         this.attachment = attachment;
     }
