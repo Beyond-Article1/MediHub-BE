@@ -191,7 +191,7 @@ public class ChatroomService {
                     // 마지막 메시지 조회 (최근 메시지 1개만 가져오기)
                     ChatMessage lastMessage = chatMessageRepository.findTopByChatroomSeqAndIsDeletedFalseOrderByCreatedAtDesc(chatroom.getChatroomSeq());
                     String lastMessageText = (lastMessage != null) ? lastMessage.getMessage() : "No messages yet";
-                    LocalDateTime lastMessageTime = (lastMessage != null) ? lastMessage.getCreatedAt() : null;
+                    LocalDateTime lastMessageTime = (lastMessage != null) ? lastMessage.getCreatedAt().minusHours(9) : null;
 
                     // 읽지 않은 메시지 개수 계산
                     Long unreadMessageCount = chatMessageRepository.countByChatroomSeqAndCreatedAtAfterAndIsDeletedFalse(chatroomSeq, chat.getLastVisitedAt().plusHours(9));
@@ -300,7 +300,7 @@ public class ChatroomService {
                 .senderUserProfileUrl(null)
                 .type("notify")
                 .message(messageContent)
-                .createdAt(savedMessage.getCreatedAt())
+                .createdAt(savedMessage.getCreatedAt().minusHours(9))
                 .build();
 
         // 6. Kafka로 메시지 전송
