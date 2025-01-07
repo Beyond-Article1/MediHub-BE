@@ -12,7 +12,8 @@ import mediHub_be.user.entity.User;
 @NoArgsConstructor
 @Data
 public class NotifyDTO {
-
+    
+    // 알림 시퀀스
     Long notiSeq;
     // 받는 사람 이름
     String name;

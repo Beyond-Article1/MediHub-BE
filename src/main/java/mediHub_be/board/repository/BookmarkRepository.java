@@ -38,11 +38,27 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     @Query("SELECT COUNT(b) " +
             "FROM Bookmark b " +
             "JOIN b.flag f " +
+            "JOIN CaseSharing cs ON cs.caseSharingSeq = f.flagEntitySeq " + // 논리적 연결
             "WHERE f.flagType = 'CASE_SHARRING' " +
             "AND b.user = :user " +
+            "AND cs.user = :user " + // CaseSharing의 작성자 기준
             "AND b.createdAt BETWEEN :startDate AND :endDate")
     Long countCaseSharingBookmarksByUserAndDateRange(
             @Param("user") User user,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT COUNT(b) " +
+            "FROM Bookmark b " +
+            "JOIN b.flag f " +
+            "JOIN CaseSharing cs ON cs.caseSharingSeq = f.flagEntitySeq " + // 논리적 연결
+            "WHERE f.flagType = 'MEDICAL_LIFE' " +
+            "AND cs.user = :user " + // CaseSharing의 작성자 기준
+            "AND b.createdAt BETWEEN :startDate AND :endDate")
+    Long countMedicalLifeBookmarksByUserAndDateRange(
+            @Param("user") User user,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
+
+    Long countByFlag_FlagEntitySeqInAndFlag_FlagType(List<Long> caseSharingIds, String caseSharring);
 }
