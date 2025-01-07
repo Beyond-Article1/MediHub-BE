@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 public class AnonymousBoardDetailDTO {
 
+    private Long userSeq;
     private String userName;
     private String anonymousBoardTitle;
     private String anonymousBoardContent;

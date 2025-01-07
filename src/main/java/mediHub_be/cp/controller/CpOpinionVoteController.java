@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "cp/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}/{cpOpinionSeq}/cpOpinionVote")
+@RequestMapping(value = "/api/cp/{cpVersionSeq}/cpOpinionLocation/{cpOpinionLocationSeq}/{cpOpinionSeq}/cpOpinionVote")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "CP", description = "CP 관련 API")

@@ -33,10 +33,10 @@ public class JooqCpVersionRepository {
 
         Condition condition = DSL.trueCondition();
 
+        // cpSearchCategoryDataArray가 비어있지 않은 경우 IN 조건 추가
         if (!cpSearchCategoryDataArray.isEmpty()) {
-            for (Long dataSeq : cpSearchCategoryDataArray) {
-                condition = condition.and(CP_SEARCH_DATA.CP_SEARCH_CATEGORY_DATA_SEQ.eq(dataSeq));
-            }
+            // IN 조건으로 변경
+            condition = condition.and(CP_SEARCH_DATA.CP_SEARCH_CATEGORY_DATA_SEQ.in(cpSearchCategoryDataArray));
         }
         log.info("조건 추가 완료");
 
@@ -44,11 +44,15 @@ public class JooqCpVersionRepository {
         Table<Record3<Long, Long, LocalDateTime>> subQuery = dslContext
                 .select(
                         CP_VERSION.CP_VERSION_SEQ,
-                        CP_VERSION.CP_SEQ,  // CP_SEQ도 포함
-                        DSL.max(CP_VERSION.CREATED_AT).as("max_created_at")
+                        CP_VERSION.CP_SEQ,
+                        CP_VERSION.CREATED_AT
                 )
                 .from(CP_VERSION)
-                .groupBy(CP_VERSION.CP_SEQ) // CP_VERSION_SEQ와 CP_SEQ로 그룹화
+                .where(CP_VERSION.CREATED_AT.eq(
+                        DSL.select(DSL.max(CP_VERSION.CREATED_AT))
+                                .from(CP_VERSION.asTable("inner_cp_version"))
+                                .where(CP_VERSION.CP_SEQ.eq(DSL.field("inner_cp_version.cp_seq", Long.class))) // alias 사용
+                ))
                 .asTable("latest_versions");
 
         // 메인 쿼리: 최신 버전만 선택
@@ -81,6 +85,7 @@ public class JooqCpVersionRepository {
         log.info("조회된 정보: {}", dtoList);
         return dtoList;
     }
+
 
     public ResponseCpDTO findCpVersionByCpVersionSeqAndCpVersion(long cpVersionSeq, String cpVersion) {
         log.info("DB 조회 시작");

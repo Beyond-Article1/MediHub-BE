@@ -22,7 +22,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value = "anonymous-board")
+@RequestMapping(value = "/api/anonymous-board")
 @RequiredArgsConstructor
 @Tag(name = "익명 게시판", description = "익명 게시판 API")
 public class AnonymousBoardController {
