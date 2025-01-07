@@ -51,7 +51,7 @@ public class JooqCpVersionRepository {
                 .where(CP_VERSION.CREATED_AT.eq(
                         DSL.select(DSL.max(CP_VERSION.CREATED_AT))
                                 .from(CP_VERSION.asTable("inner_cp_version"))
-                                .where(CP_VERSION.CP_SEQ.eq(CP_VERSION.CP_SEQ))
+                                .where(CP_VERSION.CP_SEQ.eq(DSL.field("inner_cp_version.cp_seq", Long.class))) // alias 사용
                 ))
                 .asTable("latest_versions");
 
@@ -85,6 +85,7 @@ public class JooqCpVersionRepository {
         log.info("조회된 정보: {}", dtoList);
         return dtoList;
     }
+
 
     public ResponseCpDTO findCpVersionByCpVersionSeqAndCpVersion(long cpVersionSeq, String cpVersion) {
         log.info("DB 조회 시작");
