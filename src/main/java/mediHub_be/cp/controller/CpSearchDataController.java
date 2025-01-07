@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "cp/{cpVersionSeq}/cpSearchData")
+@RequestMapping(value = "/api/cp/{cpVersionSeq}/cpSearchData")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "CP", description = "CP 관련 API")

@@ -227,7 +227,6 @@ public class JournalServiceImpl implements JournalService{
 
         // 논문 데이터들 \n\n으로 구분
         String[] journals = content.split("\n\n");
-        log.info("journals {}", journals);
         if (!journals[0].startsWith("해당하는 논문들"))
             return pubmedDTOS;
 
@@ -238,7 +237,6 @@ public class JournalServiceImpl implements JournalService{
                 // 데이터를 개별 필드로 나눔
                 String[] lines = journal.split("\n");
 
-                log.info("lines {}", lines);
                 log.info("lines.length {}", lines.length);
 
                 String title = getField(lines, "Title:");

@@ -2,6 +2,7 @@ package mediHub_be.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import mediHub_be.common.aggregate.entity.BaseFullEntity;
@@ -52,6 +53,7 @@ public class User extends BaseFullEntity {
     @Enumerated(EnumType.STRING)
     private UserAuth userAuth = UserAuth.USER;
 
+    @Builder
     public User(String userId, String userPassword, String userName, String userEmail, String userPhone, Part part, Ranking ranking, UserAuth userAuth, UserStatus userStatus) {
         this.userId = userId;
         this.userPassword = userPassword;
