@@ -28,7 +28,7 @@ public class CpVersion extends CreateTimeEntity {
     @Column
     private String cpVersionDescription;            // cp 버전 설명
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String cpUrl;                           // cp url
 
     @Builder
@@ -39,5 +39,11 @@ public class CpVersion extends CreateTimeEntity {
             String cpVersion,
             String cpVersionDescription,
             String cpUrl) {
+        this.cpVersionSeq = cpVersionSeq;
+        this.cpSeq = cpSeq;
+        this.userSeq = userSeq;
+        this.cpVersion = cpVersion;
+        this.cpVersionDescription = cpVersionDescription;
+        this.cpUrl = cpUrl;
     }
 }

@@ -64,7 +64,7 @@ public class ChatService {
                 .senderUserProfileUrl(profileUrl)
                 .type(newMessage.getType())
                 .message(newMessage.getMessage())
-                .createdAt(newMessage.getCreatedAt().minusHours(9))
+                .createdAt(newMessage.getCreatedAt())
                 .build();
     }
 
@@ -109,7 +109,7 @@ public class ChatService {
                     .senderUserProfileUrl(profileUrl)
                     .type(newMessage.getType())
                     .message(newMessage.getMessage())
-                    .createdAt(newMessage.getCreatedAt().minusHours(9))
+                    .createdAt(newMessage.getCreatedAt())
                     .attachment(newMessage.getAttachment())
                     .build();
         } catch(IOException e) {
@@ -191,7 +191,7 @@ public class ChatService {
                             .senderUserProfileUrl(profileUrl != null ? profileUrl : "System")
                             .type(message.getType())
                             .message(message.getMessage())
-                            .createdAt(message.getCreatedAt().minusHours(9))  // 시간대 조정
+                            .createdAt(message.getCreatedAt())  // 시간대 조정
                             .attachment(message.getAttachment())
                             .build();
                 })

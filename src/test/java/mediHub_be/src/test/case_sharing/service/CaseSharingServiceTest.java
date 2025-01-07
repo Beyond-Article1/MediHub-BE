@@ -1,11 +1,12 @@
-/*
 package mediHub_be.src.test.case_sharing.service;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import mediHub_be.board.Util.ViewCountManager;
+import mediHub_be.board.dto.BookmarkDTO;
+import mediHub_be.board.entity.Flag;
+import mediHub_be.board.entity.Picture;
 import mediHub_be.board.service.BookmarkService;
 import mediHub_be.board.service.FlagService;
+import mediHub_be.board.service.KeywordService;
 import mediHub_be.board.service.PictureService;
 import mediHub_be.case_sharing.dto.*;
 import mediHub_be.case_sharing.entity.CaseSharing;
@@ -15,7 +16,11 @@ import mediHub_be.case_sharing.repository.CaseSharingGroupRepository;
 import mediHub_be.case_sharing.repository.CaseSharingRepository;
 import mediHub_be.case_sharing.service.CaseSharingService;
 import mediHub_be.case_sharing.service.TemplateService;
+import mediHub_be.common.exception.CustomException;
 import mediHub_be.config.amazonS3.AmazonS3Service;
+import mediHub_be.notify.service.NotifyServiceImlp;
+import mediHub_be.part.entity.Part;
+import mediHub_be.ranking.entity.Ranking;
 import mediHub_be.user.entity.User;
 import mediHub_be.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,18 +28,16 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class CaseSharingServiceTest {
@@ -46,13 +49,13 @@ class CaseSharingServiceTest {
     private CaseSharingRepository caseSharingRepository;
 
     @Mock
-    private CaseSharingGroupRepository caseSharingGroupRepository;
-
-    @Mock
     private UserService userService;
 
     @Mock
-    private ViewCountManager viewCountManager;
+    private PictureService pictureService;
+
+    @Mock
+    private KeywordService keywordService;
 
     @Mock
     private BookmarkService bookmarkService;
@@ -64,184 +67,381 @@ class CaseSharingServiceTest {
     private FlagService flagService;
 
     @Mock
+    private NotifyServiceImlp notifyServiceImlp;
+
+    @Mock
     private TemplateService templateService;
+
+    @Mock
+    private ViewCountManager viewCountManager;
+
+    @Mock
+    private CaseSharingGroupRepository caseSharingGroupRepository;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        // 기본 Mock 설정
+        when(viewCountManager.shouldIncreaseViewCount(anyLong(), any(), any())).thenReturn(true);
+        when(flagService.createFlag(any(), any())).thenReturn(mock(Flag.class));
+        when(flagService.findFlag(any(), anyLong())).thenReturn(Optional.of(mock(Flag.class)));
+        when(caseSharingGroupRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
     }
+
 
     @Test
     void testGetCaseList() {
+        // Arrange
+        String userId = "user1";
+        User user = mock(User.class);
+        Ranking ranking = mock(Ranking.class);
+        CaseSharing caseSharing = mock(CaseSharing.class);
+
+        when(userService.findByUserId(userId)).thenReturn(user);
         when(caseSharingRepository.findAllLatestVersionsNotDraftAndDeletedAtIsNull())
-                .thenReturn(Collections.emptyList());
+                .thenReturn(List.of(caseSharing));
 
-        List<CaseSharingListDTO> result = caseSharingService.getCaseList("testUser");
+        when(caseSharing.getCaseSharingSeq()).thenReturn(1L);
+        when(caseSharing.getCaseSharingTitle()).thenReturn("Test Case");
+        when(caseSharing.getUser()).thenReturn(user);
+        when(caseSharing.getCreatedAt()).thenReturn(null);
+        when(caseSharing.getCaseSharingViewCount()).thenReturn(10L);
 
+        when(user.getUserName()).thenReturn("Test Author");
+        when(user.getRanking()).thenReturn(ranking);
+        when(ranking.getRankingName()).thenReturn("Test Rank");
+
+        // Act
+        List<CaseSharingListDTO> result = caseSharingService.getCaseList(userId);
+
+        // Assert
         assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(caseSharingRepository, times(1)).findAllLatestVersionsNotDraftAndDeletedAtIsNull();
+        assertEquals(1, result.size());
+        assertEquals("Test Case", result.get(0).getCaseSharingTitle());
+        assertEquals("Test Author", result.get(0).getCaseAuthor());
+        assertEquals("Test Rank", result.get(0).getCaseAuthorRankName());
     }
 
     @Test
     void testGetCaseSharingDetail() {
-        CaseSharing mockCaseSharing = mock(CaseSharing.class);
-        User mockUser = mock(User.class);
-        when(caseSharingRepository.findById(anyLong())).thenReturn(Optional.of(mockCaseSharing));
-        when(userService.findByUserId(anyString())).thenReturn(mockUser);
-        when(viewCountManager.shouldIncreaseViewCount(anyLong(), any(), any())).thenReturn(true);
+        // Arrange
+        Long caseSharingSeq = 1L;
+        String userId = "user1";
+        User user = mock(User.class);
+        Ranking ranking = mock(Ranking.class);
+        CaseSharing caseSharing = mock(CaseSharing.class);
+        CaseSharingGroup caseSharingGroup = mock(CaseSharingGroup.class);
+        Template template = mock(Template.class);
 
-        CaseSharingDetailDTO result = caseSharingService.getCaseSharingDetail(1L, "testUser", mock(HttpServletRequest.class), mock(HttpServletResponse.class));
+        // Mock 설정
+        when(userService.findByUserId(userId)).thenReturn(user);
+        when(caseSharingRepository.findById(caseSharingSeq)).thenReturn(Optional.of(caseSharing));
+        when(caseSharing.getDeletedAt()).thenReturn(null);
+        when(caseSharing.getUser()).thenReturn(user);
+        when(caseSharing.getCaseSharingGroup()).thenReturn(caseSharingGroup);
+        when(caseSharing.getTemplate()).thenReturn(template);
+        when(caseSharingGroup.getCaseSharingGroupSeq()).thenReturn(10L);
+        when(user.getRanking()).thenReturn(ranking);
+        when(ranking.getRankingName()).thenReturn("Test Rank");
+        when(template.getTemplateSeq()).thenReturn(100L);
 
+        // Act
+        CaseSharingDetailDTO result = caseSharingService.getCaseSharingDetail(caseSharingSeq, userId, null, null);
+
+        // Assert
         assertNotNull(result);
-        verify(caseSharingRepository, times(1)).findById(anyLong());
-        verify(viewCountManager, times(1)).shouldIncreaseViewCount(anyLong(), any(), any());
-    }
-
-    @Test
-    void testCreateCaseSharing() {
-        User mockUser = mock(User.class);
-        Template mockTemplate = mock(Template.class);
-        CaseSharingGroup mockGroup = mock(CaseSharingGroup.class);
-        CaseSharing mockCaseSharing = mock(CaseSharing.class);
-        when(userService.findByUserId(anyString())).thenReturn(mockUser);
-        when(templateService.getTemplate(anyLong())).thenReturn(mockTemplate);
-        when(caseSharingGroupRepository.save(any(CaseSharingGroup.class))).thenReturn(mockGroup);
-        when(caseSharingRepository.save(any(CaseSharing.class))).thenReturn(mockCaseSharing);
-
-        Long result = caseSharingService.createCaseSharing(new CaseSharingCreateRequestDTO(), Collections.emptyList(), "testUser");
-
-        assertNotNull(result);
-        verify(caseSharingRepository, times(1)).save(any(CaseSharing.class));
-    }
-
-    @Test
-    void testCreateNewVersion() {
-        CaseSharing mockCaseSharing = mock(CaseSharing.class);
-        when(caseSharingRepository.findById(anyLong())).thenReturn(Optional.of(mockCaseSharing));
-
-        Long result = caseSharingService.createNewVersion(1L, new CaseSharingUpdateRequestDTO(), Collections.emptyList(), "testUser");
-
-        assertNotNull(result);
-        verify(caseSharingRepository, times(2)).save(any(CaseSharing.class));
+        assertEquals(10L, result.getCaseSharingGroupSeq());
+        assertEquals("Test Rank", result.getCaseAuthorRankName());
+        assertEquals(100L, result.getTemplateSeq());
     }
 
     @Test
     void testDeleteCaseSharing() {
-        CaseSharing mockCaseSharing = mock(CaseSharing.class);
-        when(caseSharingRepository.findById(anyLong())).thenReturn(Optional.of(mockCaseSharing));
+        // Arrange
+        Long caseSharingSeq = 1L;
+        String userId = "user1";
+        User user = mock(User.class);
+        CaseSharing caseSharing = mock(CaseSharing.class);
+        Flag flag = mock(Flag.class);
 
-        caseSharingService.deleteCaseSharing(1L, "testUser");
+        when(userService.findByUserId(userId)).thenReturn(user);
+        when(caseSharingRepository.findById(caseSharingSeq)).thenReturn(Optional.of(caseSharing));
+        when(flagService.findFlag(any(), anyLong())).thenReturn(Optional.of(flag));
 
-        verify(caseSharingRepository, times(1)).save(any(CaseSharing.class));
+        // Act
+        caseSharingService.deleteCaseSharing(caseSharingSeq, userId);
+
+        // Assert
+        verify(caseSharingRepository, times(1)).save(caseSharing);
+    }
+
+
+    @Test
+    void testToggleBookmark() {
+        // Arrange
+        Long caseSharingSeq = 1L;
+        String userId = "user1";
+
+        when(bookmarkService.toggleBookmark(any(), eq(caseSharingSeq), eq(userId))).thenReturn(true);
+
+        // Act
+        boolean result = caseSharingService.toggleBookmark(caseSharingSeq, userId);
+
+        // Assert
+        assertTrue(result);
+        verify(bookmarkService, times(1)).toggleBookmark(any(), eq(caseSharingSeq), eq(userId));
     }
 
     @Test
     void testGetCasesByPart() {
-        when(caseSharingRepository.findByPartPartSeqAndCaseSharingIsLatestTrueAndIsDraftFalseAndDeletedAtIsNull(anyLong()))
-                .thenReturn(Collections.emptyList());
+        // Arrange
+        Long partSeq = 1L;
+        String userId = "user1";
+        User user = mock(User.class);
+        CaseSharing caseSharing = mock(CaseSharing.class);
 
-        List<CaseSharingListDTO> result = caseSharingService.getCasesByPart(1L, "testUser");
+        Ranking ranking = mock(Ranking.class);
+        when(userService.findByUserId(userId)).thenReturn(user);
+        when(caseSharingRepository.findByPartPartSeqAndCaseSharingIsLatestTrueAndIsDraftFalseAndDeletedAtIsNull(partSeq))
+                .thenReturn(List.of(caseSharing));
 
+        when(caseSharing.getCaseSharingSeq()).thenReturn(1L);
+        when(caseSharing.getCaseSharingTitle()).thenReturn("Test Title");
+        when(caseSharing.getUser()).thenReturn(user);
+        when(caseSharing.getCreatedAt()).thenReturn(null);
+        when(caseSharing.getCaseSharingViewCount()).thenReturn(10L);
+        when(user.getUserName()).thenReturn("Author Name");
+        when(user.getRanking()).thenReturn(ranking);
+        when(ranking.getRankingName()).thenReturn("Test Rank");
+
+        // Act
+        List<CaseSharingListDTO> result = caseSharingService.getCasesByPart(partSeq, userId);
+
+        // Assert
         assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(caseSharingRepository, times(1)).findByPartPartSeqAndCaseSharingIsLatestTrueAndIsDraftFalseAndDeletedAtIsNull(anyLong());
+        assertEquals(1, result.size());
+        assertEquals("Test Title", result.get(0).getCaseSharingTitle());
+        assertEquals("Author Name", result.get(0).getCaseAuthor());
     }
 
     @Test
     void testGetCaseVersionList() {
-        CaseSharing mockCaseSharing = mock(CaseSharing.class);
-        when(caseSharingRepository.findById(anyLong())).thenReturn(Optional.of(mockCaseSharing));
-        when(caseSharingRepository.findByCaseSharingGroupAndIsDraftFalseAndDeletedAtIsNull(anyLong()))
-                .thenReturn(Collections.emptyList());
+        // Arrange
+        Long caseSharingSeq = 1L;
+        String userId = "user1";
+        User user = mock(User.class);
+        CaseSharing caseSharing = mock(CaseSharing.class);
+        CaseSharingGroup group = mock(CaseSharingGroup.class);
 
-        List<CaseSharingVersionListDTO> result = caseSharingService.getCaseVersionList(1L, "testUser");
+        when(userService.findByUserId(userId)).thenReturn(user);
+        when(caseSharingRepository.findById(caseSharingSeq)).thenReturn(Optional.of(caseSharing));
+        when(caseSharing.getCaseSharingGroup()).thenReturn(group);
+        when(group.getCaseSharingGroupSeq()).thenReturn(2L);
+        when(caseSharingRepository.findByCaseSharingGroupAndIsDraftFalseAndDeletedAtIsNull(2L))
+                .thenReturn(List.of(caseSharing));
 
+        when(caseSharing.getCaseSharingSeq()).thenReturn(1L);
+        when(caseSharing.getCaseSharingTitle()).thenReturn("Version 1");
+        when(caseSharing.getCreatedAt()).thenReturn(null);
+        when(caseSharing.getCaseSharingViewCount()).thenReturn(5L);
+
+        // Act
+        List<CaseSharingVersionListDTO> result = caseSharingService.getCaseVersionList(caseSharingSeq, userId);
+
+        // Assert
         assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(caseSharingRepository, times(1)).findById(anyLong());
+        assertEquals(1, result.size());
+        assertEquals("Version 1", result.get(0).getCaseSharingTitle());
     }
 
     @Test
-    void testSaveDraft() {
-        User mockUser = mock(User.class);
-        Template mockTemplate = mock(Template.class);
-        CaseSharingGroup mockGroup = mock(CaseSharingGroup.class);
-        CaseSharing mockDraft = mock(CaseSharing.class);
-        when(userService.findByUserId(anyString())).thenReturn(mockUser);
-        when(templateService.getTemplate(anyLong())).thenReturn(mockTemplate);
-        when(caseSharingGroupRepository.save(any(CaseSharingGroup.class))).thenReturn(mockGroup);
-        when(caseSharingRepository.save(any(CaseSharing.class))).thenReturn(mockDraft);
+    void testGetDraftsByUser() {
+        // Arrange
+        String userId = "user1";
+        User user = mock(User.class);
+        CaseSharing draft = mock(CaseSharing.class);
 
-        Long result = caseSharingService.saveDraft(new CaseSharingCreateRequestDTO(), Collections.emptyList(), "testUser");
+        when(userService.findByUserId(userId)).thenReturn(user);
+        when(user.getUserSeq()).thenReturn(1L);
+        when(caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftTrueAndDeletedAtIsNull(1L))
+                .thenReturn(List.of(draft));
 
+        when(draft.getCaseSharingSeq()).thenReturn(1L);
+        when(draft.getCaseSharingTitle()).thenReturn("Draft Title");
+        when(draft.getCreatedAt()).thenReturn(null);
+
+        // Act
+        List<CaseSharingDraftListDTO> result = caseSharingService.getDraftsByUser(userId);
+
+        // Assert
         assertNotNull(result);
-        verify(caseSharingRepository, times(1)).save(any(CaseSharing.class));
+        assertEquals(1, result.size());
+        assertEquals("Draft Title", result.get(0).getCaseSharingTitle());
+    }
+
+    @Test
+    void testGetDraftDetail() {
+        // Arrange
+        Long caseSharingSeq = 1L;
+        String userId = "user1";
+        User user = mock(User.class);
+        CaseSharing draft = mock(CaseSharing.class);
+        CaseSharingGroup group = mock(CaseSharingGroup.class);
+
+        when(userService.findByUserId(userId)).thenReturn(user);
+        when(caseSharingRepository.findByCaseSharingSeqAndCaseSharingIsDraftTrueAndDeletedAtIsNull(caseSharingSeq))
+                .thenReturn(Optional.of(draft));
+        when(draft.getUser()).thenReturn(user);
+        when(draft.getCaseSharingSeq()).thenReturn(caseSharingSeq);
+        when(draft.getCaseSharingTitle()).thenReturn("Draft Detail Title");
+        when(draft.getCaseSharingContent()).thenReturn("Draft Content");
+        when(draft.getCaseSharingGroup()).thenReturn(group);
+        when(group.getCaseSharingGroupSeq()).thenReturn(10L);
+
+        when(keywordService.getKeywords(any(), eq(caseSharingSeq)))
+                .thenReturn(List.of(new CaseSharingKeywordDTO(1L, "Keyword1")));
+
+        // Act
+        CaseSharingDraftDetailDTO result = caseSharingService.getDraftDetail(caseSharingSeq, userId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("Draft Detail Title", result.getCaseSharingTitle());
+        assertEquals("Draft Content", result.getCaseSharingContent());
+        assertEquals(10L, result.getCaseSharingGroupSeq());
     }
 
     @Test
     void testDeleteDraft() {
-        CaseSharing mockDraft = mock(CaseSharing.class);
-        when(caseSharingRepository.findById(anyLong())).thenReturn(Optional.of(mockDraft));
+        // Arrange
+        Long caseSharingSeq = 1L;
+        String userId = "user1";
+        User user = mock(User.class);
+        CaseSharing draft = mock(CaseSharing.class);
+        Flag flag = mock(Flag.class);
+        Picture picture = mock(Picture.class);
 
-        caseSharingService.deleteDraft(1L, "testUser");
+        when(userService.findByUserId(userId)).thenReturn(user);
+        when(caseSharingRepository.findById(caseSharingSeq)).thenReturn(Optional.of(draft));
+        when(draft.getUser()).thenReturn(user);
+        when(draft.getCaseSharingSeq()).thenReturn(caseSharingSeq);
+        when(pictureService.getPicturesByFlagTypeAndEntitySeqAndIsDeletedIsNotNull(any(), eq(caseSharingSeq)))
+                .thenReturn(List.of(picture));
+        when(flagService.findFlag(any(), eq(caseSharingSeq))).thenReturn(Optional.of(flag));
+        when(picture.getPictureUrl()).thenReturn("http://example.com/image.jpg");
 
-        verify(caseSharingRepository, times(1)).delete(any(CaseSharing.class));
-    }
+        // Act
+        caseSharingService.deleteDraft(caseSharingSeq, userId);
 
-    @Test
-    void testToggleBookmark() {
-        when(bookmarkService.toggleBookmark(anyString(), anyLong(), anyString())).thenReturn(true);
-
-        boolean result = caseSharingService.toggleBookmark(1L, "testUser");
-
-        assertTrue(result);
-        verify(bookmarkService, times(1)).toggleBookmark(anyString(), anyLong(), anyString());
+        // Assert
+        verify(amazonS3Service, times(1)).deleteImageFromS3("http://example.com/image.jpg");
+        verify(caseSharingRepository, times(1)).delete(draft);
     }
 
     @Test
     void testIsBookmarked() {
-        when(bookmarkService.isBookmarked(anyString(), anyLong(), anyString())).thenReturn(true);
+        // Arrange
+        Long caseSharingSeq = 1L;
+        String userId = "user1";
 
-        boolean result = caseSharingService.isBookmarked(1L, "testUser");
+        when(userService.findByUserId(userId)).thenReturn(mock(User.class));
+        when(bookmarkService.isBookmarked(any(), eq(caseSharingSeq), eq(userId))).thenReturn(true);
 
+        // Act
+        boolean result = caseSharingService.isBookmarked(caseSharingSeq, userId);
+
+        // Assert
         assertTrue(result);
-        verify(bookmarkService, times(1)).isBookmarked(anyString(), anyLong(), anyString());
+        verify(bookmarkService, times(1)).isBookmarked(any(), eq(caseSharingSeq), eq(userId));
     }
 
     @Test
     void testGetMyCaseList() {
-        when(caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftFalseAndDeletedAtIsNullAndCaseSharingIsLatestIsTrue(anyLong()))
-                .thenReturn(Collections.emptyList());
+        // Arrange
+        String userId = "user1";
+        User user = mock(User.class);
+        CaseSharing caseSharing = mock(CaseSharing.class);
 
-        List<CaseSharingMyListDTO> result = caseSharingService.getMyCaseList("testUser");
+        when(userService.findByUserId(userId)).thenReturn(user);
+        when(user.getUserSeq()).thenReturn(1L);
+        when(caseSharingRepository.findByUserUserSeqAndCaseSharingIsDraftFalseAndDeletedAtIsNullAndCaseSharingIsLatestIsTrue(1L))
+                .thenReturn(List.of(caseSharing));
 
+        when(caseSharing.getCaseSharingSeq()).thenReturn(1L);
+        when(caseSharing.getCaseSharingTitle()).thenReturn("My Case Title");
+        when(caseSharing.getCreatedAt()).thenReturn(null);
+        when(caseSharing.getCaseSharingViewCount()).thenReturn(10L);
+
+        // Act
+        List<CaseSharingMyListDTO> result = caseSharingService.getMyCaseList(userId);
+
+        // Assert
         assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(caseSharingRepository, times(1)).findByUserUserSeqAndCaseSharingIsDraftFalseAndDeletedAtIsNullAndCaseSharingIsLatestIsTrue(anyLong());
+        assertEquals(1, result.size());
+        assertEquals("My Case Title", result.get(0).getCaseSharingTitle());
     }
 
     @Test
     void testGetBookMarkedCaseList() {
-        when(bookmarkService.findByUserAndFlagType(any(), anyString())).thenReturn(Collections.emptyList());
+        // Arrange
+        String userId = "user1";
+        User user = mock(User.class);
+        CaseSharing caseSharing = mock(CaseSharing.class);
+        Flag flag = mock(Flag.class);
+        BookmarkDTO bookmarkDTO = mock(BookmarkDTO.class);
+        Ranking ranking = mock(Ranking.class);
 
-        List<CaseSharingListDTO> result = caseSharingService.getBookMarkedCaseList("testUser");
+        when(userService.findByUserId(userId)).thenReturn(user);
+        when(bookmarkService.findByUserAndFlagType(eq(user), any())).thenReturn(List.of(bookmarkDTO));
+        when(bookmarkDTO.getFlag()).thenReturn(flag);
+        when(flag.getFlagEntitySeq()).thenReturn(1L);
+        when(caseSharingRepository.findAllById(List.of(1L))).thenReturn(List.of(caseSharing));
 
+        when(caseSharing.getCaseSharingSeq()).thenReturn(1L);
+        when(caseSharing.getCaseSharingTitle()).thenReturn("Bookmarked Case");
+        when(caseSharing.getUser()).thenReturn(user);
+        when(user.getUserName()).thenReturn("Test Author");
+        when(user.getRanking()).thenReturn(ranking);
+        when(ranking.getRankingName()).thenReturn("Test Rank");
+
+        // Act
+        List<CaseSharingListDTO> result = caseSharingService.getBookMarkedCaseList(userId);
+
+        // Assert
         assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(bookmarkService, times(1)).findByUserAndFlagType(any(), anyString());
+        assertEquals(1, result.size());
+        assertEquals("Bookmarked Case", result.get(0).getCaseSharingTitle());
+        assertEquals("Test Author", result.get(0).getCaseAuthor());
+        assertEquals("Test Rank", result.get(0).getCaseAuthorRankName());
     }
+
+
 
     @Test
     void testGetTop3Cases() {
-        Pageable pageable = PageRequest.of(0, 3);
-        when(caseSharingRepository.findTop3ByCreatedAtAfterOrderByCaseSharingViewCountDesc(any(LocalDateTime.class), eq(pageable)))
-                .thenReturn(Collections.emptyList());
+        // Arrange
+        CaseSharing caseSharing = mock(CaseSharing.class);
+        when(caseSharingRepository.findTop3ByCreatedAtAfterOrderByCaseSharingViewCountDesc(any(), any()))
+                .thenReturn(List.of(caseSharing));
 
+        when(caseSharing.getCaseSharingSeq()).thenReturn(1L);
+        when(caseSharing.getCaseSharingTitle()).thenReturn("Top Case");
+        when(caseSharing.getUser()).thenReturn(mock(User.class));
+        when(caseSharing.getPart()).thenReturn(mock(Part.class));
+        when(caseSharing.getUser().getUserName()).thenReturn("Author");
+        when(caseSharing.getPart().getPartName()).thenReturn("Part Name");
+        when(caseSharing.getUser().getRanking()).thenReturn(mock(Ranking.class));
+        when(caseSharing.getUser().getRanking().getRankingName()).thenReturn("Rank");
+        when(pictureService.getCaseSharingFirstImageUrl(1L)).thenReturn("http://example.com/image.jpg");
+
+        // Act
         List<CaseSharingMain3DTO> result = caseSharingService.getTop3Cases();
 
+        // Assert
         assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(caseSharingRepository, times(1)).findTop3ByCreatedAtAfterOrderByCaseSharingViewCountDesc(any(LocalDateTime.class), eq(pageable));
+        assertEquals(1, result.size());
+        assertEquals("Top Case", result.get(0).getCaseSharingTitle());
+        assertEquals("http://example.com/image.jpg", result.get(0).getFirstPictureUrl());
     }
-}*/
+}
