@@ -45,10 +45,14 @@ public class JooqCpVersionRepository {
                 .select(
                         CP_VERSION.CP_VERSION_SEQ,
                         CP_VERSION.CP_SEQ,
-                        DSL.max(CP_VERSION.CREATED_AT).as("max_created_at")
+                        CP_VERSION.CREATED_AT
                 )
                 .from(CP_VERSION)
-                .groupBy(CP_VERSION.CP_SEQ) // CP_VERSION_SEQ와 CP_SEQ로 그룹화
+                .where(CP_VERSION.CREATED_AT.eq(
+                        DSL.select(DSL.max(CP_VERSION.CREATED_AT))
+                                .from(CP_VERSION.asTable("inner_cp_version"))
+                                .where(CP_VERSION.CP_SEQ.eq(CP_VERSION.CP_SEQ))
+                ))
                 .asTable("latest_versions");
 
         // 메인 쿼리: 최신 버전만 선택
