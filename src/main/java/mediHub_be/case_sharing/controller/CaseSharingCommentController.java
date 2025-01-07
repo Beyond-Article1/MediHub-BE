@@ -18,7 +18,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("case_sharing_comment")
+@RequestMapping("/api/case_sharing_comment")
 @RequiredArgsConstructor
 @Tag(name = "케이스 공유 댓글", description = "케이스 공유 댓글 관련 API")
 public class CaseSharingCommentController {

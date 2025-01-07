@@ -16,7 +16,7 @@ public class ChatbotPromptLoader {
     public ChatbotPromptLoader() throws IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         promptConfig = objectMapper.readValue(
-                new File("src/main/resources/chatbot-prompts.json"),
+                new File("/chatbot-prompts.json"),
                 ChatbotPromptConfig.class
         );
     }

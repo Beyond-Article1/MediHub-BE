@@ -20,7 +20,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("case_sharing")
+@RequestMapping("/api/case_sharing")
 @RequiredArgsConstructor
 @Tag(name = "케이스 공유", description = "의사들의 케이스 공유 API")
 public class CaseSharingController {

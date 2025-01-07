@@ -23,11 +23,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         log.info("Chat StompEndpoints 작동");
 
-        registry.addEndpoint("/ws")      // 처음 웹소켓 Handshake를 위한 경로
+        registry.addEndpoint("/api/ws")      // 처음 웹소켓 Handshake를 위한 경로
                 .setAllowedOriginPatterns("*")  // 모든 Origin 허용 -> 배포 시에는 보안을 위해 Origin을 정확히 지정할 예정
                 .withSockJS();                  // SockJS 사용 가능 설정
 
-        registry.addEndpoint("/ws")
+        registry.addEndpoint("/api/ws")
                 .setAllowedOriginPatterns("*"); // api 통신 시, withSockJS() 설정을 빼야됨
     }
 
