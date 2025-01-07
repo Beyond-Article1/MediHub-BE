@@ -44,13 +44,15 @@ public class SecurityConfig {
         /* CSRF 비활성화 및 요청 경로 권한 설정 */
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(new AntPathRequestMatcher("/login")).permitAll() // 로그인 API 허용
+                                .requestMatchers("/**").permitAll()
+                                .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/login")).permitAll() // 로그인 API 허용
                         .requestMatchers(new AntPathRequestMatcher("/api/v1/token/reissue")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/webjars/**")).permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/ws/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/api/ws/**")).permitAll()
 
                         .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 )
@@ -97,6 +99,8 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         config.addAllowedOrigin("http://localhost:5173"); // 허용할 도메인
         config.addAllowedOrigin("https://medihub.s3.ap-northeast-2.amazonaws.com"); // S3 URL 추가
+        config.addAllowedOrigin("https://www.medihub.info");
+        config.addAllowedOrigin("https://medihub.info");
         config.addAllowedHeader("*"); // 모든 헤더 허용
         config.addAllowedMethod("*"); // 모든 HTTP 메소드 허용
         config.addExposedHeader("Access-Token");

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "cp/cpSearchCategory/{cpSearchCategorySeq}/cpSearchCategoryData")
+@RequestMapping(value = "/api/cp/cpSearchCategory/{cpSearchCategorySeq}/cpSearchCategoryData")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "CP", description = "CP 관련 API")

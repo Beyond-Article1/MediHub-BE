@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/chatbot")
+@RequestMapping("/api/chatbot")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "챗봇 기능 API", description = "챗봇 관련 RESTFUL한 API")

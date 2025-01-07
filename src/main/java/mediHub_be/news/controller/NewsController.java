@@ -16,7 +16,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/news")
+@RequestMapping("/api/news")
 @Tag(name = "의료 뉴스", description = "의료 뉴스 API")
 public class NewsController {
 
